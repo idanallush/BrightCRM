@@ -42,14 +42,14 @@ export default async function DashboardPage() {
           label="קמפיינים פעילים"
           value={counts.activeCampaigns}
           Icon={Megaphone}
-          href="/campaigns"
+          href="/campaigns?status=פעיל"
         />
         <Metric
           label="עבר הדדליין"
           value={counts.overdueTasks}
           Icon={AlertTriangle}
           accent={counts.overdueTasks > 0}
-          href="/tasks?status=בעבודה"
+          href="/tasks?overdue=true"
         />
       </section>
 
@@ -82,7 +82,14 @@ export default async function DashboardPage() {
                 <TBody>
                   {recent.map((t) => (
                     <TR key={t.id}>
-                      <TD className="font-medium">{t.title}</TD>
+                      <TD className="font-medium">
+                        <Link
+                          href={`/tasks?task=${t.id}`}
+                          className="block hover:text-[color:var(--color-brand)]"
+                        >
+                          {t.title}
+                        </Link>
+                      </TD>
                       <TD className="text-[color:var(--color-ink-muted)]">
                         {t.client?.name ?? "—"}
                       </TD>
@@ -129,7 +136,14 @@ export default async function DashboardPage() {
                     const v = healthVariant(c.health) ?? "neutral";
                     return (
                       <TR key={c.id}>
-                        <TD className="font-medium">{c.name}</TD>
+                        <TD className="font-medium">
+                          <Link
+                            href={`/clients/${c.id}`}
+                            className="block hover:text-[color:var(--color-brand)]"
+                          >
+                            {c.name}
+                          </Link>
+                        </TD>
                         <TD>
                           <Badge variant={v}>{c.health}</Badge>
                         </TD>

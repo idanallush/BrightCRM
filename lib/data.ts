@@ -22,7 +22,25 @@ export type Client = {
   phone: string | null;
   email: string | null;
   website_url: string | null;
+  budget_note: string | null;
+  drive_url: string | null;
+  facebook_ads_url: string | null;
+  google_ads_url: string | null;
+  cms_url: string | null;
+  analytics_url: string | null;
   health: "בריא" | "אסטרטגיה צריכה" | "קריטי" | null;
+};
+
+export type Campaign = {
+  id: string;
+  name: string;
+  client_id: string | null;
+  platform: "google" | "facebook" | "tiktok";
+  status: "פעיל" | "הסתיים" | "בעבודה" | "מושהה" | null;
+  start_date: string | null;
+  spent: number | null;
+  external_campaign_id: string | null;
+  created_at: string;
 };
 
 export type TeamMember = {
@@ -42,6 +60,7 @@ export async function getTasks(filters?: {
   status?: string;
   clientId?: string;
   assigneeId?: string;
+  overdue?: boolean;
 }): Promise<TaskWithRelations[]> {
   const sb = createClient();
   let q = sb
@@ -53,6 +72,10 @@ export async function getTasks(filters?: {
 
   if (filters?.status) q = q.eq("status", filters.status);
   if (filters?.clientId) q = q.eq("client_id", filters.clientId);
+  if (filters?.overdue) {
+    const today = new Date().toISOString().slice(0, 10);
+    q = q.eq("status", "בעבודה").lt("due_date", today);
+  }
 
   const { data, error } = await q;
   if (error) throw error;
@@ -71,14 +94,67 @@ export async function getTasks(filters?: {
   return rows;
 }
 
+const CLIENT_COLS =
+  "id,name,contact_name,account_manager_id,phone,email,website_url,budget_note,drive_url,facebook_ads_url,google_ads_url,cms_url,analytics_url,health";
+
 export async function getClients(): Promise<Client[]> {
+  const sb = createClient();
+  const { data, error } = await sb.from("clients").select(CLIENT_COLS).order("name");
+  if (error) throw error;
+  return (data ?? []) as unknown as Client[];
+}
+
+export async function getClient(id: string): Promise<Client | null> {
   const sb = createClient();
   const { data, error } = await sb
     .from("clients")
-    .select("id,name,contact_name,account_manager_id,phone,email,website_url,health")
+    .select(CLIENT_COLS)
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw error;
+  return (data as unknown as Client | null) ?? null;
+}
+
+export async function getClientsWithManager(): Promise<
+  (Client & { manager_name: string | null })[]
+> {
+  const sb = createClient();
+  const { data, error } = await sb
+    .from("clients")
+    .select(
+      `${CLIENT_COLS},manager:team_members!clients_account_manager_id_fkey(full_name)`,
+    )
     .order("name");
   if (error) throw error;
-  return (data ?? []) as Client[];
+  return ((data ?? []) as any[]).map((c) => ({
+    ...(c as Client),
+    manager_name: (c.manager?.full_name as string | undefined) ?? null,
+  }));
+}
+
+export async function getCampaignsByClient(clientId: string) {
+  const sb = createClient();
+  const { data } = await sb
+    .from("campaigns")
+    .select("id,name,platform,status,start_date,spent,external_campaign_id,created_at")
+    .eq("client_id", clientId)
+    .order("created_at", { ascending: false });
+  return (data ?? []) as Omit<Campaign, "client_id">[];
+}
+
+export async function getTasksByClient(clientId: string) {
+  const sb = createClient();
+  const { data } = await sb
+    .from("tasks")
+    .select("id,title,status,due_date")
+    .eq("client_id", clientId)
+    .order("due_date", { ascending: true, nullsFirst: false });
+  return (data ?? []) as {
+    id: string;
+    title: string;
+    status: string;
+    due_date: string | null;
+  }[];
 }
 
 export async function getTeam(): Promise<TeamMember[]> {

@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Plus, LayoutGrid, Rows3 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Plus, LayoutGrid, Rows3, AlertTriangle } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -41,13 +41,21 @@ export function TasksClient({
   clients,
   team,
   initialFilters,
+  initialOpenTaskId,
 }: {
   tasks: TaskWithRelations[];
   clients: Client[];
   team: TeamMember[];
-  initialFilters: { status: string; clientId: string; assigneeId: string };
+  initialFilters: {
+    status: string;
+    clientId: string;
+    assigneeId: string;
+    overdue: boolean;
+  };
+  initialOpenTaskId: string | null;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [view, setView] = React.useState<"table" | "kanban">("table");
   const [createOpen, setCreateOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<TaskWithRelations | null>(null);
@@ -60,21 +68,40 @@ export function TasksClient({
     if (saved === "table" || saved === "kanban") setView(saved);
   }, []);
 
+  // Deeplink: ?task=ID opens the edit sheet for that task.
+  React.useEffect(() => {
+    const id = searchParams.get("task");
+    if (id && (!editing || editing.id !== id)) {
+      const found = tasks.find((t) => t.id === id);
+      if (found) setEditing(found);
+    }
+  }, [searchParams, tasks, editing]);
+
   function changeView(next: "table" | "kanban") {
     setView(next);
     localStorage.setItem(VIEW_KEY, next);
   }
 
-  function updateFilter(key: keyof typeof filters, value: string) {
-    const next = { ...filters, [key]: value };
+  function updateFilter(key: keyof typeof filters, value: string | boolean) {
+    const next = { ...filters, [key]: value as never };
     setFilters(next);
     const params = new URLSearchParams();
     if (next.status && next.status !== "__all__") params.set("status", next.status);
     if (next.clientId && next.clientId !== "__all__") params.set("client", next.clientId);
     if (next.assigneeId && next.assigneeId !== "__all__")
       params.set("assignee", next.assigneeId);
+    if (next.overdue) params.set("overdue", "true");
     const qs = params.toString();
     router.push(qs ? `/tasks?${qs}` : "/tasks");
+  }
+
+  function closeSheet() {
+    setEditing(null);
+    setConfirmingDelete(false);
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("task");
+    const qs = params.toString();
+    router.replace(qs ? `/tasks?${qs}` : "/tasks");
   }
 
   async function onDelete() {
@@ -85,8 +112,7 @@ export function TasksClient({
       return;
     }
     toast.success("המשימה נמחקה");
-    setConfirmingDelete(false);
-    setEditing(null);
+    closeSheet();
     router.refresh();
   }
 
@@ -128,57 +154,73 @@ export function TasksClient({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div>
-          <Select value={filters.status} onValueChange={(v) => updateFilter("status", v)}>
-            <SelectTrigger>
-              <SelectValue placeholder="סטטוס" />
-            </SelectTrigger>
-            <SelectContent>
-              {STATUS_OPTIONS.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {s === "__all__" ? "כל הסטטוסים" : s}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-3">
+          <div>
+            <Select value={filters.status} onValueChange={(v) => updateFilter("status", v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="סטטוס" />
+              </SelectTrigger>
+              <SelectContent>
+                {STATUS_OPTIONS.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {s === "__all__" ? "כל הסטטוסים" : s}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Select
+              value={filters.clientId}
+              onValueChange={(v) => updateFilter("clientId", v)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="לקוח" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">כל הלקוחות</SelectItem>
+                {clients.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Select
+              value={filters.assigneeId}
+              onValueChange={(v) => updateFilter("assigneeId", v)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="אחראי" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">כל האחראים</SelectItem>
+                {team.map((m) => (
+                  <SelectItem key={m.id} value={m.id}>
+                    {m.full_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-        <div>
-          <Select
-            value={filters.clientId}
-            onValueChange={(v) => updateFilter("clientId", v)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="לקוח" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__all__">כל הלקוחות</SelectItem>
-              {clients.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {c.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Select
-            value={filters.assigneeId}
-            onValueChange={(v) => updateFilter("assigneeId", v)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="אחראי" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__all__">כל האחראים</SelectItem>
-              {team.map((m) => (
-                <SelectItem key={m.id} value={m.id}>
-                  {m.full_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+
+        <button
+          type="button"
+          onClick={() => updateFilter("overdue", !filters.overdue)}
+          className={cn(
+            "flex h-10 items-center gap-1.5 rounded-md border px-3 text-sm transition",
+            filters.overdue
+              ? "border-[color:var(--color-health-critical)] bg-[color:var(--color-health-critical)]/10 text-[color:var(--color-health-critical)]"
+              : "border-[color:var(--color-hairline)] bg-white text-[color:var(--color-ink-muted)] hover:bg-black/5",
+          )}
+        >
+          <AlertTriangle className="h-4 w-4" />
+          עבר דדליין
+        </button>
       </div>
 
       {view === "table" ? (
@@ -205,15 +247,7 @@ export function TasksClient({
       </Dialog>
 
       {/* Edit */}
-      <Sheet
-        open={!!editing}
-        onOpenChange={(open) => {
-          if (!open) {
-            setEditing(null);
-            setConfirmingDelete(false);
-          }
-        }}
-      >
+      <Sheet open={!!editing} onOpenChange={(open) => !open && closeSheet()}>
         <SheetContent side="left" className="flex flex-col">
           {editing && (
             <>
@@ -228,7 +262,7 @@ export function TasksClient({
                 task={editing}
                 clients={clients}
                 team={team}
-                onDone={() => setEditing(null)}
+                onDone={closeSheet}
               />
               <div className="border-t border-[color:var(--color-hairline)] pt-3">
                 {confirmingDelete ? (

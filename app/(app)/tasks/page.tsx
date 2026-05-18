@@ -6,14 +6,21 @@ export const dynamic = "force-dynamic";
 export default async function TasksPage({
   searchParams,
 }: {
-  searchParams: { status?: string; client?: string; assignee?: string };
+  searchParams: {
+    status?: string;
+    client?: string;
+    assignee?: string;
+    overdue?: string;
+    task?: string;
+  };
 }) {
   const status = searchParams.status;
   const clientId = searchParams.client;
   const assigneeId = searchParams.assignee;
+  const overdue = searchParams.overdue === "true";
 
   const [tasks, clients, team] = await Promise.all([
-    getTasks({ status, clientId, assigneeId }),
+    getTasks({ status, clientId, assigneeId, overdue }),
     getClients(),
     getTeam(),
   ]);
@@ -27,7 +34,9 @@ export default async function TasksPage({
         status: status ?? "__all__",
         clientId: clientId ?? "__all__",
         assigneeId: assigneeId ?? "__all__",
+        overdue,
       }}
+      initialOpenTaskId={searchParams.task ?? null}
     />
   );
 }
