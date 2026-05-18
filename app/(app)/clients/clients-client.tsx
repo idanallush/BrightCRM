@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
-import { Plus, Search } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ChevronLeft, Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -22,23 +22,42 @@ import {
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Badge, healthVariant } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/empty-state";
+import { cn } from "@/lib/utils";
 import { ClientForm } from "./client-form";
 import type { Client, TeamMember } from "@/lib/data";
 
 const ALL = "__all__";
 
+function taskCountClass(n: number): string {
+  if (n === 0) return "bg-black/5 text-[color:var(--color-ink-muted)]";
+  if (n <= 3) return "bg-[color:var(--color-brand)]/10 text-[color:var(--color-brand)]";
+  return "bg-[color:var(--color-health-critical)]/10 text-[color:var(--color-health-critical)]";
+}
+
 export function ClientsClient({
   clients,
   team,
+  openTaskCounts,
 }: {
   clients: (Client & { manager_name: string | null })[];
   team: TeamMember[];
+  openTaskCounts: Record<string, number>;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [search, setSearch] = React.useState("");
   const [health, setHealth] = React.useState(ALL);
   const [managerId, setManagerId] = React.useState(ALL);
   const [createOpen, setCreateOpen] = React.useState(false);
+
+  // FAB deeplink: ?new=true opens create dialog and strips param.
+  React.useEffect(() => {
+    if (searchParams.get("new") === "true") {
+      setCreateOpen(true);
+      router.replace("/clients");
+    }
+  }, [searchParams, router]);
 
   const filtered = React.useMemo(() => {
     return clients.filter((c) => {
@@ -50,6 +69,17 @@ export function ClientsClient({
     });
   }, [clients, search, health, managerId]);
 
+  const activeFilterCount =
+    (health !== ALL ? 1 : 0) +
+    (managerId !== ALL ? 1 : 0) +
+    (search.trim().length > 0 ? 1 : 0);
+
+  function clearFilters() {
+    setSearch("");
+    setHealth(ALL);
+    setManagerId(ALL);
+  }
+
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -58,6 +88,15 @@ export function ClientsClient({
           <span className="text-sm text-[color:var(--color-ink-muted)]">
             {filtered.length} מתוך {clients.length}
           </span>
+          {activeFilterCount > 0 && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="inline-flex items-center gap-1 rounded-full bg-[color:var(--color-brand)] px-2.5 py-0.5 text-xs font-medium text-white"
+            >
+              פילטרים פעילים ({activeFilterCount}) · נקה
+            </button>
+          )}
         </div>
         <Button onClick={() => setCreateOpen(true)}>
           <Plus className="h-4 w-4" /> לקוח חדש
@@ -101,9 +140,29 @@ export function ClientsClient({
       </div>
 
       {filtered.length === 0 ? (
-        <div className="rounded-[18px] border border-[color:var(--color-hairline)] bg-white p-10 text-center text-sm text-[color:var(--color-ink-muted)]">
-          לא נמצאו לקוחות תואמים.
-        </div>
+        activeFilterCount > 0 ? (
+          <EmptyState
+            icon={<span>👥</span>}
+            title="לא נמצאו לקוחות תואמים"
+            description="נסה לשנות את הפילטרים או לנקות אותם."
+            action={
+              <Button variant="outline" size="sm" onClick={clearFilters}>
+                נקה פילטרים
+              </Button>
+            }
+          />
+        ) : (
+          <EmptyState
+            icon={<span>👥</span>}
+            title="אין לקוחות עדיין"
+            description="הוסף את הלקוח הראשון כדי להתחיל לעקוב אחריו."
+            action={
+              <Button onClick={() => setCreateOpen(true)}>
+                <Plus className="h-4 w-4" /> לקוח חדש
+              </Button>
+            }
+          />
+        )
       ) : (
         <Card className="overflow-hidden">
           <CardContent className="p-0">
@@ -116,11 +175,14 @@ export function ClientsClient({
                   <TH>טלפון</TH>
                   <TH>אימייל</TH>
                   <TH>בריאות</TH>
+                  <TH>משימות פתוחות</TH>
+                  <TH className="w-10" />
                 </TR>
               </THead>
               <TBody>
                 {filtered.map((c) => {
                   const v = healthVariant(c.health);
+                  const openCount = openTaskCounts[c.id] ?? 0;
                   return (
                     <TR
                       key={c.id}
@@ -141,6 +203,19 @@ export function ClientsClient({
                         {c.email ?? "—"}
                       </TD>
                       <TD>{v && c.health ? <Badge variant={v}>{c.health}</Badge> : "—"}</TD>
+                      <TD>
+                        <span
+                          className={cn(
+                            "inline-flex min-w-[1.75rem] items-center justify-center rounded-full px-2 py-0.5 text-xs font-medium",
+                            taskCountClass(openCount),
+                          )}
+                        >
+                          {openCount}
+                        </span>
+                      </TD>
+                      <TD className="w-10 text-end text-[color:var(--color-brand)] opacity-0 transition group-hover:opacity-100">
+                        <ChevronLeft className="ms-auto h-4 w-4" />
+                      </TD>
                     </TR>
                   );
                 })}

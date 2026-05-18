@@ -4,6 +4,7 @@ import { isBrightEmail } from "@/lib/utils";
 import { Sidebar } from "./sidebar";
 import { Header } from "./header";
 import { Toaster } from "@/components/ui/toaster";
+import { QuickAdd } from "@/components/quick-add";
 
 export default async function AppLayout({
   children,
@@ -28,6 +29,7 @@ export default async function AppLayout({
         <Header userLabel={userLabel} />
         <main className="flex-1 overflow-x-auto p-5 md:p-8">{children}</main>
       </div>
+      <QuickAdd />
       <Toaster />
     </div>
   );

@@ -142,6 +142,100 @@ export async function getCampaignsByClient(clientId: string) {
   return (data ?? []) as Omit<Campaign, "client_id">[];
 }
 
+export async function getAttachmentsForClient(clientId: string) {
+  return getAttachments({ clientId });
+}
+
+export async function getAttachmentsForTask(taskId: string) {
+  return getAttachments({ taskId });
+}
+
+async function getAttachments(scope: { clientId?: string; taskId?: string }) {
+  const sb = createClient();
+  let q = sb
+    .from("attachments")
+    .select(
+      "id,file_name,file_size,content_type,storage_path,client_id,task_id,uploaded_by,created_at,uploader:team_members!attachments_uploaded_by_fkey(full_name)",
+    )
+    .order("created_at", { ascending: false });
+  if (scope.clientId) q = q.eq("client_id", scope.clientId);
+  if (scope.taskId) q = q.eq("task_id", scope.taskId);
+
+  const { data } = await q;
+  return ((data ?? []) as any[]).map((a) => ({
+    id: a.id as string,
+    file_name: a.file_name as string,
+    file_size: (a.file_size as number | null) ?? null,
+    content_type: (a.content_type as string | null) ?? null,
+    storage_path: a.storage_path as string,
+    client_id: (a.client_id as string | null) ?? null,
+    task_id: (a.task_id as string | null) ?? null,
+    uploaded_by: (a.uploaded_by as string | null) ?? null,
+    uploader_name: (a.uploader?.full_name as string | undefined) ?? null,
+    created_at: a.created_at as string,
+  }));
+}
+
+export async function getOpenTaskCountsByClient(): Promise<Record<string, number>> {
+  const sb = createClient();
+  const { data } = await sb
+    .from("tasks")
+    .select("client_id")
+    .eq("status", "בעבודה");
+  const map: Record<string, number> = {};
+  for (const row of (data ?? []) as { client_id: string }[]) {
+    map[row.client_id] = (map[row.client_id] ?? 0) + 1;
+  }
+  return map;
+}
+
+export type SearchResults = {
+  tasks: { id: string; title: string; client_name: string | null }[];
+  clients: { id: string; name: string }[];
+  campaigns: { id: string; name: string; client_name: string | null }[];
+};
+
+export async function searchAll(query: string): Promise<SearchResults> {
+  const q = query.trim();
+  if (q.length < 2) return { tasks: [], clients: [], campaigns: [] };
+  const sb = createClient();
+  const like = `%${q}%`;
+  const [tasksRes, clientsRes, campaignsRes] = await Promise.all([
+    sb
+      .from("tasks")
+      .select("id,title,client:clients(name)")
+      .or(`title.ilike.${like},description.ilike.${like}`)
+      .limit(5),
+    sb
+      .from("clients")
+      .select("id,name")
+      .or(`name.ilike.${like},contact_name.ilike.${like}`)
+      .order("name")
+      .limit(5),
+    sb
+      .from("campaigns")
+      .select("id,name,client:clients(name)")
+      .ilike("name", like)
+      .limit(5),
+  ]);
+  return {
+    tasks: ((tasksRes.data ?? []) as any[]).map((t) => ({
+      id: t.id as string,
+      title: t.title as string,
+      client_name: (t.client?.name as string | undefined) ?? null,
+    })),
+    clients: ((clientsRes.data ?? []) as any[]).map((c) => ({
+      id: c.id as string,
+      name: c.name as string,
+    })),
+    campaigns: ((campaignsRes.data ?? []) as any[]).map((c) => ({
+      id: c.id as string,
+      name: c.name as string,
+      client_name: (c.client?.name as string | undefined) ?? null,
+    })),
+  };
+}
+
 export async function getTasksByClient(clientId: string) {
   const sb = createClient();
   const { data } = await sb

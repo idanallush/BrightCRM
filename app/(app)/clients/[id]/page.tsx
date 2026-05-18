@@ -6,11 +6,15 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Badge, healthVariant, statusVariant } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+  getAttachmentsForClient,
   getCampaignsByClient,
   getClient,
   getTasksByClient,
   getTeam,
 } from "@/lib/data";
+import { getSignedThumbnailUrl } from "@/app/actions/attachments";
+import { FileList } from "@/components/file-list";
+import { FileUpload } from "@/components/file-upload";
 import { EditClientButton, DeleteClientButton } from "./edit-button";
 
 export const dynamic = "force-dynamic";
@@ -37,14 +41,24 @@ export default async function ClientDetailPage({
 }: {
   params: { id: string };
 }) {
-  const [client, tasks, campaigns, team] = await Promise.all([
+  const [client, tasks, campaigns, team, attachments] = await Promise.all([
     getClient(params.id),
     getTasksByClient(params.id),
     getCampaignsByClient(params.id),
     getTeam(),
+    getAttachmentsForClient(params.id),
   ]);
 
   if (!client) notFound();
+
+  const thumbs: Record<string, string | null> = {};
+  await Promise.all(
+    attachments
+      .filter((a) => a.content_type?.startsWith("image/"))
+      .map(async (a) => {
+        thumbs[a.storage_path] = await getSignedThumbnailUrl(a.storage_path);
+      }),
+  );
 
   const manager = team.find((m) => m.id === client.account_manager_id);
   const healthV = healthVariant(client.health);
@@ -229,6 +243,14 @@ export default async function ClientDetailPage({
             </CardContent>
           </Card>
         )}
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h3 className="text-sm font-medium text-[color:var(--color-ink-muted)]">
+          קבצים ({attachments.length})
+        </h3>
+        <FileUpload clientId={client.id} />
+        <FileList attachments={attachments} thumbUrls={thumbs} />
       </section>
     </div>
   );

@@ -28,15 +28,22 @@ Next.js 14 + Supabase. כלי CRM פנימי לסוכנות Bright. ראה `CLAU
    npx supabase link --project-ref YOUR-PROJECT-REF
    npx supabase db push
    ```
-   או הדבק ידנית את שני קבצי ה-SQL מ-`supabase/migrations/` ב-SQL Editor של Supabase.
+   או הדבק ידנית את קבצי ה-SQL מ-`supabase/migrations/` ב-SQL Editor של Supabase לפי סדר השמות.
 
-5. **ייבוא חד-פעמי מ-CSV**
+5. **צור Storage bucket בשם `attachments`** (חד-פעמי, חובה לפני העלאת קבצים)
+   - Dashboard → Storage → New bucket
+   - Name: `attachments`
+   - Public: **off** (אנחנו משתמשים ב-signed URLs)
+   - אחרי היצירה, המדיניות שכבר ברצה ב-migration (`20260519000001_attachments.sql`)
+     תתפוס את ה-bucket אוטומטית — אין צורך להגדיר policies נוספות בדשבורד.
+
+6. **ייבוא חד-פעמי מ-CSV**
    ```bash
    npm run import
    ```
    הסקריפט idempotent: ריצה שנייה מדלגת על טבלאות שיש בהן רשומות.
 
-6. **dev**
+7. **dev**
    ```bash
    npm run dev
    ```

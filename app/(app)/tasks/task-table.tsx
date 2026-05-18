@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronLeft } from "lucide-react";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Badge, statusVariant } from "@/components/ui/badge";
 import type { TaskWithRelations } from "@/lib/data";
@@ -14,14 +15,6 @@ export function TaskTable({
   tasks: TaskWithRelations[];
   onRowClick: (t: TaskWithRelations) => void;
 }) {
-  if (tasks.length === 0) {
-    return (
-      <div className="rounded-[18px] border border-[color:var(--color-hairline)] bg-white p-10 text-center text-sm text-[color:var(--color-ink-muted)]">
-        אין משימות תואמות לפילטר.
-      </div>
-    );
-  }
-
   const today = new Date().toISOString().slice(0, 10);
 
   return (
@@ -34,6 +27,7 @@ export function TaskTable({
             <TH>סטטוס</TH>
             <TH>תאריך יעד</TH>
             <TH>אחראי</TH>
+            <TH className="w-10" />
           </TR>
         </THead>
         <TBody>
@@ -66,6 +60,9 @@ export function TaskTable({
                   {t.assignees.length === 0
                     ? "—"
                     : t.assignees.map((a) => a.full_name).join(", ")}
+                </TD>
+                <TD className="w-10 text-end text-[color:var(--color-brand)] opacity-0 transition group-hover:opacity-100">
+                  <ChevronLeft className="ms-auto h-4 w-4" />
                 </TD>
               </TR>
             );

@@ -27,9 +27,11 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
+import { EmptyState } from "@/components/empty-state";
 import { TaskTable } from "./task-table";
 import { TaskKanban } from "./task-kanban";
 import { TaskForm } from "./task-form";
+import { TaskAttachments } from "./task-attachments";
 import { deleteTask } from "./actions";
 import type { Client, TaskWithRelations, TeamMember } from "@/lib/data";
 
@@ -77,6 +79,34 @@ export function TasksClient({
     }
   }, [searchParams, tasks, editing]);
 
+  // FAB deeplink: ?new=true opens the create dialog and strips the param.
+  React.useEffect(() => {
+    if (searchParams.get("new") === "true") {
+      setCreateOpen(true);
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("new");
+      const qs = params.toString();
+      router.replace(qs ? `/tasks?${qs}` : "/tasks");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  const activeFilterCount =
+    (filters.status !== "__all__" ? 1 : 0) +
+    (filters.clientId !== "__all__" ? 1 : 0) +
+    (filters.assigneeId !== "__all__" ? 1 : 0) +
+    (filters.overdue ? 1 : 0);
+
+  function clearFilters() {
+    setFilters({
+      status: "__all__",
+      clientId: "__all__",
+      assigneeId: "__all__",
+      overdue: false,
+    });
+    router.push("/tasks");
+  }
+
   function changeView(next: "table" | "kanban") {
     setView(next);
     localStorage.setItem(VIEW_KEY, next);
@@ -119,7 +149,19 @@ export function TasksClient({
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">משימות</h1>
+        <div className="flex items-baseline gap-3">
+          <h1 className="text-2xl font-semibold tracking-tight">משימות</h1>
+          {activeFilterCount > 0 && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="inline-flex items-center gap-1 rounded-full bg-[color:var(--color-brand)] px-2.5 py-0.5 text-xs font-medium text-white"
+              title="נקה את כל הפילטרים"
+            >
+              פילטרים פעילים ({activeFilterCount}) · נקה
+            </button>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           <div className="inline-flex rounded-md border border-[color:var(--color-hairline)] bg-white p-0.5">
             <button
@@ -223,7 +265,31 @@ export function TasksClient({
         </button>
       </div>
 
-      {view === "table" ? (
+      {tasks.length === 0 ? (
+        activeFilterCount > 0 ? (
+          <EmptyState
+            icon={<span>📋</span>}
+            title="לא נמצאו משימות תואמות"
+            description="נסה לשנות את הפילטרים או לנקות את כולם."
+            action={
+              <Button variant="outline" size="sm" onClick={clearFilters}>
+                נקה פילטרים
+              </Button>
+            }
+          />
+        ) : (
+          <EmptyState
+            icon={<span>📋</span>}
+            title="אין משימות עדיין"
+            description="פתח משימה ראשונה — דרך הכפתור או דרך בוט הטלגרם."
+            action={
+              <Button onClick={() => setCreateOpen(true)}>
+                <Plus className="h-4 w-4" /> משימה חדשה
+              </Button>
+            }
+          />
+        )
+      ) : view === "table" ? (
         <TaskTable tasks={tasks} onRowClick={setEditing} />
       ) : (
         <TaskKanban tasks={tasks} onCardClick={setEditing} />
@@ -248,51 +314,57 @@ export function TasksClient({
 
       {/* Edit */}
       <Sheet open={!!editing} onOpenChange={(open) => !open && closeSheet()}>
-        <SheetContent side="left" className="flex flex-col">
+        <SheetContent side="left" className="flex flex-col gap-0 p-0">
           {editing && (
             <>
-              <SheetHeader>
+              <SheetHeader className="px-6 pb-3 pt-6">
                 <SheetTitle>עריכת משימה</SheetTitle>
                 <SheetDescription>
                   שינויים נשמרים מיד אחרי לחיצה על "שמירה".
                 </SheetDescription>
               </SheetHeader>
-              <TaskForm
-                key={editing.id}
-                task={editing}
-                clients={clients}
-                team={team}
-                onDone={closeSheet}
-              />
-              <div className="border-t border-[color:var(--color-hairline)] pt-3">
-                {confirmingDelete ? (
-                  <div className="flex flex-col gap-2 rounded-md bg-red-50 p-3 text-right">
-                    <p className="text-sm text-red-700">
-                      למחוק את המשימה לצמיתות?
-                    </p>
-                    <div className="flex flex-row-reverse gap-2">
-                      <Button variant="danger" size="sm" onClick={onDelete}>
-                        מחק
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setConfirmingDelete(false)}
-                      >
-                        ביטול
-                      </Button>
+              <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6 pb-6">
+                <TaskForm
+                  key={editing.id}
+                  task={editing}
+                  clients={clients}
+                  team={team}
+                  onDone={closeSheet}
+                  compact
+                />
+                <div className="border-t border-[color:var(--color-hairline)] pt-4">
+                  <TaskAttachments key={editing.id} taskId={editing.id} />
+                </div>
+                <div className="border-t border-[color:var(--color-hairline)] pt-3">
+                  {confirmingDelete ? (
+                    <div className="flex flex-col gap-2 rounded-md bg-red-50 p-3 text-right">
+                      <p className="text-sm text-red-700">
+                        למחוק את המשימה לצמיתות?
+                      </p>
+                      <div className="flex flex-row-reverse gap-2">
+                        <Button variant="danger" size="sm" onClick={onDelete}>
+                          מחק
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setConfirmingDelete(false)}
+                        >
+                          ביטול
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setConfirmingDelete(true)}
-                    className="text-red-600"
-                  >
-                    מחיקה
-                  </Button>
-                )}
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setConfirmingDelete(true)}
+                      className="text-red-600"
+                    >
+                      מחיקה
+                    </Button>
+                  )}
+                </div>
               </div>
             </>
           )}

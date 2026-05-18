@@ -23,11 +23,18 @@ export function TaskForm({
   clients,
   team,
   onDone,
+  compact = false,
 }: {
   task?: TaskWithRelations;
   clients: Client[];
   team: TeamMember[];
   onDone: () => void;
+  /**
+   * Default layout fills its parent and scrolls fields internally (Dialog).
+   * compact=true: intrinsic height, no internal scroll — for Sheet contexts
+   * where the parent is itself scrollable and stacks more sections after.
+   */
+  compact?: boolean;
 }) {
   const router = useRouter();
   const [pending, setPending] = React.useState(false);
@@ -80,8 +87,19 @@ export function TaskForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
-      <div className="-mx-1 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-1 pb-1">
+    <form
+      onSubmit={onSubmit}
+      className={
+        compact ? "flex flex-col" : "flex min-h-0 flex-1 flex-col"
+      }
+    >
+      <div
+        className={
+          compact
+            ? "flex flex-col gap-4"
+            : "-mx-1 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-1 pb-1"
+        }
+      >
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="title">כותרת</Label>
         <Input
