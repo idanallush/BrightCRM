@@ -81,7 +81,8 @@ export function CampaignForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="flex flex-1 flex-col gap-4 overflow-y-auto">
+    <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col">
+      <div className="-mx-1 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-1 pb-1">
       <Field label="שם קמפיין">
         <Input
           value={form.name}
@@ -179,7 +180,8 @@ export function CampaignForm({
         />
       </Field>
 
-      <div className="mt-2 flex flex-row-reverse gap-2 pt-2">
+      </div>
+      <div className="mt-3 flex shrink-0 flex-row-reverse gap-2 border-t border-[color:var(--color-hairline)] pt-3">
         <Button type="submit" disabled={pending}>
           {pending ? "שומר..." : campaign ? "שמירה" : "צור קמפיין"}
         </Button>

@@ -30,7 +30,7 @@ export function EditClientButton({
         <Pencil className="h-4 w-4" /> עריכה
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-h-[90vh] overflow-hidden">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>עריכת לקוח</DialogTitle>
             <DialogDescription>שינויים נשמרים מיד אחרי "שמירה".</DialogDescription>

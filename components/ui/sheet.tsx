@@ -55,11 +55,21 @@ export const SheetContent = React.forwardRef<
 SheetContent.displayName = "SheetContent";
 
 export function SheetHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("flex flex-col gap-1 text-right", className)} {...props} />;
+  return (
+    <div
+      className={cn("flex shrink-0 flex-col gap-1 text-right", className)}
+      {...props}
+    />
+  );
 }
 
 export function SheetFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("mt-auto flex flex-row-reverse gap-2 pt-4", className)} {...props} />;
+  return (
+    <div
+      className={cn("mt-auto flex shrink-0 flex-row-reverse gap-2 pt-4", className)}
+      {...props}
+    />
+  );
 }
 
 export const SheetTitle = React.forwardRef<

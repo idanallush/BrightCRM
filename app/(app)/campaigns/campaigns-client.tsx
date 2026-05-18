@@ -241,7 +241,7 @@ export function CampaignsClient({
 
       {/* Create */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-h-[90vh] overflow-hidden">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>קמפיין חדש</DialogTitle>
             <DialogDescription>חובה: שם ופלטפורמה.</DialogDescription>

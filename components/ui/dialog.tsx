@@ -35,7 +35,9 @@ export const DialogContent = React.forwardRef<
       dir="rtl"
       className={cn(
         // physical left/top so centering works regardless of dir
-        "fixed left-1/2 top-1/2 z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 rounded-2xl bg-white p-6 shadow-2xl",
+        // max-h-[85vh] + flex-col + overflow-hidden makes the dialog scrollable
+        // via an inner overflow-y-auto region without clipping the rounded corners.
+        "fixed left-1/2 top-1/2 z-50 flex max-h-[85vh] w-full max-w-lg -translate-x-1/2 -translate-y-1/2 flex-col gap-4 overflow-hidden rounded-2xl bg-white p-6 shadow-2xl",
         className,
       )}
       {...props}
@@ -50,16 +52,18 @@ export const DialogContent = React.forwardRef<
 DialogContent.displayName = "DialogContent";
 
 export function DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("flex flex-col gap-1 text-right", className)} {...props} />;
+  return (
+    <div
+      className={cn("flex shrink-0 flex-col gap-1 text-right", className)}
+      {...props}
+    />
+  );
 }
 
 export function DialogFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn(
-        "flex flex-row-reverse gap-2 pt-2",
-        className,
-      )}
+      className={cn("flex shrink-0 flex-row-reverse gap-2 pt-2", className)}
       {...props}
     />
   );

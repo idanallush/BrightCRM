@@ -231,7 +231,7 @@ export function TasksClient({
 
       {/* Create */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-h-[90vh] overflow-hidden">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>משימה חדשה</DialogTitle>
             <DialogDescription>
