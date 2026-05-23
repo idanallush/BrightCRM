@@ -37,9 +37,11 @@ import type { Client, TaskWithRelations, TeamMember } from "@/lib/data";
 
 const STATUS_TABS = [
   { key: "__all__", label: "הכל" },
+  { key: "מחכה לטיפול", label: "ממתין" },
+  { key: "נכנס לעבודה", label: "נכנס" },
   { key: "בעבודה", label: "בעבודה" },
+  { key: "אישור לקוח", label: "אישור" },
   { key: "בוצע", label: "בוצע" },
-  { key: "סגור", label: "סגור" },
 ] as const;
 const VIEW_KEY = "brightcrm:tasks-view";
 

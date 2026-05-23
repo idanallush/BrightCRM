@@ -2,13 +2,12 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Plus, CheckSquare, Users, Megaphone } from "lucide-react";
+import { Plus, CheckSquare, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
   { href: "/tasks?new=true", label: "משימה חדשה", Icon: CheckSquare },
   { href: "/clients?new=true", label: "לקוח חדש", Icon: Users },
-  { href: "/campaigns?new=true", label: "קמפיין חדש", Icon: Megaphone },
 ];
 
 export function QuickAdd() {

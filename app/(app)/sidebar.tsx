@@ -6,7 +6,6 @@ import {
   LayoutDashboard,
   CheckSquare,
   Users,
-  Megaphone,
   PanelRightOpen,
   PanelRightClose,
   X,
@@ -19,7 +18,6 @@ const NAV = [
   { href: "/dashboard", label: "דשבורד", Icon: LayoutDashboard },
   { href: "/tasks", label: "משימות", Icon: CheckSquare },
   { href: "/clients", label: "לקוחות", Icon: Users },
-  { href: "/campaigns", label: "קמפיינים", Icon: Megaphone },
 ];
 
 export function Sidebar() {

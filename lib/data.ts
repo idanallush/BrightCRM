@@ -5,7 +5,7 @@ export type Task = {
   title: string;
   client_id: string;
   description: string | null;
-  status: "בעבודה" | "בוצע" | "סגור";
+  status: "מחכה לטיפול" | "נכנס לעבודה" | "בעבודה" | "אישור לקוח" | "אישור מנהל" | "בוצע" | "בוטל";
   start_date: string;
   due_date: string | null;
   created_by_id: string | null;
@@ -74,7 +74,7 @@ export async function getTasks(filters?: {
   if (filters?.clientId) q = q.eq("client_id", filters.clientId);
   if (filters?.overdue) {
     const today = new Date().toISOString().slice(0, 10);
-    q = q.eq("status", "בעבודה").lt("due_date", today);
+    q = q.in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה"]).lt("due_date", today);
   }
 
   const { data, error } = await q;
@@ -181,7 +181,7 @@ export async function getOpenTaskCountsByClient(): Promise<Record<string, number
   const { data } = await sb
     .from("tasks")
     .select("client_id")
-    .eq("status", "בעבודה");
+    .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח", "אישור מנהל"]);
   const map: Record<string, number> = {};
   for (const row of (data ?? []) as { client_id: string }[]) {
     map[row.client_id] = (map[row.client_id] ?? 0) + 1;
@@ -273,17 +273,18 @@ export async function getDashboardCounts(): Promise<DashboardCounts> {
   const sb = createClient();
   const today = new Date().toISOString().slice(0, 10);
 
-  const [open, clients, campaigns, overdue] = await Promise.all([
-    sb.from("tasks").select("*", { count: "exact", head: true }).eq("status", "בעבודה"),
+  const activeStatuses = ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח", "אישור מנהל"];
+
+  const [open, clients, overdue] = await Promise.all([
+    sb.from("tasks").select("*", { count: "exact", head: true }).in("status", activeStatuses),
     sb.from("clients").select("*", { count: "exact", head: true }),
-    sb.from("campaigns").select("*", { count: "exact", head: true }).eq("status", "פעיל"),
-    sb.from("tasks").select("*", { count: "exact", head: true }).eq("status", "בעבודה").lt("due_date", today),
+    sb.from("tasks").select("*", { count: "exact", head: true }).in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה"]).lt("due_date", today),
   ]);
 
   return {
     openTasks: open.count ?? 0,
     totalClients: clients.count ?? 0,
-    activeCampaigns: campaigns.count ?? 0,
+    activeCampaigns: 0,
     overdueTasks: overdue.count ?? 0,
   };
 }
@@ -343,7 +344,7 @@ export async function getMyTasks(userEmail: string) {
     .select(
       "id,title,due_date,client:clients(name),assignees:task_assignees(member:team_members(id))",
     )
-    .eq("status", "בעבודה")
+    .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח", "אישור מנהל"])
     .order("due_date", { ascending: true, nullsFirst: false });
 
   // Filter to only tasks assigned to this member

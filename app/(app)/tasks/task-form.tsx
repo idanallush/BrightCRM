@@ -16,7 +16,7 @@ import { toast } from "@/components/ui/toaster";
 import { createTask, updateTask, type TaskInput } from "./actions";
 import type { Client, TaskWithRelations, TeamMember } from "@/lib/data";
 
-const STATUSES: TaskInput["status"][] = ["בעבודה", "בוצע", "סגור"];
+const STATUSES: TaskInput["status"][] = ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח", "אישור מנהל", "בוצע", "בוטל"];
 
 export function TaskForm({
   task,

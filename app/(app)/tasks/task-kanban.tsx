@@ -14,12 +14,14 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { toast } from "@/components/ui/toaster";
 import { updateTaskStatus } from "./actions";
-import type { TaskWithRelations } from "@/lib/data";
+import type { Task, TaskWithRelations } from "@/lib/data";
 
-const COLUMNS: { key: "בעבודה" | "בוצע" | "סגור"; label: string }[] = [
+const COLUMNS: { key: string; label: string }[] = [
+  { key: "מחכה לטיפול", label: "ממתין" },
+  { key: "נכנס לעבודה", label: "נכנס לעבודה" },
   { key: "בעבודה", label: "בעבודה" },
+  { key: "אישור לקוח", label: "אישור" },
   { key: "בוצע", label: "בוצע" },
-  { key: "סגור", label: "סגור" },
 ];
 
 const fmtDate = (iso: string | null) =>
@@ -46,7 +48,7 @@ export function TaskKanban({
 
   async function onDragEnd(e: DragEndEvent) {
     const taskId = String(e.active.id);
-    const newStatus = e.over?.id as "בעבודה" | "בוצע" | "סגור" | undefined;
+    const newStatus = e.over?.id as Task["status"] | undefined;
     if (!newStatus) return;
     const current = local.find((t) => t.id === taskId);
     if (!current || current.status === newStatus) return;
@@ -129,7 +131,8 @@ function KanbanCard({
     id: task.id,
   });
   const today = new Date().toISOString().slice(0, 10);
-  const overdue = task.status === "בעבודה" && task.due_date && task.due_date < today;
+  const activeStatuses = ["מחכה לטיפול", "נכנס לעבודה", "בעבודה"];
+  const overdue = activeStatuses.includes(task.status) && task.due_date && task.due_date < today;
 
   return (
     <div

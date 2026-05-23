@@ -34,7 +34,7 @@ export function TaskTable({
         <TBody>
           {tasks.map((t) => {
             const overdue =
-              t.status === "בעבודה" && t.due_date && t.due_date < today;
+              ["מחכה לטיפול", "נכנס לעבודה", "בעבודה"].includes(t.status) && t.due_date && t.due_date < today;
             return (
               <TR
                 key={t.id}

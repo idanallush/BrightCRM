@@ -6,7 +6,7 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Badge, healthVariant, statusVariant } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  getAttachmentsForClient, getCampaignsByClient, getClient, getTasksByClient, getTeam,
+  getAttachmentsForClient, getClient, getTasksByClient, getTeam,
 } from "@/lib/data";
 import { getSignedThumbnailUrl } from "@/app/actions/attachments";
 import { FileList } from "@/components/file-list";
@@ -16,14 +16,10 @@ import { EditClientButton, DeleteClientButton } from "./edit-button";
 export const dynamic = "force-dynamic";
 
 const fmtDate = (iso: string | null) => iso ? new Date(iso).toLocaleDateString("he-IL") : "\u2014";
-const fmtMoney = (n: number | null) =>
-  n == null ? "\u2014" : new Intl.NumberFormat("he-IL", { style: "currency", currency: "ILS", minimumFractionDigits: 2 }).format(n);
-
-const PLATFORM_LABELS: Record<string, string> = { google: "Google", facebook: "Meta", tiktok: "TikTok" };
 
 export default async function ClientDetailPage({ params }: { params: { id: string } }) {
-  const [client, tasks, campaigns, team, attachments] = await Promise.all([
-    getClient(params.id), getTasksByClient(params.id), getCampaignsByClient(params.id), getTeam(), getAttachmentsForClient(params.id),
+  const [client, tasks, team, attachments] = await Promise.all([
+    getClient(params.id), getTasksByClient(params.id), getTeam(), getAttachmentsForClient(params.id),
   ]);
   if (!client) notFound();
 
@@ -114,35 +110,6 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
       </section>
 
       <section className="flex flex-col gap-2">
-        <div className="flex items-baseline justify-between">
-          <h3 className="text-sm font-semibold text-ink">קמפיינים ({campaigns.length})</h3>
-          <Link href={`/campaigns?client=${client.id}`} className="text-xs font-medium text-ink-muted transition-colors hover:text-ink">לכל הקמפיינים</Link>
-        </div>
-        {campaigns.length === 0 ? (
-          <EmptyBox text="אין קמפיינים ללקוח." />
-        ) : (
-          <Card className="overflow-hidden">
-            <CardContent className="p-0">
-              <Table>
-                <THead><TR className="hover:bg-transparent"><TH>שם</TH><TH>פלטפורמה</TH><TH className="hidden sm:table-cell">סטטוס</TH><TH className="hidden md:table-cell">התחלה</TH><TH className="hidden md:table-cell">תקציב שנוצל</TH></TR></THead>
-                <TBody>
-                  {campaigns.map((c) => (
-                    <TR key={c.id}>
-                      <TD className="font-medium"><Link href={`/campaigns?campaign=${c.id}`} className="block transition-colors hover:text-accent">{c.name}</Link></TD>
-                      <TD><PlatformBadge platform={c.platform} /></TD>
-                      <TD className="hidden sm:table-cell">{c.status ? <Badge variant={c.status === "פעיל" ? "active" : "closed"}>{c.status}</Badge> : "\u2014"}</TD>
-                      <TD className="hidden text-ink-muted md:table-cell">{fmtDate(c.start_date)}</TD>
-                      <TD className="hidden text-ink-muted md:table-cell">{fmtMoney(c.spent)}</TD>
-                    </TR>
-                  ))}
-                </TBody>
-              </Table>
-            </CardContent>
-          </Card>
-        )}
-      </section>
-
-      <section className="flex flex-col gap-2">
         <h3 className="text-sm font-semibold text-ink">קבצים ({attachments.length})</h3>
         <FileUpload clientId={client.id} />
         <FileList attachments={attachments} thumbUrls={thumbs} />
@@ -164,10 +131,3 @@ function EmptyBox({ text }: { text: string }) {
   return <div className="rounded-lg bg-surface-card p-6 text-center text-sm text-ink-muted">{text}</div>;
 }
 
-function PlatformBadge({ platform }: { platform: string }) {
-  const cls = platform === "google" ? "bg-accent/10 text-accent"
-    : platform === "facebook" ? "bg-badge-violet/10 text-badge-violet"
-    : platform === "tiktok" ? "bg-surface-card text-ink"
-    : "bg-surface-card text-ink-muted";
-  return <span className={`inline-flex items-center rounded-pill px-2.5 py-0.5 text-xs font-medium ${cls}`}>{PLATFORM_LABELS[platform] ?? platform}</span>;
-}

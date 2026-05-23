@@ -67,7 +67,7 @@ export function GlobalSearch() {
   }
 
   const totalCount =
-    results.tasks.length + results.clients.length + results.campaigns.length;
+    results.tasks.length + results.clients.length + (results.campaigns?.length ?? 0);
 
   return (
     <div ref={wrapRef} className="relative w-full max-w-md">
@@ -125,18 +125,6 @@ export function GlobalSearch() {
                     sub={null}
                     badge="לקוח"
                     badgeClass="bg-badge-orange/10 text-badge-orange"
-                  />
-                ))}
-              </Group>
-              <Group label="קמפיינים" items={results.campaigns.length}>
-                {results.campaigns.map((c) => (
-                  <Item
-                    key={c.id}
-                    onClick={() => navigate(`/campaigns?campaign=${c.id}`)}
-                    title={c.name}
-                    sub={c.client_name}
-                    badge="קמפיין"
-                    badgeClass="bg-badge-violet/10 text-badge-violet"
                   />
                 ))}
               </Group>

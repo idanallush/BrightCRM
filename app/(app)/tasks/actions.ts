@@ -3,11 +3,20 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
+export type TaskStatus =
+  | "מחכה לטיפול"
+  | "נכנס לעבודה"
+  | "בעבודה"
+  | "אישור לקוח"
+  | "אישור מנהל"
+  | "בוצע"
+  | "בוטל";
+
 export type TaskInput = {
   title: string;
   client_id: string;
   description: string | null;
-  status: "בעבודה" | "בוצע" | "סגור";
+  status: TaskStatus;
   due_date: string | null;
   assignee_ids: string[];
 };
@@ -54,7 +63,6 @@ export async function updateTask(id: string, input: TaskInput) {
     .eq("id", id);
   if (error) return { error: error.message };
 
-  // Sync assignees: easiest correct approach for tiny scale — delete + insert.
   const { error: dErr } = await sb.from("task_assignees").delete().eq("task_id", id);
   if (dErr) return { error: dErr.message };
   if (input.assignee_ids.length > 0) {
@@ -78,10 +86,7 @@ export async function deleteTask(id: string) {
   return { ok: true as const };
 }
 
-export async function updateTaskStatus(
-  id: string,
-  status: "בעבודה" | "בוצע" | "סגור",
-) {
+export async function updateTaskStatus(id: string, status: string) {
   const sb = createClient();
   const { error } = await sb.from("tasks").update({ status }).eq("id", id);
   if (error) return { error: error.message };

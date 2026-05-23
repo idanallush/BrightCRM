@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   CheckSquare,
   Users,
-  Megaphone,
   AlertTriangle,
   Globe,
   Send,
@@ -63,12 +62,12 @@ export default async function DashboardPage() {
       </h1>
 
       {/* Stats */}
-      <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <section className="grid grid-cols-2 gap-4 lg:grid-cols-3">
         <StatCard
           label="משימות פתוחות"
           value={counts.openTasks}
           Icon={CheckSquare}
-          href="/tasks?status=בעבודה"
+          href="/tasks"
         />
         <StatCard
           label="עבר דדליין"
@@ -82,12 +81,6 @@ export default async function DashboardPage() {
           value={counts.totalClients}
           Icon={Users}
           href="/clients"
-        />
-        <StatCard
-          label="קמפיינים פעילים"
-          value={counts.activeCampaigns}
-          Icon={Megaphone}
-          href="/campaigns?status=פעיל"
         />
       </section>
 

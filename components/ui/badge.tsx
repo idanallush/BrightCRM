@@ -1,10 +1,11 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-type Variant = "active" | "done" | "closed" | "neutral" | "warning" | "danger" | "good";
+type Variant = "active" | "pending" | "done" | "closed" | "neutral" | "warning" | "danger" | "good";
 
 const VARIANT_CLASSES: Record<Variant, string> = {
   active: "bg-accent/10 text-accent",
+  pending: "bg-status-warning/10 text-status-warning",
   done: "bg-status-done/10 text-status-done",
   closed: "bg-surface-card text-ink-muted",
   neutral: "bg-surface-card text-ink",
@@ -31,8 +32,14 @@ export function Badge({
 }
 
 export function statusVariant(status: string): Variant {
+  if (status === "מחכה לטיפול") return "pending";
+  if (status === "נכנס לעבודה") return "active";
   if (status === "בעבודה") return "active";
+  if (status === "אישור לקוח") return "warning";
+  if (status === "אישור מנהל") return "warning";
   if (status === "בוצע") return "done";
+  if (status === "בוטל") return "closed";
+  // Legacy
   if (status === "סגור") return "closed";
   return "neutral";
 }
