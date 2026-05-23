@@ -21,9 +21,9 @@ import { motion } from "framer-motion";
 const ALL = "__all__";
 
 const HEALTH_BORDER: Record<string, string> = {
-  "בריא": "border-r-success",
-  "אסטרטגיה צריכה": "border-r-warning",
-  "קריטי": "border-r-overdue",
+  "בריא": "border-r-green-500",
+  "אסטרטגיה צריכה": "border-r-amber-500",
+  "קריטי": "border-r-red-500",
 };
 
 const HEALTH_PILLS = [

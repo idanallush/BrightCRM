@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, Send, Globe, AlertTriangle } from "lucide-react";
+import { ChevronLeft, Send, Globe, AlertTriangle, Download } from "lucide-react";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Badge, statusVariant } from "@/components/ui/badge";
 import type { TaskWithRelations } from "@/lib/data";
@@ -28,8 +28,8 @@ export function TaskTable({
           <TR className="hover:bg-transparent">
             <TH>סטטוס</TH>
             <TH>משימה</TH>
-            <TH className="hidden md:table-cell">לקוח</TH>
-            <TH className="hidden lg:table-cell">אחראי</TH>
+            <TH>לקוח</TH>
+            <TH className="hidden sm:table-cell">אחראי</TH>
             <TH>דדליין</TH>
             <TH className="hidden sm:table-cell">מקור</TH>
             <TH className="w-8" />
@@ -45,13 +45,12 @@ export function TaskTable({
                 <TD>
                   <div className="font-medium text-ink">{t.title}</div>
                   {t.description && <div className="mt-0.5 line-clamp-1 text-caption text-ink-secondary">{t.description}</div>}
-                  <div className="mt-0.5 text-caption text-ink-secondary md:hidden">{t.client?.name ?? ""}</div>
                 </TD>
-                <TD className="hidden text-ink-secondary md:table-cell">{t.client?.name ?? "\u2014"}</TD>
-                <TD className="hidden lg:table-cell">
+                <TD className="text-ink-secondary">{t.client?.name ?? "\u2014"}</TD>
+                <TD className="hidden sm:table-cell">
                   <div className="flex items-center gap-1.5">
                     {t.assignees.length === 0 ? (
-                      <span className="text-ink-muted">\u2014</span>
+                      <span className="text-ink-muted">{"\u2014"}</span>
                     ) : (
                       <>
                         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-light text-[10px] font-semibold text-brand">
@@ -70,11 +69,11 @@ export function TaskTable({
                 </TD>
                 <TD className="hidden sm:table-cell">
                   {t.source === "telegram" ? (
-                    <span className="inline-flex items-center rounded-full bg-brand-light p-1.5 text-brand"><Send className="h-3 w-3" /></span>
+                    <span className="inline-flex items-center rounded-full bg-purple-50 p-1.5 text-st-working"><Send className="h-3 w-3" /></span>
                   ) : t.source === "web" ? (
                     <span className="inline-flex items-center rounded-full bg-gray-100 p-1.5 text-ink-muted"><Globe className="h-3 w-3" /></span>
                   ) : (
-                    <span className="text-caption text-ink-muted">{t.source}</span>
+                    <span className="inline-flex items-center rounded-full bg-gray-100 p-1.5 text-ink-muted"><Download className="h-3 w-3" /></span>
                   )}
                 </TD>
                 <TD className="w-8 text-end text-ink-muted opacity-0 transition-opacity group-hover:opacity-100">
