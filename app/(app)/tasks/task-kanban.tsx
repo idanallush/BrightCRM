@@ -5,11 +5,11 @@ import { AlertTriangle, Clock } from "lucide-react";
 import type { TaskWithRelations } from "@/lib/data";
 
 const COLUMNS = [
-  { key: "מחכה לטיפול", label: "ממתין", dot: "bg-st-waiting", border: "border-t-amber-500" },
-  { key: "נכנס לעבודה", label: "נכנס לעבודה", dot: "bg-blue-500", border: "border-t-blue-500" },
-  { key: "בעבודה", label: "בעבודה", dot: "bg-purple-500", border: "border-t-purple-500" },
-  { key: "אישור לקוח", label: "אישור לקוח", dot: "bg-st-approval", border: "border-t-orange-500" },
-  { key: "אישור מנהל", label: "אישור מנהל", dot: "bg-b-pink", border: "border-t-pink-500" },
+  { key: "מחכה לטיפול", label: "ממתין", dot: "bg-dot-waiting" },
+  { key: "נכנס לעבודה", label: "נכנס לעבודה", dot: "bg-dot-incoming" },
+  { key: "בעבודה", label: "בעבודה", dot: "bg-dot-working" },
+  { key: "אישור לקוח", label: "אישור לקוח", dot: "bg-dot-approval" },
+  { key: "אישור מנהל", label: "אישור מנהל", dot: "bg-dot-manager" },
 ];
 
 function relativeDate(iso: string | null): { text: string; overdue: boolean } {
@@ -41,21 +41,15 @@ export function TaskKanban({
       {COLUMNS.map((col) => {
         const colTasks = byStatus(col.key);
         return (
-          <div key={col.key} className="min-h-[50vh] rounded-lg bg-surface-soft p-3">
-            {/* Column header */}
-            <div className="sticky top-0 z-10 mb-3 rounded-lg bg-white p-3 shadow-subtle">
-              <div className="flex items-center gap-2">
-                <span className={`h-3 w-3 rounded-full ${col.dot}`} />
-                <h3 className="text-sm font-semibold text-ink">{col.label}</h3>
-                <span className="rounded-full bg-gray-200 px-2 py-0.5 text-[11px] font-medium text-slate">
-                  {colTasks.length}
-                </span>
-              </div>
+          <div key={col.key} className="min-h-[50vh] rounded-lg bg-gray-50 p-3">
+            <div className="sticky top-0 z-10 mb-3 flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2.5">
+              <span className={`h-2.5 w-2.5 rounded-full ${col.dot}`} />
+              <h3 className="text-body-sm font-semibold text-ink">{col.label}</h3>
+              <span className="rounded-full bg-gray-100 px-2 py-0.5 text-caption text-ink-secondary">{colTasks.length}</span>
             </div>
-            {/* Cards */}
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2">
               {colTasks.map((t) => (
-                <KanbanCard key={t.id} task={t} topBorder={col.border} onClick={() => onCardClick(t)} />
+                <KanbanCard key={t.id} task={t} onClick={() => onCardClick(t)} />
               ))}
             </div>
           </div>
@@ -65,31 +59,24 @@ export function TaskKanban({
   );
 }
 
-function KanbanCard({ task, topBorder, onClick }: {
-  task: TaskWithRelations; topBorder: string; onClick: () => void;
+function KanbanCard({ task, onClick }: {
+  task: TaskWithRelations; onClick: () => void;
 }) {
   const { text: dateText, overdue } = relativeDate(task.due_date);
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`w-full rounded-lg border bg-white p-4 text-right shadow-subtle transition-all duration-200 hover:shadow-card border-t-[3px] ${topBorder} ${overdue ? "border-overdue/30 bg-overdue-bg/30" : "border-hairline"}`}
-    >
-      <div className="text-sm font-medium leading-tight text-ink">{task.title}</div>
-      <div className="mt-1.5 text-sm text-slate">{task.client?.name ?? "\u2014"}</div>
-      <div className="mt-3 flex items-center justify-between">
-        <span className={`inline-flex items-center gap-1 text-caption ${overdue ? "font-medium text-overdue" : "text-stone"}`}>
-          {overdue ? <AlertTriangle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+    <button type="button" onClick={onClick}
+      className={`w-full rounded-lg border bg-white p-3 text-right transition-colors duration-150 hover:bg-gray-50 ${overdue ? "border-red-200" : "border-border"}`}>
+      <div className="text-body-sm font-medium text-ink">{task.title}</div>
+      <div className="mt-1 text-body-sm text-ink-secondary">{task.client?.name ?? "\u2014"}</div>
+      <div className="mt-2 flex items-center justify-between">
+        <span className={`text-caption ${overdue ? "font-medium text-overdue" : "text-ink-muted"}`}>
+          {overdue && <AlertTriangle className="mb-px mr-1 inline h-3 w-3" />}
           {dateText}
         </span>
-        <div className="flex items-center -space-x-1.5">
-          {task.assignees.slice(0, 3).map((a) => (
-            <span
-              key={a.id}
-              className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-tint-sky text-[9px] font-semibold text-link"
-              title={a.full_name}
-            >
+        <div className="flex items-center -space-x-1">
+          {task.assignees.slice(0, 2).map((a) => (
+            <span key={a.id} className="flex h-5 w-5 items-center justify-center rounded-full border border-white bg-gray-100 text-[9px] font-medium text-ink" title={a.full_name}>
               {getInitials(a.full_name)}
             </span>
           ))}

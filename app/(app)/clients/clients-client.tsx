@@ -2,35 +2,24 @@
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Plus, Search, Globe, FolderOpen, BarChart3, CheckSquare } from "lucide-react";
+import { Plus, Search, Globe, FolderOpen, BarChart3, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
-} from "@/components/ui/dialog";
-import { Badge, healthVariant } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { HealthBadge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { cn } from "@/lib/utils";
 import { ClientForm } from "./client-form";
 import type { Client, TeamMember } from "@/lib/data";
-import { motion } from "framer-motion";
 
 const ALL = "__all__";
 
-const HEALTH_BORDER: Record<string, string> = {
-  "בריא": "border-r-green-500",
-  "אסטרטגיה צריכה": "border-r-amber-500",
-  "קריטי": "border-r-red-500",
-};
-
 const HEALTH_PILLS = [
   { key: ALL, label: "הכל" },
-  { key: "בריא", label: "בריא", dot: "bg-st-done" },
-  { key: "אסטרטגיה צריכה", label: "אסטרטגיה", dot: "bg-st-waiting" },
-  { key: "קריטי", label: "קריטי", dot: "bg-red-500" },
+  { key: "בריא", label: "בריא", dot: "bg-health-good" },
+  { key: "אסטרטגיה צריכה", label: "אסטרטגיה", dot: "bg-health-strategy" },
+  { key: "קריטי", label: "קריטי", dot: "bg-health-critical" },
 ];
 
 export function ClientsClient({
@@ -49,10 +38,7 @@ export function ClientsClient({
   const [createOpen, setCreateOpen] = React.useState(false);
 
   React.useEffect(() => {
-    if (searchParams.get("new") === "true") {
-      setCreateOpen(true);
-      router.replace("/clients");
-    }
+    if (searchParams.get("new") === "true") { setCreateOpen(true); router.replace("/clients"); }
   }, [searchParams, router]);
 
   const filtered = React.useMemo(() => {
@@ -64,73 +50,46 @@ export function ClientsClient({
     });
   }, [clients, search, health, managerId]);
 
-  // Split into my clients and others
   const { myClients, otherClients } = React.useMemo(() => {
     if (!currentMemberId) return { myClients: [], otherClients: filtered };
     const mine: typeof filtered = [];
     const others: typeof filtered = [];
     for (const c of filtered) {
-      if (c.account_manager_id === currentMemberId) {
-        mine.push(c);
-      } else {
-        others.push(c);
-      }
+      if (c.account_manager_id === currentMemberId) mine.push(c); else others.push(c);
     }
     return { myClients: mine, otherClients: others };
   }, [filtered, currentMemberId]);
 
-  const activeFilterCount =
-    (health !== ALL ? 1 : 0) + (managerId !== ALL ? 1 : 0) + (search.trim().length > 0 ? 1 : 0);
-
+  const activeFilterCount = (health !== ALL ? 1 : 0) + (managerId !== ALL ? 1 : 0) + (search.trim().length > 0 ? 1 : 0);
   function clearFilters() { setSearch(""); setHealth(ALL); setManagerId(ALL); }
 
-  function renderCard(c: (typeof clients)[0], i: number, isMine: boolean) {
-    const v = healthVariant(c.health);
+  function renderRow(c: (typeof clients)[0]) {
     const openCount = openTaskCounts[c.id] ?? 0;
-    const borderColor = c.health ? (HEALTH_BORDER[c.health] ?? "border-r-hairline") : "border-r-hairline";
-    const links: { icon: React.ReactNode; url: string; label: string }[] = [];
-    if (c.website_url) links.push({ icon: <Globe className="h-3.5 w-3.5" />, url: c.website_url, label: "אתר" });
-    if (c.drive_url) links.push({ icon: <FolderOpen className="h-3.5 w-3.5" />, url: c.drive_url, label: "Drive" });
-    if (c.facebook_ads_url) links.push({ icon: <BarChart3 className="h-3.5 w-3.5" />, url: c.facebook_ads_url, label: "Meta" });
-    if (c.google_ads_url) links.push({ icon: <BarChart3 className="h-3.5 w-3.5" />, url: c.google_ads_url, label: "Google" });
+    const links = [
+      c.website_url && { url: c.website_url, icon: <Globe className="h-3.5 w-3.5" /> },
+      c.drive_url && { url: c.drive_url, icon: <FolderOpen className="h-3.5 w-3.5" /> },
+      c.facebook_ads_url && { url: c.facebook_ads_url, icon: <BarChart3 className="h-3.5 w-3.5" /> },
+    ].filter(Boolean) as { url: string; icon: React.ReactNode }[];
 
     return (
-      <motion.div key={c.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: Math.min(i * 0.03, 0.3), duration: 0.2 }}>
-        <div
-          className={cn(
-            "cursor-pointer rounded-lg border border-hairline/60 p-5 shadow-subtle transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover border-r-[3px]",
-            borderColor,
-            isMine ? "bg-tint-sky/30" : "bg-white",
-          )}
-          onClick={() => router.push(`/clients/${c.id}`)}>
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="text-[15px] font-semibold text-ink">{c.name}</h3>
-            {v && c.health && <Badge variant={v} className="shrink-0">{c.health}</Badge>}
+      <tr key={c.id} onClick={() => router.push(`/clients/${c.id}`)} className="cursor-pointer hover:bg-gray-50 transition-colors">
+        <td className="px-4 py-3 font-medium text-ink">{c.name}</td>
+        <td className="px-4 py-3 text-ink-secondary">{c.manager_name ?? "ללא"}</td>
+        <td className="hidden px-4 py-3 sm:table-cell">
+          {c.health ? <HealthBadge health={c.health} /> : <span className="text-ink-muted">—</span>}
+        </td>
+        <td className="px-4 py-3">
+          <span className={openCount > 0 ? "font-medium text-ink" : "text-ink-muted"}>{openCount}</span>
+        </td>
+        <td className="hidden px-4 py-3 md:table-cell">
+          <div className="flex gap-1">
+            {links.map((l, i) => (
+              <a key={i} href={l.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
+                className="rounded p-1 text-ink-muted hover:bg-gray-100 hover:text-ink">{l.icon}</a>
+            ))}
           </div>
-          <div className="mt-3 flex items-center justify-between text-sm">
-            <span className="text-slate">{c.manager_name ?? "ללא מנהל"}</span>
-            <span className={cn(
-              "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-caption font-medium",
-              openCount === 0 ? "bg-surface text-stone"
-                : openCount <= 3 ? "bg-tint-sky text-link"
-                : "bg-overdue-bg text-overdue",
-            )}>
-              <CheckSquare className="h-3 w-3" />{openCount}
-            </span>
-          </div>
-          {links.length > 0 && (
-            <div className="mt-3 flex gap-1.5 border-t border-hairline-soft pt-3">
-              {links.map((l) => (
-                <a key={l.label} href={l.url} target="_blank" rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="flex h-7 items-center gap-1 rounded-lg border border-hairline bg-white px-2 text-caption text-slate transition-colors hover:text-ink"
-                  title={l.label}>{l.icon}<span className="hidden sm:inline">{l.label}</span></a>
-              ))}
-            </div>
-          )}
-        </div>
-      </motion.div>
+        </td>
+      </tr>
     );
   }
 
@@ -138,11 +97,11 @@ export function ClientsClient({
     <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-baseline gap-3">
-          <h1 className="text-2xl font-bold text-ink">לקוחות</h1>
-          <span className="text-caption text-stone">{filtered.length} מתוך {clients.length}</span>
+          <h1 className="text-xl font-semibold text-ink">לקוחות</h1>
+          <span className="text-caption text-ink-muted">{filtered.length}</span>
           {activeFilterCount > 0 && (
             <button type="button" onClick={clearFilters}
-              className="rounded-full bg-primary px-3 py-1 text-[11px] font-medium text-white transition-colors hover:bg-primary-pressed">
+              className="rounded-full bg-primary px-3 py-1 text-[11px] font-medium text-white hover:bg-primary-hover">
               {activeFilterCount} פילטרים · נקה
             </button>
           )}
@@ -157,10 +116,8 @@ export function ClientsClient({
         <div className="flex gap-1 overflow-x-auto pb-1">
           {HEALTH_PILLS.map((p) => (
             <button key={p.key} type="button" onClick={() => setHealth(p.key)}
-              className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-caption transition-all duration-200",
-                health === p.key
-                  ? p.key === ALL ? "bg-primary text-white" : "bg-accent font-medium text-ink-deep shadow-subtle"
-                  : "text-slate hover:bg-surface")}>
+              className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-caption transition-all duration-150",
+                health === p.key ? "bg-primary font-medium text-white" : "text-ink-secondary hover:bg-gray-100")}>
               {p.dot && <span className={`mr-1.5 inline-block h-2 w-2 rounded-full ${p.dot}`} />}
               {p.label}
             </button>
@@ -168,11 +125,11 @@ export function ClientsClient({
         </div>
         <div className="flex flex-1 flex-wrap items-center gap-2">
           <div className="relative min-w-[160px] flex-1 sm:max-w-[220px]">
-            <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone" />
-            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="חיפוש שם לקוח" className="h-9 pr-9" />
+            <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="חיפוש" className="h-9 pr-9" />
           </div>
           <Select value={managerId} onValueChange={setManagerId}>
-            <SelectTrigger className="h-9 w-auto min-w-[120px]"><SelectValue placeholder="מנהל לקוח" /></SelectTrigger>
+            <SelectTrigger className="h-9 w-auto min-w-[120px]"><SelectValue placeholder="מנהל" /></SelectTrigger>
             <SelectContent>
               <SelectItem value={ALL}>כל המנהלים</SelectItem>
               {team.map((m) => <SelectItem key={m.id} value={m.id}>{m.full_name}</SelectItem>)}
@@ -181,46 +138,40 @@ export function ClientsClient({
         </div>
       </div>
 
-      {/* Cards */}
+      {/* Table */}
       {filtered.length === 0 ? (
         activeFilterCount > 0 ? (
-          <EmptyState title="לא נמצאו לקוחות תואמים" description="נסה לשנות את הפילטרים."
-            action={<Button variant="secondary" size="sm" onClick={clearFilters}>נקה פילטרים</Button>} />
+          <EmptyState title="לא נמצאו לקוחות" description="נסה לשנות פילטרים."
+            action={<Button variant="secondary" size="sm" onClick={clearFilters}>נקה</Button>} />
         ) : (
-          <EmptyState title="אין לקוחות עדיין" description="הוסף את הלקוח הראשון."
+          <EmptyState title="אין לקוחות" description="הוסף לקוח ראשון."
             action={<Button onClick={() => setCreateOpen(true)}><Plus className="h-4 w-4" /> לקוח חדש</Button>} />
         )
       ) : (
-        <div className="flex flex-col gap-6">
-          {/* My clients */}
-          {myClients.length > 0 && (
-            <div>
-              <div className="mb-3 flex items-center gap-2">
-                <span className="h-5 w-[3px] rounded-full bg-accent" />
-                <h2 className="text-lg font-semibold text-ink">הלקוחות שלי</h2>
-                <span className="text-caption text-stone">{myClients.length}</span>
-              </div>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {myClients.map((c, i) => renderCard(c, i, true))}
-              </div>
-            </div>
-          )}
-
-          {/* Separator */}
-          {myClients.length > 0 && otherClients.length > 0 && (
-            <div className="flex items-center gap-3">
-              <div className="h-px flex-1 bg-hairline" />
-              <span className="text-caption text-stone">לקוחות נוספים</span>
-              <div className="h-px flex-1 bg-hairline" />
-            </div>
-          )}
-
-          {/* Other clients */}
-          {otherClients.length > 0 && (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {otherClients.map((c, i) => renderCard(c, i + myClients.length, false))}
-            </div>
-          )}
+        <div className="rounded-lg border border-border bg-white">
+          <table className="w-full text-right text-body-sm">
+            <thead>
+              <tr className="border-b border-border text-caption text-ink-muted">
+                <th className="px-4 py-2.5 text-right font-medium">לקוח</th>
+                <th className="px-4 py-2.5 text-right font-medium">מנהל</th>
+                <th className="hidden px-4 py-2.5 text-right font-medium sm:table-cell">בריאות</th>
+                <th className="px-4 py-2.5 text-right font-medium">משימות</th>
+                <th className="hidden px-4 py-2.5 text-right font-medium md:table-cell">קישורים</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {myClients.length > 0 && (
+                <>
+                  <tr><td colSpan={5} className="bg-gray-50 px-4 py-1.5 text-caption font-medium text-ink-secondary">הלקוחות שלי</td></tr>
+                  {myClients.map(renderRow)}
+                </>
+              )}
+              {myClients.length > 0 && otherClients.length > 0 && (
+                <tr><td colSpan={5} className="bg-gray-50 px-4 py-1.5 text-caption font-medium text-ink-secondary">לקוחות נוספים</td></tr>
+              )}
+              {otherClients.map(renderRow)}
+            </tbody>
+          </table>
         </div>
       )}
 
@@ -228,7 +179,7 @@ export function ClientsClient({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>לקוח חדש</DialogTitle>
-            <DialogDescription>שדות חובה: שם בלבד. את השאר אפשר להשלים בהמשך.</DialogDescription>
+            <DialogDescription>שדות חובה: שם בלבד.</DialogDescription>
           </DialogHeader>
           <ClientForm team={team} onDone={() => setCreateOpen(false)} />
         </DialogContent>

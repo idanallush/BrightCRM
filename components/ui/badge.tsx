@@ -1,43 +1,56 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-type Variant =
-  | "waiting" | "incoming" | "working" | "approval" | "manager"
-  | "done" | "cancelled" | "overdue"
-  | "neutral" | "good" | "warning" | "danger"
-  | "purple" | "pink" | "orange";
-
-const VARIANT_CLASSES: Record<Variant, string> = {
-  waiting:   "bg-tint-yellow text-st-waiting",
-  incoming:  "bg-tint-sky text-st-incoming",
-  working:   "bg-tint-lavender text-st-working",
-  approval:  "bg-tint-peach text-st-approval",
-  manager:   "bg-tint-rose text-st-manager",
-  done:      "bg-tint-mint text-st-done",
-  cancelled: "bg-surface text-slate",
-  overdue:   "bg-overdue-bg text-overdue",
-  neutral:   "bg-surface text-slate",
-  good:      "bg-tint-mint text-b-green",
-  warning:   "bg-tint-yellow text-b-orange",
-  danger:    "bg-overdue-bg text-overdue",
-  purple:    "bg-primary text-white",
-  pink:      "bg-b-pink text-white",
-  orange:    "bg-b-orange text-white",
+const STATUS_DOT: Record<string, string> = {
+  "מחכה לטיפול": "bg-dot-waiting",
+  "נכנס לעבודה": "bg-dot-incoming",
+  "בעבודה": "bg-dot-working",
+  "אישור לקוח": "bg-dot-approval",
+  "אישור מנהל": "bg-dot-manager",
+  "בוצע": "bg-dot-done",
+  "בוטל": "bg-dot-cancelled",
+  "סגור": "bg-dot-cancelled",
 };
 
-const DOT_COLORS: Partial<Record<Variant, string>> = {
-  waiting: "bg-st-waiting", incoming: "bg-st-incoming", working: "bg-st-working",
-  approval: "bg-st-approval", manager: "bg-st-manager", done: "bg-st-done",
-  cancelled: "bg-slate", overdue: "bg-overdue", good: "bg-b-green",
-  warning: "bg-b-orange", danger: "bg-overdue",
+const HEALTH_DOT: Record<string, string> = {
+  "בריא": "bg-health-good",
+  "אסטרטגיה צריכה": "bg-health-strategy",
+  "קריטי": "bg-health-critical",
 };
 
-export function Badge({
-  variant = "neutral", dot = true, className, ...props
-}: { variant?: Variant; dot?: boolean } & React.HTMLAttributes<HTMLSpanElement>) {
+export function StatusBadge({ status, className }: { status: string; className?: string }) {
+  const dot = STATUS_DOT[status] ?? "bg-gray-400";
   return (
-    <span className={cn("inline-flex items-center gap-1.5 rounded-sm px-2 py-0.5 text-caption", VARIANT_CLASSES[variant], className)} {...props}>
-      {dot && DOT_COLORS[variant] && <span className={cn("h-2 w-2 shrink-0 rounded-full", DOT_COLORS[variant])} />}
+    <span className={cn("inline-flex items-center gap-1.5 text-body-sm text-ink", className)}>
+      <span className={cn("h-2 w-2 shrink-0 rounded-full", dot)} />
+      {status}
+    </span>
+  );
+}
+
+export function HealthBadge({ health, className }: { health: string; className?: string }) {
+  const dot = HEALTH_DOT[health] ?? "bg-gray-400";
+  return (
+    <span className={cn("inline-flex items-center gap-1.5 text-body-sm text-ink", className)}>
+      <span className={cn("h-2 w-2 shrink-0 rounded-full", dot)} />
+      {health}
+    </span>
+  );
+}
+
+// Legacy compat — still used by some pages
+type Variant = "waiting" | "incoming" | "working" | "approval" | "manager" | "done" | "cancelled" | "overdue" | "neutral" | "good" | "warning" | "danger";
+
+export function Badge({ variant = "neutral", dot = true, className, ...props }: { variant?: Variant; dot?: boolean } & React.HTMLAttributes<HTMLSpanElement>) {
+  const dotMap: Record<Variant, string> = {
+    waiting: "bg-dot-waiting", incoming: "bg-dot-incoming", working: "bg-dot-working",
+    approval: "bg-dot-approval", manager: "bg-dot-manager", done: "bg-dot-done",
+    cancelled: "bg-dot-cancelled", overdue: "bg-dot-overdue", neutral: "bg-gray-400",
+    good: "bg-health-good", warning: "bg-health-strategy", danger: "bg-health-critical",
+  };
+  return (
+    <span className={cn("inline-flex items-center gap-1.5 text-body-sm text-ink", className)} {...props}>
+      {dot && <span className={cn("h-2 w-2 shrink-0 rounded-full", dotMap[variant])} />}
       {props.children}
     </span>
   );

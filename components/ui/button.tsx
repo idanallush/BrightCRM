@@ -6,21 +6,20 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-all duration-150 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-all duration-150 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        primary: "rounded-md bg-primary text-white shadow-subtle hover:bg-primary-pressed text-button",
-        dark: "rounded-md bg-ink-deep text-white shadow-subtle hover:bg-navy-mid text-button",
-        secondary: "rounded-md border border-hairline-strong bg-canvas text-ink hover:bg-surface text-button",
-        ghost: "rounded-sm bg-transparent text-ink hover:bg-surface text-button",
-        danger: "rounded-md bg-overdue text-white shadow-subtle hover:opacity-90 text-button",
+        primary: "rounded-md bg-primary text-white text-button hover:bg-primary-hover",
+        secondary: "rounded-md border border-border bg-white text-ink text-button hover:bg-gray-50",
+        ghost: "rounded-md text-ink text-button hover:bg-gray-100",
+        danger: "rounded-md bg-overdue text-white text-button hover:opacity-90",
         link: "bg-transparent text-link p-0 text-body-sm hover:underline",
       },
       size: {
         sm: "h-8 px-3",
-        md: "h-10 px-[18px] py-[10px]",
-        lg: "h-12 px-6 text-body-md",
+        md: "h-10 px-4",
+        lg: "h-12 px-6",
         icon: "h-9 w-9",
       },
     },

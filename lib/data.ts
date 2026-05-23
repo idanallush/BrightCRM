@@ -263,30 +263,39 @@ export async function getTeam(): Promise<TeamMember[]> {
 }
 
 export type DashboardCounts = {
-  openTasks: number;
-  totalClients: number;
-  telegramThisMonth: number;
+  incoming: number;
+  working: number;
+  awaitingApproval: number;
   overdueTasks: number;
 };
 
-export async function getDashboardCounts(): Promise<DashboardCounts> {
+export async function getDashboardCounts(dateFrom?: string): Promise<DashboardCounts> {
   const sb = createClient();
   const today = new Date().toISOString().slice(0, 10);
-  const monthStart = today.slice(0, 8) + "01";
 
-  const activeStatuses = ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח", "אישור מנהל"];
+  let incomingQ = sb.from("tasks").select("*", { count: "exact", head: true }).eq("status", "נכנס לעבודה");
+  let workingQ = sb.from("tasks").select("*", { count: "exact", head: true }).eq("status", "בעבודה");
+  let approvalQ = sb.from("tasks").select("*", { count: "exact", head: true }).in("status", ["אישור לקוח", "אישור מנהל"]);
 
-  const [open, clients, overdue, telegram] = await Promise.all([
-    sb.from("tasks").select("*", { count: "exact", head: true }).in("status", activeStatuses),
-    sb.from("clients").select("*", { count: "exact", head: true }),
-    sb.from("tasks").select("*", { count: "exact", head: true }).in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה"]).lt("due_date", today),
-    sb.from("tasks").select("*", { count: "exact", head: true }).eq("source", "telegram").gte("created_at", monthStart),
+  if (dateFrom) {
+    incomingQ = incomingQ.gte("created_at", dateFrom);
+    workingQ = workingQ.gte("created_at", dateFrom);
+    approvalQ = approvalQ.gte("created_at", dateFrom);
+  }
+
+  // Overdue always shows current state (not filtered by date)
+  const overdueQ = sb.from("tasks").select("*", { count: "exact", head: true })
+    .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה"])
+    .lt("due_date", today);
+
+  const [incoming, working, approval, overdue] = await Promise.all([
+    incomingQ, workingQ, approvalQ, overdueQ,
   ]);
 
   return {
-    openTasks: open.count ?? 0,
-    totalClients: clients.count ?? 0,
-    telegramThisMonth: telegram.count ?? 0,
+    incoming: incoming.count ?? 0,
+    working: working.count ?? 0,
+    awaitingApproval: approval.count ?? 0,
     overdueTasks: overdue.count ?? 0,
   };
 }

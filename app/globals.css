@@ -3,65 +3,44 @@
 @tailwind utilities;
 
 :root {
-  /* Status CSS vars */
-  --st-waiting: #D97706;
-  --st-incoming: #0077D4;
-  --st-working: #9B59B6;
-  --st-approval: #D97706;
-  --st-manager: #E9528B;
-  --st-done: #0F9D58;
-  --st-cancelled: #787774;
-  --st-overdue: #E03E3E;
-
-  /* Primary + accent */
   --color-primary: #1A1A1A;
-  --color-primary-active: #333333;
   --color-accent: #FFDF4F;
+  --color-border: #E5E7EB;
+  --color-ink: #1A1A1A;
+  --color-ink-muted: #6B7280;
 
   /* Legacy compat */
-  --color-bg: #F7F6F3;
-  --color-hairline: #E3E2DE;
-  --color-ink: #37352F;
-  --color-ink-muted: #787774;
+  --color-bg: #F9FAFB;
+  --color-hairline: #E5E7EB;
   --color-brand: #1A1A1A;
   --color-brand-focus: #333333;
-  --color-brand-light: #F7F6F3;
-  --color-border: #E3E2DE;
-  --color-surface-card: #F7F6F3;
+  --color-brand-light: #F3F4F6;
   --color-canvas: #FFFFFF;
-  --color-status-active: #0077D4;
-  --color-status-done: #0F9D58;
-  --color-status-closed: #787774;
-  --color-health-good: #0F9D58;
-  --color-health-strategy: #D97706;
-  --color-health-critical: #E03E3E;
+  --color-surface-card: #F9FAFB;
+  --color-primary-active: #333333;
+  --color-status-active: #2E7CF6;
+  --color-status-done: #0F9549;
+  --color-status-closed: #8C8C8C;
+  --color-health-good: #0F9549;
+  --color-health-strategy: #D29B00;
+  --color-health-critical: #DC2626;
 }
 
 @layer base {
   html {
     font-family: theme("fontFamily.sans");
-    font-size: 16px;
+    font-size: 15px;
     background: #FFFFFF;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
-
-  body {
-    background: #FFFFFF;
-    color: #37352F;
-    line-height: 1.55;
-  }
-
-  h1, h2, h3 {
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    color: #37352F;
-  }
+  body { background: #FFFFFF; color: #1A1A1A; line-height: 1.55; }
+  h1, h2, h3 { font-weight: 600; color: #1A1A1A; }
 }
 
 @layer utilities {
   .skeleton {
-    background: linear-gradient(90deg, #F7F6F3 25%, #E3E2DE 50%, #F7F6F3 75%);
+    background: linear-gradient(90deg, #F3F4F6 25%, #E5E7EB 50%, #F3F4F6 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s ease-in-out infinite;
   }

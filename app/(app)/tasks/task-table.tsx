@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronLeft, Send, Globe, AlertTriangle, Download, Clock } from "lucide-react";
-import { Badge, statusVariant } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/badge";
 import type { TaskWithRelations } from "@/lib/data";
 
 function getInitials(name: string): string {
@@ -27,10 +27,10 @@ export function TaskTable({
   const today = new Date().toISOString().slice(0, 10);
 
   return (
-    <div className="overflow-hidden rounded-lg border border-hairline/60 bg-white shadow-subtle">
-      <table className="w-full text-right text-sm">
+    <div className="overflow-hidden rounded-lg border border-border bg-white">
+      <table className="w-full text-right text-body-sm">
         <thead>
-          <tr className="bg-surface-soft text-xs font-medium uppercase tracking-wide text-slate">
+          <tr className="border-b border-border text-caption text-ink-muted">
             <th className="px-4 py-3 text-right">סטטוס</th>
             <th className="px-4 py-3 text-right">משימה</th>
             <th className="hidden px-4 py-3 text-right md:table-cell">לקוח</th>
@@ -40,18 +40,18 @@ export function TaskTable({
             <th className="w-8 px-2" />
           </tr>
         </thead>
-        <tbody className="divide-y divide-hairline-soft">
-          {tasks.map((t, i) => {
+        <tbody className="divide-y divide-gray-100">
+          {tasks.map((t) => {
             const overdue = ["מחכה לטיפול", "נכנס לעבודה", "בעבודה"].includes(t.status) && t.due_date && t.due_date < today;
             const { text: dateText, class: dateClass } = relativeDate(t.due_date);
             return (
               <tr
                 key={t.id}
                 onClick={() => onRowClick(t)}
-                className={`group cursor-pointer transition-colors duration-150 hover:bg-tint-sky/40 ${i % 2 === 1 ? "bg-surface-soft/30" : ""}`}
+                className="group cursor-pointer transition-colors duration-150 hover:bg-gray-50"
               >
                 <td className="px-4 py-3 align-middle">
-                  <Badge variant={statusVariant(t.status)}>{t.status}</Badge>
+                  <StatusBadge status={t.status} />
                 </td>
                 <td className="max-w-xs px-4 py-3 align-middle">
                   <div className="font-medium text-ink">{t.title}</div>
@@ -61,42 +61,37 @@ export function TaskTable({
                   {/* Client visible on mobile only */}
                   <div className="mt-0.5 text-sm text-stone md:hidden">{t.client?.name ?? ""}</div>
                 </td>
-                <td className="hidden px-4 py-3 align-middle md:table-cell">
-                  {t.client?.name ? (
-                    <span className="inline-flex rounded-md bg-surface px-2 py-0.5 text-sm text-slate">{t.client.name}</span>
-                  ) : (
-                    <span className="text-stone">{"\u2014"}</span>
-                  )}
+                <td className="hidden px-4 py-3 align-middle text-ink-secondary md:table-cell">
+                  {t.client?.name ?? "\u2014"}
                 </td>
                 <td className="hidden px-4 py-3 align-middle lg:table-cell">
                   {t.assignees.length === 0 ? (
-                    <span className="text-stone">{"\u2014"}</span>
+                    <span className="text-ink-muted">{"\u2014"}</span>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-tint-sky text-[11px] font-semibold text-link">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-[10px] font-semibold text-ink">
                         {getInitials(t.assignees[0].full_name)}
                       </span>
-                      <span className="text-sm text-ink">{t.assignees[0].full_name}</span>
+                      <span className="text-body-sm text-ink">{t.assignees[0].full_name}</span>
                     </div>
                   )}
                 </td>
                 <td className="px-4 py-3 align-middle">
-                  <span className={`inline-flex items-center gap-1 text-sm ${dateClass}`}>
+                  <span className={`inline-flex items-center gap-1 text-body-sm ${dateClass}`}>
                     {overdue && <AlertTriangle className="h-3.5 w-3.5" />}
-                    {!overdue && t.due_date && <Clock className="h-3.5 w-3.5 text-stone" />}
                     {dateText}
                   </span>
                 </td>
                 <td className="hidden px-4 py-3 align-middle sm:table-cell">
                   {t.source === "telegram" ? (
-                    <span className="inline-flex items-center rounded-full bg-tint-lavender p-1.5 text-primary" title="טלגרם"><Send className="h-3.5 w-3.5" /></span>
+                    <Send className="h-3.5 w-3.5 text-ink-muted" />
                   ) : t.source === "web" ? (
-                    <span className="inline-flex items-center rounded-full bg-surface p-1.5 text-slate" title="ממשק"><Globe className="h-3.5 w-3.5" /></span>
+                    <Globe className="h-3.5 w-3.5 text-ink-muted" />
                   ) : (
-                    <span className="inline-flex items-center rounded-full bg-surface p-1.5 text-slate" title="ייבוא"><Download className="h-3.5 w-3.5" /></span>
+                    <Download className="h-3.5 w-3.5 text-ink-muted" />
                   )}
                 </td>
-                <td className="w-8 px-2 text-end text-stone opacity-0 transition-opacity group-hover:opacity-100">
+                <td className="w-8 px-2 text-end text-ink-muted opacity-0 transition-opacity group-hover:opacity-100">
                   <ChevronLeft className="ms-auto h-4 w-4" />
                 </td>
               </tr>

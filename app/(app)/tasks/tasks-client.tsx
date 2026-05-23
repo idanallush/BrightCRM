@@ -27,11 +27,11 @@ import type { Client, TaskWithRelations, TeamMember } from "@/lib/data";
 
 const STATUS_PILLS = [
   { key: "__all__", label: "הכל", dot: "" },
-  { key: "מחכה לטיפול", label: "ממתין", dot: "bg-st-waiting" },
-  { key: "נכנס לעבודה", label: "נכנס", dot: "bg-blue-500" },
-  { key: "בעבודה", label: "בעבודה", dot: "bg-purple-500" },
-  { key: "אישור לקוח", label: "אישור", dot: "bg-st-approval" },
-  { key: "בוצע", label: "בוצע", dot: "bg-st-done" },
+  { key: "מחכה לטיפול", label: "ממתין", dot: "bg-dot-waiting" },
+  { key: "נכנס לעבודה", label: "נכנס", dot: "bg-dot-incoming" },
+  { key: "בעבודה", label: "בעבודה", dot: "bg-dot-working" },
+  { key: "אישור לקוח", label: "אישור", dot: "bg-dot-approval" },
+  { key: "בוצע", label: "בוצע", dot: "bg-dot-done" },
 ] as const;
 const VIEW_KEY = "brightcrm:tasks-view";
 
@@ -154,16 +154,16 @@ export function TasksClient({
         </div>
       </div>
 
-      {/* Filter bar — card with visual depth */}
-      <div className="rounded-lg border border-hairline/60 bg-white p-4 shadow-subtle">
+      {/* Filter bar */}
+      <div className="rounded-lg border border-border bg-white p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="flex gap-1 overflow-x-auto pb-1">
             {STATUS_PILLS.map((pill) => (
               <button key={pill.key} type="button" onClick={() => updateFilter("status", pill.key)}
                 className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-caption transition-all duration-200",
                   filters.status === pill.key
-                    ? pill.key === "__all__" ? "bg-primary text-white" : "bg-accent font-medium text-ink-deep shadow-subtle"
-                    : "text-slate hover:bg-surface")}>
+                    ? "bg-primary font-medium text-white"
+                    : "text-ink-secondary hover:bg-gray-100")}>
                 {pill.dot && <span className={`mr-1.5 inline-block h-2 w-2 rounded-full ${pill.dot}`} />}
                 {pill.label}
               </button>
@@ -195,7 +195,7 @@ export function TasksClient({
 
             <button type="button" onClick={() => updateFilter("overdue", !filters.overdue)}
               className={cn("flex h-9 items-center gap-1.5 rounded-lg border px-3 text-caption transition-colors duration-200",
-                filters.overdue ? "border-overdue/40 bg-overdue-bg text-overdue" : "border-hairline bg-white text-slate hover:bg-surface-soft")}>
+                filters.overdue ? "border-red-300 bg-red-50 text-overdue" : "border-border bg-white text-ink-secondary hover:bg-gray-50")}>
               <AlertTriangle className="h-3.5 w-3.5" />עבר דדליין
             </button>
           </div>

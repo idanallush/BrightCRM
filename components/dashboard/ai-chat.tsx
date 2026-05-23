@@ -67,24 +67,22 @@ export function AiChat({ userEmail }: { userEmail: string }) {
   }
 
   return (
-    <div className="rounded-lg border border-hairline/60 bg-white p-5 shadow-subtle">
+    <div className="rounded-lg border border-border bg-white p-4">
       {/* Header */}
-      <div className="mb-4 flex items-center gap-2">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/20">
-          <Bot className="h-4 w-4 text-ink" />
-        </div>
-        <h2 className="text-sm font-semibold text-ink">עוזר BrightCRM</h2>
+      <div className="mb-3 flex items-center gap-2">
+        <Bot className="h-4 w-4 text-ink-muted" />
+        <h2 className="text-body-sm font-semibold text-ink">עוזר</h2>
       </div>
 
-      {/* Quick actions */}
-      <div className="-mx-1 mb-4 flex gap-2 overflow-x-auto px-1 pb-1">
+      {/* Quick actions — compact */}
+      <div className="-mx-1 mb-3 flex gap-1.5 overflow-x-auto px-1 pb-1">
         {QUICK_ACTIONS.map((qa) => (
           <button
             key={qa.action}
             type="button"
             onClick={() => ask({ action: qa.action })}
             disabled={loading}
-            className="whitespace-nowrap rounded-full bg-surface px-4 py-2 text-sm text-slate transition-all duration-200 hover:bg-accent/20 hover:text-ink disabled:opacity-50"
+            className="whitespace-nowrap rounded-full bg-gray-100 px-3 py-1.5 text-caption text-ink-secondary transition-colors hover:bg-gray-200 hover:text-ink disabled:opacity-50"
           >
             {qa.label}
           </button>

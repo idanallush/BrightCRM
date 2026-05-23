@@ -26,18 +26,20 @@ export function QuickAdd() {
     <div ref={wrapRef} className="fixed bottom-[4.5rem] start-5 z-40 flex flex-col items-start gap-2 md:bottom-6">
       <AnimatePresence>
         {open && (
-          <motion.div initial={{ opacity: 0, scale: 0.9, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9, y: 10 }} transition={{ duration: 0.15 }}
-            className="flex flex-col gap-0.5 rounded-lg border border-hairline bg-canvas p-1.5 shadow-modal">
+          <motion.div initial={{ opacity: 0, scale: 0.95, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 8 }} transition={{ duration: 0.12 }}
+            className="flex flex-col gap-0.5 rounded-lg border border-border bg-white p-1 shadow-lg">
             {ITEMS.map(({ href, label, Icon }) => (
               <button key={href} type="button" onClick={() => { setOpen(false); router.push(href); }}
-                className="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-right text-body-sm text-ink transition-colors duration-150 hover:bg-surface">{Icon && <Icon className="h-4 w-4 text-slate" />}{label}</button>
+                className="flex items-center gap-2 rounded px-3 py-2 text-right text-body-sm text-ink transition-colors hover:bg-gray-50">
+                <Icon className="h-4 w-4 text-ink-muted" />{label}
+              </button>
             ))}
           </motion.div>
         )}
       </AnimatePresence>
-      <motion.button type="button" onClick={() => setOpen((v) => !v)} title="יצירה מהירה" aria-label="יצירה מהירה" whileTap={{ scale: 0.92 }}
-        className="flex h-12 w-12 items-center justify-center rounded-md bg-accent text-ink-deep shadow-card transition-all duration-150 hover:bg-accent-hover">
-        <Plus className={cn("h-5 w-5 transition-transform duration-200", open && "rotate-45")} />
+      <motion.button type="button" onClick={() => setOpen((v) => !v)} title="יצירה מהירה" aria-label="יצירה מהירה" whileTap={{ scale: 0.93 }}
+        className="flex h-11 w-11 items-center justify-center rounded-md bg-accent text-ink shadow-sm transition-colors hover:bg-accent-hover">
+        <Plus className={cn("h-5 w-5 transition-transform duration-150", open && "rotate-45")} />
       </motion.button>
     </div>
   );

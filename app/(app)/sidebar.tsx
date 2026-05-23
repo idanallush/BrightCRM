@@ -38,10 +38,10 @@ export function Sidebar({ userLabel }: { userLabel: string }) {
     const link = (
       <Link href={href} aria-current={active ? "page" : undefined}
         className={cn("group relative flex items-center gap-3 rounded-md px-3 py-2 text-body-sm transition-all duration-150",
-          active ? "bg-surface font-medium text-ink" : "text-slate hover:bg-surface-soft hover:text-ink",
+          active ? "bg-gray-100 font-semibold text-ink" : "text-ink-secondary hover:bg-gray-50 hover:text-ink",
           !isMobile && collapsed && "justify-center px-0",
         )} title={label}>
-        {active && <span className="absolute right-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-l-full bg-accent" />}
+        {active && <span className="absolute right-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-l-full bg-ink" />}
         <Icon className="h-[18px] w-[18px] shrink-0" />
         {(isMobile || !collapsed) && <span>{label}</span>}
       </Link>
@@ -67,10 +67,10 @@ export function Sidebar({ userLabel }: { userLabel: string }) {
       </div>
       <nav className="mt-1 flex flex-col gap-0.5 px-3">{NAV_MAIN.map((item, i) => <NavLink key={item.href} {...item} isMobile={isMobile} index={i} />)}</nav>
       <div className="flex-1" />
-      <div className="flex flex-col gap-0.5 border-t border-hairline px-3 pt-2 pb-1">{NAV_BOTTOM.map((item, i) => <NavLink key={item.href} {...item} isMobile={isMobile} index={NAV_MAIN.length + i} />)}</div>
-      <div className="shrink-0 border-t border-hairline p-3">
+      <div className="flex flex-col gap-0.5 border-t border-border px-3 pt-2 pb-1">{NAV_BOTTOM.map((item, i) => <NavLink key={item.href} {...item} isMobile={isMobile} index={NAV_MAIN.length + i} />)}</div>
+      <div className="shrink-0 border-t border-border p-3">
         <div className={cn("flex items-center gap-3 rounded-md px-2 py-2", collapsed && !isMobile && "justify-center px-0")}>
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-tint-lavender text-caption text-b-purple-800">{initials}</div>
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-caption text-ink">{initials}</div>
           {(isMobile || !collapsed) && <div className="flex min-w-0 flex-1 items-center justify-between">
             <span className="truncate text-body-sm text-ink">{userLabel}</span>
             <button type="button" onClick={signOut} className="rounded-sm p-1.5 text-stone transition-colors duration-150 hover:bg-surface hover:text-ink" title="התנתקות"><LogOut className="h-4 w-4" /></button>
@@ -82,10 +82,10 @@ export function Sidebar({ userLabel }: { userLabel: string }) {
 
   return (
     <>
-      <aside className={cn("fixed inset-y-0 right-0 z-30 hidden flex-col border-l border-hairline bg-canvas transition-all duration-300 md:flex", collapsed ? "w-16" : "w-60")}>{content(false)}</aside>
+      <aside className={cn("fixed inset-y-0 right-0 z-30 hidden flex-col border-l border-border bg-canvas transition-all duration-300 md:flex", collapsed ? "w-16" : "w-60")}>{content(false)}</aside>
       <AnimatePresence>{mobileOpen && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
         className="fixed inset-0 z-40 bg-black/30 md:hidden" onClick={() => setMobileOpen(false)} />}</AnimatePresence>
-      <aside className={cn("fixed inset-y-0 right-0 z-50 w-72 transform bg-canvas shadow-modal transition-transform duration-300 md:hidden", mobileOpen ? "translate-x-0" : "translate-x-full")}>{content(true)}</aside>
+      <aside className={cn("fixed inset-y-0 right-0 z-50 w-72 transform bg-canvas shadow-lg transition-transform duration-300 md:hidden", mobileOpen ? "translate-x-0" : "translate-x-full")}>{content(true)}</aside>
     </>
   );
 }
