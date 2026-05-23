@@ -8,6 +8,10 @@ import type { TaskWithRelations } from "@/lib/data";
 const fmtDate = (iso: string | null) =>
   iso ? new Date(iso).toLocaleDateString("he-IL") : "\u2014";
 
+function getInitials(name: string): string {
+  return name.split(/\s+/).map((w) => w[0]).join("").toUpperCase().slice(0, 2);
+}
+
 export function TaskTable({
   tasks,
   onRowClick,
@@ -28,7 +32,7 @@ export function TaskTable({
             <TH className="hidden lg:table-cell">אחראי</TH>
             <TH>דדליין</TH>
             <TH className="hidden sm:table-cell">מקור</TH>
-            <TH className="w-10" />
+            <TH className="w-8" />
           </TR>
         </THead>
         <TBody>
@@ -44,8 +48,19 @@ export function TaskTable({
                   <div className="mt-0.5 text-caption text-ink-secondary md:hidden">{t.client?.name ?? ""}</div>
                 </TD>
                 <TD className="hidden text-ink-secondary md:table-cell">{t.client?.name ?? "\u2014"}</TD>
-                <TD className="hidden text-ink-secondary lg:table-cell">
-                  {t.assignees.length === 0 ? "\u2014" : t.assignees.map((a) => a.full_name).join(", ")}
+                <TD className="hidden lg:table-cell">
+                  <div className="flex items-center gap-1.5">
+                    {t.assignees.length === 0 ? (
+                      <span className="text-ink-muted">\u2014</span>
+                    ) : (
+                      <>
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-light text-[10px] font-semibold text-brand">
+                          {getInitials(t.assignees[0].full_name)}
+                        </span>
+                        <span className="text-sm text-ink-secondary">{t.assignees[0].full_name}</span>
+                      </>
+                    )}
+                  </div>
                 </TD>
                 <TD>
                   <span className={overdue ? "inline-flex items-center gap-1 font-medium text-overdue" : "text-ink-secondary"}>
@@ -53,8 +68,16 @@ export function TaskTable({
                     {fmtDate(t.due_date)}
                   </span>
                 </TD>
-                <TD className="hidden sm:table-cell"><SourceIcon source={t.source} /></TD>
-                <TD className="w-10 text-end text-ink-muted opacity-0 transition-opacity group-hover:opacity-100">
+                <TD className="hidden sm:table-cell">
+                  {t.source === "telegram" ? (
+                    <span className="inline-flex items-center rounded-full bg-brand-light p-1.5 text-brand"><Send className="h-3 w-3" /></span>
+                  ) : t.source === "web" ? (
+                    <span className="inline-flex items-center rounded-full bg-gray-100 p-1.5 text-ink-muted"><Globe className="h-3 w-3" /></span>
+                  ) : (
+                    <span className="text-caption text-ink-muted">{t.source}</span>
+                  )}
+                </TD>
+                <TD className="w-8 text-end text-ink-muted opacity-0 transition-opacity group-hover:opacity-100">
                   <ChevronLeft className="ms-auto h-4 w-4" />
                 </TD>
               </TR>
@@ -64,14 +87,4 @@ export function TaskTable({
       </Table>
     </div>
   );
-}
-
-function SourceIcon({ source }: { source: string }) {
-  if (source === "telegram") {
-    return <span className="inline-flex items-center rounded-full bg-brand-light p-1.5 text-brand"><Send className="h-3 w-3" /></span>;
-  }
-  if (source === "web") {
-    return <span className="inline-flex items-center rounded-full bg-gray-100 p-1.5 text-ink-muted"><Globe className="h-3 w-3" /></span>;
-  }
-  return <span className="text-caption text-ink-muted">{source}</span>;
 }

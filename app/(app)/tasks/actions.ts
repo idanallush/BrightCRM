@@ -94,3 +94,40 @@ export async function updateTaskStatus(id: string, status: string) {
   revalidatePath("/dashboard");
   return { ok: true as const };
 }
+
+export async function addComment(
+  taskId: string,
+  authorId: string,
+  content: string,
+  mentions: string[] = [],
+) {
+  const sb = createClient();
+  const { error } = await sb.from("task_comments").insert({
+    task_id: taskId,
+    author_id: authorId,
+    content,
+    mentions,
+  });
+  if (error) return { error: error.message };
+
+  // Create notification for each mentioned user
+  if (mentions.length > 0) {
+    const { data: author } = await sb
+      .from("team_members")
+      .select("full_name")
+      .eq("id", authorId)
+      .single();
+    const authorName = author?.full_name ?? "מישהו";
+    const notifs = mentions.map((userId) => ({
+      user_id: userId,
+      type: "mention" as const,
+      task_id: taskId,
+      from_user_id: authorId,
+      content: `${authorName} הזכיר/ה אותך בתגובה`,
+    }));
+    await sb.from("notifications").insert(notifs);
+  }
+
+  revalidatePath("/tasks");
+  return { ok: true as const };
+}

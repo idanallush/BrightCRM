@@ -265,26 +265,28 @@ export async function getTeam(): Promise<TeamMember[]> {
 export type DashboardCounts = {
   openTasks: number;
   totalClients: number;
-  activeCampaigns: number;
+  telegramThisMonth: number;
   overdueTasks: number;
 };
 
 export async function getDashboardCounts(): Promise<DashboardCounts> {
   const sb = createClient();
   const today = new Date().toISOString().slice(0, 10);
+  const monthStart = today.slice(0, 8) + "01";
 
   const activeStatuses = ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח", "אישור מנהל"];
 
-  const [open, clients, overdue] = await Promise.all([
+  const [open, clients, overdue, telegram] = await Promise.all([
     sb.from("tasks").select("*", { count: "exact", head: true }).in("status", activeStatuses),
     sb.from("clients").select("*", { count: "exact", head: true }),
     sb.from("tasks").select("*", { count: "exact", head: true }).in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה"]).lt("due_date", today),
+    sb.from("tasks").select("*", { count: "exact", head: true }).eq("source", "telegram").gte("created_at", monthStart),
   ]);
 
   return {
     openTasks: open.count ?? 0,
     totalClients: clients.count ?? 0,
-    activeCampaigns: 0,
+    telegramThisMonth: telegram.count ?? 0,
     overdueTasks: overdue.count ?? 0,
   };
 }
@@ -342,7 +344,7 @@ export async function getMyTasks(userEmail: string) {
   const { data } = await sb
     .from("tasks")
     .select(
-      "id,title,due_date,client:clients(name),assignees:task_assignees(member:team_members(id))",
+      "id,title,status,due_date,client:clients(name),assignees:task_assignees(member:team_members(id))",
     )
     .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח", "אישור מנהל"])
     .order("due_date", { ascending: true, nullsFirst: false });
@@ -355,9 +357,27 @@ export async function getMyTasks(userEmail: string) {
     .map((t: any) => ({
       id: t.id as string,
       title: t.title as string,
+      status: t.status as string,
       due_date: t.due_date as string | null,
       client_name: (t.client?.name as string | undefined) ?? null,
     }));
+}
+
+export async function getTaskComments(taskId: string) {
+  const sb = createClient();
+  const { data } = await sb
+    .from("task_comments")
+    .select("id,content,mentions,created_at,author:team_members!task_comments_author_id_fkey(id,full_name)")
+    .eq("task_id", taskId)
+    .order("created_at", { ascending: true });
+  return ((data ?? []) as any[]).map((c) => ({
+    id: c.id as string,
+    content: c.content as string,
+    mentions: (c.mentions ?? []) as string[],
+    created_at: c.created_at as string,
+    author_id: (c.author?.id as string | undefined) ?? null,
+    author_name: (c.author?.full_name as string | undefined) ?? null,
+  }));
 }
 
 export async function getCriticalClients() {
