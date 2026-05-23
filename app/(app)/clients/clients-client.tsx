@@ -2,7 +2,14 @@
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChevronLeft, Plus, Search } from "lucide-react";
+import {
+  Plus,
+  Search,
+  ExternalLink,
+  Globe,
+  FolderOpen,
+  BarChart3,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,21 +26,14 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
-import { Badge, healthVariant } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge, healthVariant } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { cn } from "@/lib/utils";
 import { ClientForm } from "./client-form";
 import type { Client, TeamMember } from "@/lib/data";
 
 const ALL = "__all__";
-
-function taskCountClass(n: number): string {
-  if (n === 0) return "bg-black/5 text-[color:var(--color-ink-muted)]";
-  if (n <= 3) return "bg-[color:var(--color-brand)]/10 text-[color:var(--color-brand)]";
-  return "bg-[color:var(--color-health-critical)]/10 text-[color:var(--color-health-critical)]";
-}
 
 export function ClientsClient({
   clients,
@@ -51,7 +51,6 @@ export function ClientsClient({
   const [managerId, setManagerId] = React.useState(ALL);
   const [createOpen, setCreateOpen] = React.useState(false);
 
-  // FAB deeplink: ?new=true opens create dialog and strips param.
   React.useEffect(() => {
     if (searchParams.get("new") === "true") {
       setCreateOpen(true);
@@ -81,31 +80,33 @@ export function ClientsClient({
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-4 md:gap-5">
+      {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-baseline gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight">לקוחות</h1>
-          <span className="text-sm text-[color:var(--color-ink-muted)]">
+          <h1 className="text-xl font-semibold text-ink md:text-2xl">לקוחות</h1>
+          <span className="text-sm text-ink-muted">
             {filtered.length} מתוך {clients.length}
           </span>
           {activeFilterCount > 0 && (
             <button
               type="button"
               onClick={clearFilters}
-              className="inline-flex items-center gap-1 rounded-full bg-[color:var(--color-brand)] px-2.5 py-0.5 text-xs font-medium text-white"
+              className="inline-flex items-center gap-1 rounded-full bg-brand px-2.5 py-0.5 text-xs font-medium text-white transition-colors hover:bg-brand-focus"
             >
-              פילטרים פעילים ({activeFilterCount}) · נקה
+              {activeFilterCount} פילטרים · נקה
             </button>
           )}
         </div>
-        <Button onClick={() => setCreateOpen(true)}>
+        <Button onClick={() => setCreateOpen(true)} className="hidden sm:inline-flex">
           <Plus className="h-4 w-4" /> לקוח חדש
         </Button>
       </div>
 
+      {/* Filters */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div className="relative">
-          <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--color-ink-muted)]" />
+          <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -139,10 +140,10 @@ export function ClientsClient({
         </Select>
       </div>
 
+      {/* Content */}
       {filtered.length === 0 ? (
         activeFilterCount > 0 ? (
           <EmptyState
-            icon={<span>👥</span>}
             title="לא נמצאו לקוחות תואמים"
             description="נסה לשנות את הפילטרים או לנקות אותם."
             action={
@@ -153,7 +154,6 @@ export function ClientsClient({
           />
         ) : (
           <EmptyState
-            icon={<span>👥</span>}
             title="אין לקוחות עדיין"
             description="הוסף את הלקוח הראשון כדי להתחיל לעקוב אחריו."
             action={
@@ -164,65 +164,99 @@ export function ClientsClient({
           />
         )
       ) : (
-        <Card className="overflow-hidden">
-          <CardContent className="p-0">
-            <Table>
-              <THead>
-                <TR>
-                  <TH>שם לקוח</TH>
-                  <TH>איש קשר</TH>
-                  <TH>מנהל לקוח</TH>
-                  <TH>טלפון</TH>
-                  <TH>אימייל</TH>
-                  <TH>בריאות</TH>
-                  <TH>משימות פתוחות</TH>
-                  <TH className="w-10" />
-                </TR>
-              </THead>
-              <TBody>
-                {filtered.map((c) => {
-                  const v = healthVariant(c.health);
-                  const openCount = openTaskCounts[c.id] ?? 0;
-                  return (
-                    <TR
-                      key={c.id}
-                      onClick={() => router.push(`/clients/${c.id}`)}
-                      className="cursor-pointer"
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((c) => {
+            const v = healthVariant(c.health);
+            const openCount = openTaskCounts[c.id] ?? 0;
+            const links: { icon: React.ReactNode; url: string; label: string }[] =
+              [];
+            if (c.website_url)
+              links.push({
+                icon: <Globe className="h-3.5 w-3.5" />,
+                url: c.website_url,
+                label: "אתר",
+              });
+            if (c.drive_url)
+              links.push({
+                icon: <FolderOpen className="h-3.5 w-3.5" />,
+                url: c.drive_url,
+                label: "Drive",
+              });
+            if (c.facebook_ads_url)
+              links.push({
+                icon: <BarChart3 className="h-3.5 w-3.5" />,
+                url: c.facebook_ads_url,
+                label: "Meta",
+              });
+            if (c.google_ads_url)
+              links.push({
+                icon: <BarChart3 className="h-3.5 w-3.5" />,
+                url: c.google_ads_url,
+                label: "Google",
+              });
+
+            return (
+              <Card
+                key={c.id}
+                className="cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover"
+                onClick={() => router.push(`/clients/${c.id}`)}
+              >
+                <CardContent className="flex flex-col gap-3 p-4 md:p-5">
+                  {/* Name + health */}
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="text-base font-semibold text-ink">
+                      {c.name}
+                    </h3>
+                    {v && c.health && (
+                      <Badge variant={v} className="shrink-0">
+                        {c.health}
+                      </Badge>
+                    )}
+                  </div>
+
+                  {/* Manager + open tasks */}
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-ink-muted">
+                      {c.manager_name ?? "ללא מנהל"}
+                    </span>
+                    <span
+                      className={cn(
+                        "inline-flex min-w-[1.75rem] items-center justify-center rounded-full px-2 py-0.5 text-xs font-medium",
+                        openCount === 0
+                          ? "bg-gray-100 text-ink-muted"
+                          : openCount <= 3
+                            ? "bg-blue-50 text-blue-700"
+                            : "bg-red-50 text-red-700",
+                      )}
                     >
-                      <TD className="font-medium">{c.name}</TD>
-                      <TD className="text-[color:var(--color-ink-muted)]">
-                        {c.contact_name ?? "—"}
-                      </TD>
-                      <TD className="text-[color:var(--color-ink-muted)]">
-                        {c.manager_name ?? "—"}
-                      </TD>
-                      <TD className="text-[color:var(--color-ink-muted)]">
-                        {c.phone ?? "—"}
-                      </TD>
-                      <TD className="text-[color:var(--color-ink-muted)]">
-                        {c.email ?? "—"}
-                      </TD>
-                      <TD>{v && c.health ? <Badge variant={v}>{c.health}</Badge> : "—"}</TD>
-                      <TD>
-                        <span
-                          className={cn(
-                            "inline-flex min-w-[1.75rem] items-center justify-center rounded-full px-2 py-0.5 text-xs font-medium",
-                            taskCountClass(openCount),
-                          )}
+                      {openCount} משימות
+                    </span>
+                  </div>
+
+                  {/* Quick links */}
+                  {links.length > 0 && (
+                    <div className="flex gap-1.5 border-t border-gray-100 pt-3">
+                      {links.map((l) => (
+                        <a
+                          key={l.label}
+                          href={l.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex h-8 items-center gap-1 rounded-lg border border-gray-200 bg-white px-2 text-xs text-ink-muted transition-colors hover:bg-gray-50 hover:text-ink"
+                          title={l.label}
                         >
-                          {openCount}
-                        </span>
-                      </TD>
-                      <TD className="w-10 text-end text-[color:var(--color-brand)] opacity-0 transition group-hover:opacity-100">
-                        <ChevronLeft className="ms-auto h-4 w-4" />
-                      </TD>
-                    </TR>
-                  );
-                })}
-              </TBody>
-            </Table>
-          </CardContent>
-        </Card>
+                          {l.icon}
+                          <span className="hidden sm:inline">{l.label}</span>
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       )}
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>

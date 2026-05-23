@@ -1,12 +1,12 @@
 "use client";
 
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Send, Globe, AlertTriangle } from "lucide-react";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Badge, statusVariant } from "@/components/ui/badge";
 import type { TaskWithRelations } from "@/lib/data";
 
 const fmtDate = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleDateString("he-IL") : "—";
+  iso ? new Date(iso).toLocaleDateString("he-IL") : "\u2014";
 
 export function TaskTable({
   tasks,
@@ -18,15 +18,16 @@ export function TaskTable({
   const today = new Date().toISOString().slice(0, 10);
 
   return (
-    <div className="rounded-[18px] border border-[color:var(--color-hairline)] bg-white">
+    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
       <Table>
         <THead>
-          <TR>
-            <TH>כותרת</TH>
-            <TH>לקוח</TH>
+          <TR className="hover:bg-transparent">
             <TH>סטטוס</TH>
-            <TH>תאריך יעד</TH>
-            <TH>אחראי</TH>
+            <TH>משימה</TH>
+            <TH className="hidden md:table-cell">לקוח</TH>
+            <TH className="hidden lg:table-cell">אחראי</TH>
+            <TH>דדליין</TH>
+            <TH className="hidden sm:table-cell">מקור</TH>
             <TH className="w-10" />
           </TR>
         </THead>
@@ -40,28 +41,45 @@ export function TaskTable({
                 onClick={() => onRowClick(t)}
                 className="cursor-pointer"
               >
-                <TD className="font-medium">{t.title}</TD>
-                <TD className="text-[color:var(--color-ink-muted)]">
-                  {t.client?.name ?? "—"}
-                </TD>
                 <TD>
                   <Badge variant={statusVariant(t.status)}>{t.status}</Badge>
                 </TD>
-                <TD
-                  className={
-                    overdue
-                      ? "font-medium text-[color:var(--color-health-critical)]"
-                      : "text-[color:var(--color-ink-muted)]"
-                  }
-                >
-                  {fmtDate(t.due_date)}
+                <TD>
+                  <div className="font-medium text-ink">{t.title}</div>
+                  {t.description && (
+                    <div className="mt-0.5 line-clamp-1 text-xs text-ink-muted">
+                      {t.description}
+                    </div>
+                  )}
+                  {/* Client name visible on mobile only */}
+                  <div className="mt-0.5 text-xs text-ink-muted md:hidden">
+                    {t.client?.name ?? ""}
+                  </div>
                 </TD>
-                <TD className="text-[color:var(--color-ink-muted)]">
+                <TD className="hidden text-ink-muted md:table-cell">
+                  {t.client?.name ?? "\u2014"}
+                </TD>
+                <TD className="hidden text-ink-muted lg:table-cell">
                   {t.assignees.length === 0
-                    ? "—"
+                    ? "\u2014"
                     : t.assignees.map((a) => a.full_name).join(", ")}
                 </TD>
-                <TD className="w-10 text-end text-[color:var(--color-brand)] opacity-0 transition group-hover:opacity-100">
+                <TD>
+                  <span
+                    className={
+                      overdue
+                        ? "inline-flex items-center gap-1 font-medium text-red-600"
+                        : "text-ink-muted"
+                    }
+                  >
+                    {overdue && <AlertTriangle className="h-3.5 w-3.5" />}
+                    {fmtDate(t.due_date)}
+                  </span>
+                </TD>
+                <TD className="hidden sm:table-cell">
+                  <SourceIcon source={t.source} />
+                </TD>
+                <TD className="w-10 text-end text-brand opacity-0 transition-opacity group-hover:opacity-100">
                   <ChevronLeft className="ms-auto h-4 w-4" />
                 </TD>
               </TR>
@@ -71,4 +89,22 @@ export function TaskTable({
       </Table>
     </div>
   );
+}
+
+function SourceIcon({ source }: { source: string }) {
+  if (source === "telegram") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-600">
+        <Send className="h-3 w-3" />
+      </span>
+    );
+  }
+  if (source === "web") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-ink-muted">
+        <Globe className="h-3 w-3" />
+      </span>
+    );
+  }
+  return <span className="text-xs text-ink-muted">{source}</span>;
 }

@@ -39,7 +39,7 @@ export function QuickAdd() {
   return (
     <div
       ref={wrapRef}
-      className="fixed bottom-6 start-6 z-40 flex flex-col items-start gap-2"
+      className="fixed bottom-20 start-6 z-40 flex flex-col items-start gap-2 md:bottom-6"
     >
       {/* Menu */}
       <div

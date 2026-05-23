@@ -23,7 +23,7 @@ const COLUMNS: { key: "בעבודה" | "בוצע" | "סגור"; label: string }[
 ];
 
 const fmtDate = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleDateString("he-IL") : "—";
+  iso ? new Date(iso).toLocaleDateString("he-IL") : "\u2014";
 
 export function TaskKanban({
   tasks,
@@ -33,7 +33,6 @@ export function TaskKanban({
   onCardClick: (t: TaskWithRelations) => void;
 }) {
   const router = useRouter();
-  // Optimistic local copy so cards move instantly.
   const [local, setLocal] = React.useState(tasks);
   React.useEffect(() => setLocal(tasks), [tasks]);
 
@@ -57,7 +56,6 @@ export function TaskKanban({
     );
     const res = await updateTaskStatus(taskId, newStatus);
     if ("error" in res) {
-      // Roll back on failure.
       setLocal((prev) =>
         prev.map((t) => (t.id === taskId ? { ...t, status: current.status } : t)),
       );
@@ -101,13 +99,13 @@ function KanbanColumn({
       ref={setNodeRef}
       className={
         isOver
-          ? "min-h-[200px] rounded-[18px] border-2 border-dashed border-[color:var(--color-brand)] bg-[color:var(--color-brand)]/5 p-3"
-          : "min-h-[200px] rounded-[18px] border border-[color:var(--color-hairline)] bg-white p-3"
+          ? "min-h-[200px] rounded-xl border-2 border-dashed border-brand bg-brand-light/50 p-3"
+          : "min-h-[200px] rounded-xl border border-gray-200 bg-gray-50/50 p-3"
       }
     >
       <div className="mb-3 flex items-center justify-between px-1">
-        <h3 className="text-sm font-medium">{label}</h3>
-        <span className="text-xs text-[color:var(--color-ink-muted)]">
+        <h3 className="text-sm font-semibold text-ink">{label}</h3>
+        <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-ink-muted">
           {tasks.length}
         </span>
       </div>
@@ -143,30 +141,34 @@ function KanbanCard({
       {...listeners}
       {...attributes}
       onClick={(e) => {
-        // Don't treat a drag as a click.
         if (isDragging) return;
         e.preventDefault();
         onClick();
       }}
-      className="cursor-grab rounded-md border border-[color:var(--color-hairline)] bg-white p-3 text-right transition hover:border-[color:var(--color-brand)]/40 active:cursor-grabbing"
+      className={`cursor-grab rounded-lg border bg-white p-3 text-right shadow-card transition-all duration-200 hover:shadow-card-hover active:cursor-grabbing ${overdue ? "border-l-2 border-l-red-500 border-t-gray-200 border-r-gray-200 border-b-gray-200" : "border-gray-200"}`}
     >
-      <div className="text-sm font-medium leading-tight">{task.title}</div>
-      <div className="mt-1 text-xs text-[color:var(--color-ink-muted)]">
-        {task.client?.name ?? "—"}
-      </div>
+      <div className="text-sm font-medium leading-tight text-ink">{task.title}</div>
+      <div className="mt-1 text-xs text-ink-muted">{task.client?.name ?? "\u2014"}</div>
       <div className="mt-2 flex items-center justify-between text-xs">
-        <span
-          className={
-            overdue
-              ? "text-[color:var(--color-health-critical)]"
-              : "text-[color:var(--color-ink-muted)]"
-          }
-        >
+        <span className={overdue ? "font-medium text-red-600" : "text-ink-muted"}>
           {fmtDate(task.due_date)}
         </span>
-        <span className="truncate text-[color:var(--color-ink-muted)]">
-          {task.assignees.map((a) => a.full_name).join(", ")}
-        </span>
+        <div className="flex items-center gap-1">
+          {task.assignees.slice(0, 2).map((a) => (
+            <span
+              key={a.id}
+              className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-light text-[10px] font-semibold text-brand"
+              title={a.full_name}
+            >
+              {a.full_name
+                .split(/\s+/)
+                .map((w) => w[0])
+                .join("")
+                .toUpperCase()
+                .slice(0, 2)}
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );

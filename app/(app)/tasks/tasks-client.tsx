@@ -35,7 +35,12 @@ import { TaskAttachments } from "./task-attachments";
 import { deleteTask } from "./actions";
 import type { Client, TaskWithRelations, TeamMember } from "@/lib/data";
 
-const STATUS_OPTIONS = ["__all__", "בעבודה", "בוצע", "סגור"] as const;
+const STATUS_TABS = [
+  { key: "__all__", label: "הכל" },
+  { key: "בעבודה", label: "בעבודה" },
+  { key: "בוצע", label: "בוצע" },
+  { key: "סגור", label: "סגור" },
+] as const;
 const VIEW_KEY = "brightcrm:tasks-view";
 
 export function TasksClient({
@@ -64,13 +69,11 @@ export function TasksClient({
   const [confirmingDelete, setConfirmingDelete] = React.useState(false);
   const [filters, setFilters] = React.useState(initialFilters);
 
-  // Hydrate view preference from localStorage on mount.
   React.useEffect(() => {
     const saved = localStorage.getItem(VIEW_KEY);
     if (saved === "table" || saved === "kanban") setView(saved);
   }, []);
 
-  // Deeplink: ?task=ID opens the edit sheet for that task.
   React.useEffect(() => {
     const id = searchParams.get("task");
     if (id && (!editing || editing.id !== id)) {
@@ -79,7 +82,6 @@ export function TasksClient({
     }
   }, [searchParams, tasks, editing]);
 
-  // FAB deeplink: ?new=true opens the create dialog and strips the param.
   React.useEffect(() => {
     if (searchParams.get("new") === "true") {
       setCreateOpen(true);
@@ -147,128 +149,133 @@ export function TasksClient({
   }
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-4 md:gap-5">
+      {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-baseline gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight">משימות</h1>
+          <h1 className="text-xl font-semibold text-ink md:text-2xl">משימות</h1>
           {activeFilterCount > 0 && (
             <button
               type="button"
               onClick={clearFilters}
-              className="inline-flex items-center gap-1 rounded-full bg-[color:var(--color-brand)] px-2.5 py-0.5 text-xs font-medium text-white"
-              title="נקה את כל הפילטרים"
+              className="inline-flex items-center gap-1 rounded-full bg-brand px-2.5 py-0.5 text-xs font-medium text-white transition-colors hover:bg-brand-focus"
             >
-              פילטרים פעילים ({activeFilterCount}) · נקה
+              {activeFilterCount} פילטרים · נקה
             </button>
           )}
         </div>
         <div className="flex items-center gap-2">
-          <div className="inline-flex rounded-md border border-[color:var(--color-hairline)] bg-white p-0.5">
+          {/* View toggle */}
+          <div className="inline-flex rounded-lg border border-gray-200 bg-white p-0.5">
             <button
               type="button"
               onClick={() => changeView("table")}
               className={cn(
-                "flex items-center gap-1.5 rounded px-3 py-1.5 text-sm",
+                "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-all duration-200",
                 view === "table"
-                  ? "bg-[color:var(--color-brand)]/10 text-[color:var(--color-brand)]"
-                  : "text-[color:var(--color-ink-muted)]",
+                  ? "bg-brand-light font-medium text-brand"
+                  : "text-ink-muted hover:text-ink",
               )}
             >
-              <Rows3 className="h-4 w-4" /> טבלה
+              <Rows3 className="h-4 w-4" />
+              <span className="hidden sm:inline">טבלה</span>
             </button>
             <button
               type="button"
               onClick={() => changeView("kanban")}
               className={cn(
-                "flex items-center gap-1.5 rounded px-3 py-1.5 text-sm",
+                "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-all duration-200",
                 view === "kanban"
-                  ? "bg-[color:var(--color-brand)]/10 text-[color:var(--color-brand)]"
-                  : "text-[color:var(--color-ink-muted)]",
+                  ? "bg-brand-light font-medium text-brand"
+                  : "text-ink-muted hover:text-ink",
               )}
             >
-              <LayoutGrid className="h-4 w-4" /> קנבן
+              <LayoutGrid className="h-4 w-4" />
+              <span className="hidden sm:inline">קנבן</span>
             </button>
           </div>
-
-          <Button onClick={() => setCreateOpen(true)}>
+          <Button onClick={() => setCreateOpen(true)} className="hidden sm:inline-flex">
             <Plus className="h-4 w-4" /> משימה חדשה
           </Button>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="grid flex-1 grid-cols-1 gap-3 sm:grid-cols-3">
-          <div>
-            <Select value={filters.status} onValueChange={(v) => updateFilter("status", v)}>
-              <SelectTrigger>
-                <SelectValue placeholder="סטטוס" />
-              </SelectTrigger>
-              <SelectContent>
-                {STATUS_OPTIONS.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    {s === "__all__" ? "כל הסטטוסים" : s}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Select
-              value={filters.clientId}
-              onValueChange={(v) => updateFilter("clientId", v)}
+      {/* Filters */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        {/* Status tabs */}
+        <div className="flex gap-1 overflow-x-auto rounded-lg border border-gray-200 bg-white p-1">
+          {STATUS_TABS.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => updateFilter("status", tab.key)}
+              className={cn(
+                "whitespace-nowrap rounded-md px-3 py-1.5 text-sm transition-all duration-200",
+                filters.status === tab.key
+                  ? "bg-brand-light font-medium text-brand"
+                  : "text-ink-muted hover:text-ink",
+              )}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="לקוח" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__all__">כל הלקוחות</SelectItem>
-                {clients.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Select
-              value={filters.assigneeId}
-              onValueChange={(v) => updateFilter("assigneeId", v)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="אחראי" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__all__">כל האחראים</SelectItem>
-                {team.map((m) => (
-                  <SelectItem key={m.id} value={m.id}>
-                    {m.full_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+              {tab.label}
+            </button>
+          ))}
         </div>
 
-        <button
-          type="button"
-          onClick={() => updateFilter("overdue", !filters.overdue)}
-          className={cn(
-            "flex h-10 items-center gap-1.5 rounded-md border px-3 text-sm transition",
-            filters.overdue
-              ? "border-[color:var(--color-health-critical)] bg-[color:var(--color-health-critical)]/10 text-[color:var(--color-health-critical)]"
-              : "border-[color:var(--color-hairline)] bg-white text-[color:var(--color-ink-muted)] hover:bg-black/5",
-          )}
-        >
-          <AlertTriangle className="h-4 w-4" />
-          עבר דדליין
-        </button>
+        <div className="flex flex-1 flex-wrap items-center gap-2">
+          <Select
+            value={filters.clientId}
+            onValueChange={(v) => updateFilter("clientId", v)}
+          >
+            <SelectTrigger className="h-9 w-auto min-w-[140px]">
+              <SelectValue placeholder="לקוח" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all__">כל הלקוחות</SelectItem>
+              {clients.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={filters.assigneeId}
+            onValueChange={(v) => updateFilter("assigneeId", v)}
+          >
+            <SelectTrigger className="h-9 w-auto min-w-[120px]">
+              <SelectValue placeholder="אחראי" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all__">כל האחראים</SelectItem>
+              {team.map((m) => (
+                <SelectItem key={m.id} value={m.id}>
+                  {m.full_name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <button
+            type="button"
+            onClick={() => updateFilter("overdue", !filters.overdue)}
+            className={cn(
+              "flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm transition-all duration-200",
+              filters.overdue
+                ? "border-red-300 bg-red-50 text-red-600"
+                : "border-gray-200 bg-white text-ink-muted hover:bg-gray-50",
+            )}
+          >
+            <AlertTriangle className="h-3.5 w-3.5" />
+            עבר דדליין
+          </button>
+        </div>
       </div>
 
+      {/* Content */}
       {tasks.length === 0 ? (
         activeFilterCount > 0 ? (
           <EmptyState
-            icon={<span>📋</span>}
             title="לא נמצאו משימות תואמות"
             description="נסה לשנות את הפילטרים או לנקות את כולם."
             action={
@@ -279,9 +286,8 @@ export function TasksClient({
           />
         ) : (
           <EmptyState
-            icon={<span>📋</span>}
             title="אין משימות עדיין"
-            description="פתח משימה ראשונה — דרך הכפתור או דרך בוט הטלגרם."
+            description="פתח משימה ראשונה דרך הכפתור או דרך בוט הטלגרם."
             action={
               <Button onClick={() => setCreateOpen(true)}>
                 <Plus className="h-4 w-4" /> משימה חדשה
@@ -295,13 +301,13 @@ export function TasksClient({
         <TaskKanban tasks={tasks} onCardClick={setEditing} />
       )}
 
-      {/* Create */}
+      {/* Create dialog */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>משימה חדשה</DialogTitle>
             <DialogDescription>
-              פתיחה מהירה. נשמרת כ-source=web — בהמשך תזהה משימות מטלגרם בנפרד.
+              פתיחה מהירה. נשמרת כ-source=web.
             </DialogDescription>
           </DialogHeader>
           <TaskForm
@@ -312,18 +318,24 @@ export function TasksClient({
         </DialogContent>
       </Dialog>
 
-      {/* Edit */}
+      {/* Edit sheet */}
       <Sheet open={!!editing} onOpenChange={(open) => !open && closeSheet()}>
         <SheetContent side="left" className="flex flex-col gap-0 p-0">
           {editing && (
             <>
-              <SheetHeader className="px-6 pb-3 pt-6">
+              <SheetHeader className="px-5 pb-3 pt-5 md:px-6 md:pt-6">
                 <SheetTitle>עריכת משימה</SheetTitle>
                 <SheetDescription>
-                  שינויים נשמרים מיד אחרי לחיצה על "שמירה".
+                  שינויים נשמרים אחרי לחיצה על שמירה.
                 </SheetDescription>
               </SheetHeader>
-              <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6 pb-6">
+              <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-5 pb-6 md:px-6">
+                {/* Task metadata */}
+                <div className="flex flex-wrap gap-2 text-xs text-ink-muted">
+                  <span>נוצר ב-{new Date(editing.created_at).toLocaleDateString("he-IL")}</span>
+                  <span>·</span>
+                  <span>מקור: {editing.source === "telegram" ? "טלגרם" : editing.source === "web" ? "ממשק" : "ייבוא"}</span>
+                </div>
                 <TaskForm
                   key={editing.id}
                   task={editing}
@@ -332,12 +344,12 @@ export function TasksClient({
                   onDone={closeSheet}
                   compact
                 />
-                <div className="border-t border-[color:var(--color-hairline)] pt-4">
+                <div className="border-t border-gray-200 pt-4">
                   <TaskAttachments key={editing.id} taskId={editing.id} />
                 </div>
-                <div className="border-t border-[color:var(--color-hairline)] pt-3">
+                <div className="border-t border-gray-200 pt-3">
                   {confirmingDelete ? (
-                    <div className="flex flex-col gap-2 rounded-md bg-red-50 p-3 text-right">
+                    <div className="flex flex-col gap-2 rounded-lg bg-red-50 p-3 text-right">
                       <p className="text-sm text-red-700">
                         למחוק את המשימה לצמיתות?
                       </p>

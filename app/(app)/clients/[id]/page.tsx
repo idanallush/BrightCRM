@@ -20,10 +20,10 @@ import { EditClientButton, DeleteClientButton } from "./edit-button";
 export const dynamic = "force-dynamic";
 
 const fmtDate = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleDateString("he-IL") : "—";
+  iso ? new Date(iso).toLocaleDateString("he-IL") : "\u2014";
 const fmtMoney = (n: number | null) =>
   n == null
-    ? "—"
+    ? "\u2014"
     : new Intl.NumberFormat("he-IL", {
         style: "currency",
         currency: "ILS",
@@ -76,17 +76,18 @@ export default async function ClientDetailPage({
     externalLinks.push({ label: "אתר/דף נחיתה", url: client.website_url });
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5 md:gap-6">
+      {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-baseline gap-3">
           <Link
             href="/clients"
-            className="inline-flex items-center gap-1 text-sm text-[color:var(--color-ink-muted)] hover:text-[color:var(--color-brand)]"
+            className="inline-flex items-center gap-1 text-sm text-ink-muted transition-colors hover:text-brand"
           >
             <ArrowRight className="h-4 w-4" />
-            חזרה לרשימה
+            חזרה
           </Link>
-          <h1 className="text-2xl font-semibold tracking-tight">{client.name}</h1>
+          <h1 className="text-xl font-semibold text-ink md:text-2xl">{client.name}</h1>
           {healthV && client.health && (
             <Badge variant={healthV}>{client.health}</Badge>
           )}
@@ -97,8 +98,9 @@ export default async function ClientDetailPage({
         </div>
       </div>
 
+      {/* Info card */}
       <Card>
-        <CardContent className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 lg:grid-cols-3">
+        <CardContent className="grid grid-cols-2 gap-4 p-4 sm:grid-cols-3 md:p-5 lg:grid-cols-5">
           <Field label="איש קשר" value={client.contact_name} />
           <Field label="מנהל לקוח" value={manager?.full_name ?? null} />
           <Field label="תקציב" value={client.budget_note} />
@@ -107,11 +109,10 @@ export default async function ClientDetailPage({
         </CardContent>
       </Card>
 
+      {/* External links */}
       {externalLinks.length > 0 && (
         <section className="flex flex-col gap-2">
-          <h3 className="text-sm font-medium text-[color:var(--color-ink-muted)]">
-            קישורים
-          </h3>
+          <h3 className="text-sm font-semibold text-ink">קישורים</h3>
           <div className="flex flex-wrap gap-2">
             {externalLinks.map((l) => (
               <Button key={l.label} variant="outline" size="sm" asChild>
@@ -125,42 +126,39 @@ export default async function ClientDetailPage({
         </section>
       )}
 
+      {/* Tasks */}
       <section className="flex flex-col gap-2">
         <div className="flex items-baseline justify-between">
-          <h3 className="text-sm font-medium text-[color:var(--color-ink-muted)]">
+          <h3 className="text-sm font-semibold text-ink">
             משימות ({tasks.length})
           </h3>
           <Link
             href={`/tasks?client=${client.id}`}
-            className="text-xs text-[color:var(--color-brand)] hover:underline"
+            className="text-xs text-brand transition-colors hover:text-brand-focus"
           >
-            לכל המשימות של הלקוח ←
+            לכל המשימות
           </Link>
         </div>
         {tasks.length === 0 ? (
-          <EmptyBox text="אין משימות פתוחות ללקוח." />
+          <EmptyBox text="אין משימות ללקוח." />
         ) : (
           <Card className="overflow-hidden">
             <CardContent className="p-0">
               <Table>
                 <THead>
-                  <TR>
+                  <TR className="hover:bg-transparent">
                     <TH>כותרת</TH>
                     <TH>סטטוס</TH>
-                    <TH>תאריך יעד</TH>
+                    <TH className="hidden sm:table-cell">תאריך יעד</TH>
                   </TR>
                 </THead>
                 <TBody>
                   {tasks.map((t) => (
-                    <TR
-                      key={t.id}
-                      className="cursor-pointer"
-                      // Server component → no router; use full-row link via TD content
-                    >
+                    <TR key={t.id} className="cursor-pointer">
                       <TD className="font-medium">
                         <Link
                           href={`/tasks?task=${t.id}`}
-                          className="block hover:text-[color:var(--color-brand)]"
+                          className="block transition-colors hover:text-brand"
                         >
                           {t.title}
                         </Link>
@@ -168,7 +166,7 @@ export default async function ClientDetailPage({
                       <TD>
                         <Badge variant={statusVariant(t.status)}>{t.status}</Badge>
                       </TD>
-                      <TD className="text-[color:var(--color-ink-muted)]">
+                      <TD className="hidden text-ink-muted sm:table-cell">
                         {fmtDate(t.due_date)}
                       </TD>
                     </TR>
@@ -180,16 +178,17 @@ export default async function ClientDetailPage({
         )}
       </section>
 
+      {/* Campaigns */}
       <section className="flex flex-col gap-2">
         <div className="flex items-baseline justify-between">
-          <h3 className="text-sm font-medium text-[color:var(--color-ink-muted)]">
+          <h3 className="text-sm font-semibold text-ink">
             קמפיינים ({campaigns.length})
           </h3>
           <Link
             href={`/campaigns?client=${client.id}`}
-            className="text-xs text-[color:var(--color-brand)] hover:underline"
+            className="text-xs text-brand transition-colors hover:text-brand-focus"
           >
-            לכל הקמפיינים של הלקוח ←
+            לכל הקמפיינים
           </Link>
         </div>
         {campaigns.length === 0 ? (
@@ -199,12 +198,12 @@ export default async function ClientDetailPage({
             <CardContent className="p-0">
               <Table>
                 <THead>
-                  <TR>
+                  <TR className="hover:bg-transparent">
                     <TH>שם</TH>
                     <TH>פלטפורמה</TH>
-                    <TH>סטטוס</TH>
-                    <TH>התחלה</TH>
-                    <TH>תקציב שנוצל</TH>
+                    <TH className="hidden sm:table-cell">סטטוס</TH>
+                    <TH className="hidden md:table-cell">התחלה</TH>
+                    <TH className="hidden md:table-cell">תקציב שנוצל</TH>
                   </TR>
                 </THead>
                 <TBody>
@@ -213,7 +212,7 @@ export default async function ClientDetailPage({
                       <TD className="font-medium">
                         <Link
                           href={`/campaigns?campaign=${c.id}`}
-                          className="block hover:text-[color:var(--color-brand)]"
+                          className="block transition-colors hover:text-brand"
                         >
                           {c.name}
                         </Link>
@@ -221,19 +220,19 @@ export default async function ClientDetailPage({
                       <TD>
                         <PlatformBadge platform={c.platform} />
                       </TD>
-                      <TD>
+                      <TD className="hidden sm:table-cell">
                         {c.status ? (
                           <Badge variant={c.status === "פעיל" ? "active" : "closed"}>
                             {c.status}
                           </Badge>
                         ) : (
-                          "—"
+                          "\u2014"
                         )}
                       </TD>
-                      <TD className="text-[color:var(--color-ink-muted)]">
+                      <TD className="hidden text-ink-muted md:table-cell">
                         {fmtDate(c.start_date)}
                       </TD>
-                      <TD className="text-[color:var(--color-ink-muted)]">
+                      <TD className="hidden text-ink-muted md:table-cell">
                         {fmtMoney(c.spent)}
                       </TD>
                     </TR>
@@ -245,8 +244,9 @@ export default async function ClientDetailPage({
         )}
       </section>
 
+      {/* Files */}
       <section className="flex flex-col gap-2">
-        <h3 className="text-sm font-medium text-[color:var(--color-ink-muted)]">
+        <h3 className="text-sm font-semibold text-ink">
           קבצים ({attachments.length})
         </h3>
         <FileUpload clientId={client.id} />
@@ -259,15 +259,15 @@ export default async function ClientDetailPage({
 function Field({ label, value }: { label: string; value: string | null }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-xs text-[color:var(--color-ink-muted)]">{label}</span>
-      <span className="text-sm text-[color:var(--color-ink)]">{value ?? "—"}</span>
+      <span className="text-xs text-ink-muted">{label}</span>
+      <span className="text-sm text-ink">{value ?? "\u2014"}</span>
     </div>
   );
 }
 
 function EmptyBox({ text }: { text: string }) {
   return (
-    <div className="rounded-[18px] border border-[color:var(--color-hairline)] bg-white p-6 text-center text-sm text-[color:var(--color-ink-muted)]">
+    <div className="rounded-xl border border-gray-200 bg-white p-6 text-center text-sm text-ink-muted">
       {text}
     </div>
   );
@@ -276,12 +276,12 @@ function EmptyBox({ text }: { text: string }) {
 function PlatformBadge({ platform }: { platform: string }) {
   const cls =
     platform === "google"
-      ? "bg-[#4285f4]/10 text-[#1a73e8]"
+      ? "bg-blue-50 text-blue-700"
       : platform === "facebook"
-        ? "bg-[#1877f2]/10 text-[#0a4ea8]"
+        ? "bg-indigo-50 text-indigo-700"
         : platform === "tiktok"
-          ? "bg-black/10 text-black"
-          : "bg-black/5 text-[color:var(--color-ink-muted)]";
+          ? "bg-gray-100 text-gray-800"
+          : "bg-gray-100 text-ink-muted";
   return (
     <span
       className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${cls}`}
