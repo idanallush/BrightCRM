@@ -9,7 +9,8 @@
  *   npx tsx scripts/setup-telegram-webhook.ts https://abc123.ngrok.io
  */
 
-import "dotenv/config";
+import dotenv from "dotenv";
+dotenv.config({ path: ".env.local" });
 
 const baseUrl = process.argv[2];
 
