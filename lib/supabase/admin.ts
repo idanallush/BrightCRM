@@ -4,7 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 // (webhooks, cron jobs, scripts). Never import from client components.
 export function createAdminClient() {
   return createClient(
-    process.env.SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
   );
 }
