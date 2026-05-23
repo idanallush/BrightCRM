@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, CheckSquare, Users } from "lucide-react";
+import { LayoutDashboard, CheckSquare, Users, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
   { href: "/dashboard", label: "דשבורד", Icon: LayoutDashboard },
   { href: "/tasks", label: "משימות", Icon: CheckSquare },
   { href: "/clients", label: "לקוחות", Icon: Users },
+  { href: "/settings", label: "הגדרות", Icon: Settings },
 ];
 
 export function MobileNav() {
@@ -20,16 +21,11 @@ export function MobileNav() {
         {ITEMS.map(({ href, label, Icon }) => {
           const active = pathname === href || pathname.startsWith(href + "/");
           return (
-            <Link
-              key={href}
-              href={href}
+            <Link key={href} href={href}
               className={cn(
                 "flex flex-1 flex-col items-center justify-center gap-0.5 text-[11px] transition-colors duration-200",
-                active
-                  ? "font-semibold text-brand"
-                  : "text-ink-muted",
-              )}
-            >
+                active ? "font-semibold text-brand" : "text-ink-muted",
+              )}>
               <Icon className={cn("h-5 w-5", active && "text-brand")} />
               <span>{label}</span>
             </Link>

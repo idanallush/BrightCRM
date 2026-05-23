@@ -2,6 +2,7 @@
 
 import { Menu } from "lucide-react";
 import { GlobalSearch } from "@/components/global-search";
+import { NotificationBell } from "@/components/notification-bell";
 import { useMobileMenu } from "./shell-context";
 
 export function Header() {
@@ -9,7 +10,6 @@ export function Header() {
 
   return (
     <header className="flex h-14 items-center gap-3 border-b border-border bg-white px-4 md:px-6">
-      {/* Mobile hamburger */}
       <button
         type="button"
         onClick={() => setMobileOpen(true)}
@@ -21,6 +21,11 @@ export function Header() {
 
       <div className="min-w-0 flex-1">
         <GlobalSearch />
+      </div>
+
+      {/* Mobile notification bell (desktop bell is in sidebar) */}
+      <div className="md:hidden">
+        <NotificationBell />
       </div>
     </header>
   );
