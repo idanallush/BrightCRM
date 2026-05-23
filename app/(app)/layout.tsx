@@ -7,6 +7,7 @@ import { ShellProvider } from "./shell-context";
 import { Toaster } from "@/components/ui/toaster";
 import { QuickAdd } from "@/components/quick-add";
 import { MobileNav } from "@/components/mobile-nav";
+import { AppShellContent } from "./app-shell-content";
 
 export default async function AppLayout({
   children,
@@ -26,14 +27,14 @@ export default async function AppLayout({
 
   return (
     <ShellProvider>
-      <div className="flex min-h-screen bg-surface-bg">
+      <div className="min-h-screen">
         <Sidebar userLabel={userLabel} />
-        <div className="flex min-w-0 flex-1 flex-col">
+        <AppShellContent>
           <Header />
           <main className="mx-auto w-full max-w-7xl flex-1 p-4 pb-20 md:p-6 md:pb-6">
             {children}
           </main>
-        </div>
+        </AppShellContent>
         <QuickAdd />
         <MobileNav />
         <Toaster />

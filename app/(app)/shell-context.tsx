@@ -2,20 +2,32 @@
 
 import * as React from "react";
 
-const ShellContext = React.createContext({
+const MobileMenuContext = React.createContext({
   mobileOpen: false,
   setMobileOpen: (_: boolean) => {},
 });
 
+const SidebarContext = React.createContext({
+  collapsed: false,
+  setCollapsed: (_: boolean | ((v: boolean) => boolean)) => {},
+});
+
 export function ShellProvider({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [collapsed, setCollapsed] = React.useState(false);
   return (
-    <ShellContext.Provider value={{ mobileOpen, setMobileOpen }}>
-      {children}
-    </ShellContext.Provider>
+    <MobileMenuContext.Provider value={{ mobileOpen, setMobileOpen }}>
+      <SidebarContext.Provider value={{ collapsed, setCollapsed: setCollapsed as any }}>
+        {children}
+      </SidebarContext.Provider>
+    </MobileMenuContext.Provider>
   );
 }
 
 export function useMobileMenu() {
-  return React.useContext(ShellContext);
+  return React.useContext(MobileMenuContext);
+}
+
+export function useSidebarCollapsed() {
+  return React.useContext(SidebarContext);
 }

@@ -6,35 +6,55 @@ type Variant =
   | "done" | "cancelled" | "overdue"
   | "neutral" | "good" | "warning" | "danger";
 
+const DOT_COLORS: Partial<Record<Variant, string>> = {
+  waiting:   "bg-amber-500",
+  incoming:  "bg-blue-500",
+  working:   "bg-purple-500",
+  approval:  "bg-orange-500",
+  manager:   "bg-pink-500",
+  done:      "bg-green-500",
+  cancelled: "bg-gray-400",
+  overdue:   "bg-red-500",
+  good:      "bg-green-500",
+  warning:   "bg-amber-500",
+  danger:    "bg-red-500",
+};
+
 const VARIANT_CLASSES: Record<Variant, string> = {
-  waiting:   "bg-st-waiting-bg text-st-waiting",
-  incoming:  "bg-st-incoming-bg text-st-incoming",
-  working:   "bg-st-working-bg text-st-working",
-  approval:  "bg-st-approval-bg text-st-approval",
-  manager:   "bg-st-manager-bg text-st-manager",
-  done:      "bg-st-done-bg text-st-done",
-  cancelled: "bg-st-cancelled-bg text-st-cancelled",
-  overdue:   "bg-overdue-bg text-overdue",
-  neutral:   "bg-gray-100 text-ink-secondary",
-  good:      "bg-success-bg text-success",
-  warning:   "bg-warning-bg text-warning",
-  danger:    "bg-overdue-bg text-overdue",
+  waiting:   "bg-amber-100 text-amber-700",
+  incoming:  "bg-blue-100 text-blue-700",
+  working:   "bg-purple-100 text-purple-700",
+  approval:  "bg-orange-100 text-orange-700",
+  manager:   "bg-pink-100 text-pink-700",
+  done:      "bg-green-100 text-green-700",
+  cancelled: "bg-gray-100 text-gray-500",
+  overdue:   "bg-red-100 text-red-700",
+  neutral:   "bg-gray-100 text-gray-500",
+  good:      "bg-green-100 text-green-700",
+  warning:   "bg-amber-100 text-amber-700",
+  danger:    "bg-red-100 text-red-700",
 };
 
 export function Badge({
   variant = "neutral",
+  dot = true,
   className,
   ...props
-}: { variant?: Variant } & React.HTMLAttributes<HTMLSpanElement>) {
+}: { variant?: Variant; dot?: boolean } & React.HTMLAttributes<HTMLSpanElement>) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 text-caption font-medium",
+        "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-caption font-medium",
         VARIANT_CLASSES[variant],
         className,
       )}
       {...props}
-    />
+    >
+      {dot && DOT_COLORS[variant] && (
+        <span className={cn("h-2 w-2 shrink-0 rounded-full", DOT_COLORS[variant])} />
+      )}
+      {props.children}
+    </span>
   );
 }
 

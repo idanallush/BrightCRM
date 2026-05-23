@@ -28,17 +28,18 @@ const HEALTH_BORDER: Record<string, string> = {
 
 const HEALTH_PILLS = [
   { key: ALL, label: "הכל" },
-  { key: "בריא", label: "בריא", dot: "bg-success" },
-  { key: "אסטרטגיה צריכה", label: "אסטרטגיה", dot: "bg-warning" },
-  { key: "קריטי", label: "קריטי", dot: "bg-overdue" },
+  { key: "בריא", label: "בריא", dot: "bg-green-500" },
+  { key: "אסטרטגיה צריכה", label: "אסטרטגיה", dot: "bg-amber-500" },
+  { key: "קריטי", label: "קריטי", dot: "bg-red-500" },
 ];
 
 export function ClientsClient({
-  clients, team, openTaskCounts,
+  clients, team, openTaskCounts, currentMemberId,
 }: {
   clients: (Client & { manager_name: string | null })[];
   team: TeamMember[];
   openTaskCounts: Record<string, number>;
+  currentMemberId: string | null;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -63,17 +64,82 @@ export function ClientsClient({
     });
   }, [clients, search, health, managerId]);
 
+  // Split into my clients and others
+  const { myClients, otherClients } = React.useMemo(() => {
+    if (!currentMemberId) return { myClients: [], otherClients: filtered };
+    const mine: typeof filtered = [];
+    const others: typeof filtered = [];
+    for (const c of filtered) {
+      if (c.account_manager_id === currentMemberId) {
+        mine.push(c);
+      } else {
+        others.push(c);
+      }
+    }
+    return { myClients: mine, otherClients: others };
+  }, [filtered, currentMemberId]);
+
   const activeFilterCount =
     (health !== ALL ? 1 : 0) + (managerId !== ALL ? 1 : 0) + (search.trim().length > 0 ? 1 : 0);
 
   function clearFilters() { setSearch(""); setHealth(ALL); setManagerId(ALL); }
 
+  function renderCard(c: (typeof clients)[0], i: number, isMine: boolean) {
+    const v = healthVariant(c.health);
+    const openCount = openTaskCounts[c.id] ?? 0;
+    const borderColor = c.health ? (HEALTH_BORDER[c.health] ?? "border-r-gray-200") : "border-r-gray-200";
+    const links: { icon: React.ReactNode; url: string; label: string }[] = [];
+    if (c.website_url) links.push({ icon: <Globe className="h-3.5 w-3.5" />, url: c.website_url, label: "אתר" });
+    if (c.drive_url) links.push({ icon: <FolderOpen className="h-3.5 w-3.5" />, url: c.drive_url, label: "Drive" });
+    if (c.facebook_ads_url) links.push({ icon: <BarChart3 className="h-3.5 w-3.5" />, url: c.facebook_ads_url, label: "Meta" });
+    if (c.google_ads_url) links.push({ icon: <BarChart3 className="h-3.5 w-3.5" />, url: c.google_ads_url, label: "Google" });
+
+    return (
+      <motion.div key={c.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: Math.min(i * 0.03, 0.3), duration: 0.2 }}>
+        <div
+          className={cn(
+            "cursor-pointer rounded-xl border border-gray-200/60 p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg border-r-[3px]",
+            borderColor,
+            isMine ? "bg-blue-50/30" : "bg-white",
+          )}
+          onClick={() => router.push(`/clients/${c.id}`)}>
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="text-[15px] font-semibold text-gray-900">{c.name}</h3>
+            {v && c.health && <Badge variant={v} className="shrink-0">{c.health}</Badge>}
+          </div>
+          <div className="mt-3 flex items-center justify-between text-sm">
+            <span className="text-gray-500">{c.manager_name ?? "ללא מנהל"}</span>
+            <span className={cn(
+              "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-caption font-medium",
+              openCount === 0 ? "bg-gray-100 text-gray-400"
+                : openCount <= 3 ? "bg-blue-100 text-blue-700"
+                : "bg-red-100 text-red-700",
+            )}>
+              <CheckSquare className="h-3 w-3" />{openCount}
+            </span>
+          </div>
+          {links.length > 0 && (
+            <div className="mt-3 flex gap-1.5 border-t border-gray-100 pt-3">
+              {links.map((l) => (
+                <a key={l.label} href={l.url} target="_blank" rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex h-7 items-center gap-1 rounded-lg border border-gray-200 bg-white px-2 text-caption text-gray-500 transition-colors hover:text-gray-900"
+                  title={l.label}>{l.icon}<span className="hidden sm:inline">{l.label}</span></a>
+              ))}
+            </div>
+          )}
+        </div>
+      </motion.div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-baseline gap-3">
-          <h1 className="text-xl font-semibold text-ink md:text-2xl">לקוחות</h1>
-          <span className="text-caption text-ink-secondary">{filtered.length} מתוך {clients.length}</span>
+          <h1 className="text-2xl font-bold text-gray-900">לקוחות</h1>
+          <span className="text-caption text-gray-400">{filtered.length} מתוך {clients.length}</span>
           {activeFilterCount > 0 && (
             <button type="button" onClick={clearFilters}
               className="rounded-full bg-brand px-3 py-1 text-[11px] font-medium text-white transition-colors hover:bg-brand-hover">
@@ -93,17 +159,16 @@ export function ClientsClient({
             <button key={p.key} type="button" onClick={() => setHealth(p.key)}
               className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-caption transition-all duration-200",
                 health === p.key
-                  ? p.key === ALL ? "bg-ink text-white" : "bg-white font-medium text-ink shadow-sm ring-1 ring-border"
-                  : "text-ink-secondary hover:bg-gray-100")}>
+                  ? p.key === ALL ? "bg-gray-900 text-white" : "bg-white font-medium text-gray-900 shadow-sm ring-1 ring-gray-200"
+                  : "text-gray-500 hover:bg-gray-100")}>
               {p.dot && <span className={`mr-1.5 inline-block h-2 w-2 rounded-full ${p.dot}`} />}
               {p.label}
             </button>
           ))}
         </div>
-
         <div className="flex flex-1 flex-wrap items-center gap-2">
           <div className="relative min-w-[160px] flex-1 sm:max-w-[220px]">
-            <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+            <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="חיפוש שם לקוח" className="h-9 pr-9" />
           </div>
           <Select value={managerId} onValueChange={setManagerId}>
@@ -126,59 +191,36 @@ export function ClientsClient({
             action={<Button onClick={() => setCreateOpen(true)}><Plus className="h-4 w-4" /> לקוח חדש</Button>} />
         )
       ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((c, i) => {
-            const v = healthVariant(c.health);
-            const openCount = openTaskCounts[c.id] ?? 0;
-            const borderColor = c.health ? (HEALTH_BORDER[c.health] ?? "border-r-border") : "border-r-border";
-            const links: { icon: React.ReactNode; url: string; label: string }[] = [];
-            if (c.website_url) links.push({ icon: <Globe className="h-3.5 w-3.5" />, url: c.website_url, label: "אתר" });
-            if (c.drive_url) links.push({ icon: <FolderOpen className="h-3.5 w-3.5" />, url: c.drive_url, label: "Drive" });
-            if (c.facebook_ads_url) links.push({ icon: <BarChart3 className="h-3.5 w-3.5" />, url: c.facebook_ads_url, label: "Meta" });
-            if (c.google_ads_url) links.push({ icon: <BarChart3 className="h-3.5 w-3.5" />, url: c.google_ads_url, label: "Google" });
+        <div className="flex flex-col gap-6">
+          {/* My clients */}
+          {myClients.length > 0 && (
+            <div>
+              <div className="mb-3 flex items-center gap-2">
+                <span className="h-5 w-[3px] rounded-full bg-brand" />
+                <h2 className="text-lg font-semibold text-gray-800">הלקוחות שלי</h2>
+                <span className="text-caption text-gray-400">{myClients.length}</span>
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {myClients.map((c, i) => renderCard(c, i, true))}
+              </div>
+            </div>
+          )}
 
-            return (
-              <motion.div key={c.id}
-                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: Math.min(i * 0.03, 0.3), duration: 0.2 }}>
-                <div
-                  className={`cursor-pointer rounded-xl border border-border bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover border-r-[3px] ${borderColor}`}
-                  onClick={() => router.push(`/clients/${c.id}`)}>
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="text-[15px] font-semibold text-ink">{c.name}</h3>
-                    {v && c.health && <Badge variant={v} className="shrink-0">{c.health}</Badge>}
-                  </div>
+          {/* Separator */}
+          {myClients.length > 0 && otherClients.length > 0 && (
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-gray-200" />
+              <span className="text-caption text-gray-400">לקוחות נוספים</span>
+              <div className="h-px flex-1 bg-gray-200" />
+            </div>
+          )}
 
-                  <div className="mt-3 flex items-center justify-between text-sm">
-                    <span className="text-ink-secondary">{c.manager_name ?? "ללא מנהל"}</span>
-                    <span className={cn(
-                      "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-caption font-medium",
-                      openCount === 0 ? "bg-gray-100 text-ink-muted"
-                        : openCount <= 3 ? "bg-brand-light text-brand"
-                        : "bg-overdue-bg text-overdue",
-                    )}>
-                      <CheckSquare className="h-3 w-3" />
-                      {openCount}
-                    </span>
-                  </div>
-
-                  {links.length > 0 && (
-                    <div className="mt-3 flex gap-1.5 border-t border-gray-100 pt-3">
-                      {links.map((l) => (
-                        <a key={l.label} href={l.url} target="_blank" rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="flex h-7 items-center gap-1 rounded-lg border border-border bg-white px-2 text-caption text-ink-secondary transition-colors hover:text-ink"
-                          title={l.label}>
-                          {l.icon}
-                          <span className="hidden sm:inline">{l.label}</span>
-                        </a>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            );
-          })}
+          {/* Other clients */}
+          {otherClients.length > 0 && (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {otherClients.map((c, i) => renderCard(c, i + myClients.length, false))}
+            </div>
+          )}
         </div>
       )}
 

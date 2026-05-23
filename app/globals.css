@@ -3,7 +3,6 @@
 @tailwind utilities;
 
 :root {
-  /* Status colors — CSS vars for dynamic use */
   --st-waiting:   #f59e0b;
   --st-incoming:  #3b82f6;
   --st-working:   #8b5cf6;
@@ -40,19 +39,20 @@
   html {
     font-family: theme("fontFamily.sans");
     font-size: 15px;
-    background: #f8f9fa;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
 
   body {
-    background: #f8f9fa;
+    background: linear-gradient(180deg, #f8f9fb 0%, #f0f2f5 100%);
+    background-attachment: fixed;
     color: #111827;
     line-height: 1.6;
+    min-height: 100vh;
   }
 
   h1, h2, h3 {
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: -0.02em;
     color: #111827;
   }
