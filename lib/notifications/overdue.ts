@@ -1,8 +1,6 @@
-import { Resend } from "resend";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 type OverdueTask = {
-  task_id: string;
   title: string;
   due_date: string;
   client_name: string;
@@ -10,16 +8,31 @@ type OverdueTask = {
 };
 
 type AssigneeTasks = {
-  email: string;
+  telegram_user_id: number;
   full_name: string;
   tasks: OverdueTask[];
 };
+
+async function sendTelegramMessage(chatId: number, text: string) {
+  const res = await fetch(
+    `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML" }),
+    },
+  );
+  const data = await res.json();
+  if (!data.ok) {
+    console.error(`[Overdue] Telegram send failed for ${chatId}:`, data);
+  }
+  return data.ok;
+}
 
 export async function checkAndNotifyOverdue() {
   const db = createAdminClient();
   const today = new Date().toISOString().split("T")[0];
 
-  // Get all overdue tasks (status = בעבודה, due_date < today) with assignees
   const { data: rows, error } = await db
     .from("tasks")
     .select(
@@ -29,7 +42,7 @@ export async function checkAndNotifyOverdue() {
       due_date,
       clients!inner ( name ),
       task_assignees!inner (
-        team_members!inner ( email, full_name )
+        team_members!inner ( full_name, telegram_user_id )
       )
     `,
     )
@@ -42,11 +55,11 @@ export async function checkAndNotifyOverdue() {
   }
 
   if (!rows || rows.length === 0) {
-    return { tasksFound: 0, emailsSent: 0 };
+    return { tasksFound: 0, messagesSent: 0 };
   }
 
-  // Group tasks by assignee email
-  const byAssignee = new Map<string, AssigneeTasks>();
+  // Group by assignee telegram_user_id (skip members without one)
+  const byAssignee = new Map<number, AssigneeTasks>();
 
   for (const row of rows) {
     const dueDate = new Date(row.due_date!);
@@ -56,20 +69,21 @@ export async function checkAndNotifyOverdue() {
     const clientName = (row.clients as unknown as { name: string }).name;
 
     const assignees = row.task_assignees as unknown as {
-      team_members: { email: string; full_name: string };
+      team_members: { full_name: string; telegram_user_id: number | null };
     }[];
 
     for (const a of assignees) {
-      const email = a.team_members.email;
-      if (!byAssignee.has(email)) {
-        byAssignee.set(email, {
-          email,
+      const tgId = a.team_members.telegram_user_id;
+      if (!tgId) continue;
+
+      if (!byAssignee.has(tgId)) {
+        byAssignee.set(tgId, {
+          telegram_user_id: tgId,
           full_name: a.team_members.full_name,
           tasks: [],
         });
       }
-      byAssignee.get(email)!.tasks.push({
-        task_id: row.id,
+      byAssignee.get(tgId)!.tasks.push({
         title: row.title,
         due_date: row.due_date!,
         client_name: clientName,
@@ -78,61 +92,22 @@ export async function checkAndNotifyOverdue() {
     }
   }
 
-  // Send one email per assignee
-  const resend = new Resend(process.env.RESEND_API_KEY);
-  let emailsSent = 0;
+  let messagesSent = 0;
 
   for (const [, assignee] of byAssignee) {
-    const taskRows = assignee.tasks
+    const taskLines = assignee.tasks
       .sort((a, b) => b.days_overdue - a.days_overdue)
       .map(
-        (t) => `
-        <tr>
-          <td style="padding:8px 12px;border-bottom:1px solid #eee;">${t.client_name}</td>
-          <td style="padding:8px 12px;border-bottom:1px solid #eee;">${t.title}</td>
-          <td style="padding:8px 12px;border-bottom:1px solid #eee;">${t.due_date}</td>
-          <td style="padding:8px 12px;border-bottom:1px solid #eee;color:#dc2626;font-weight:bold;">${t.days_overdue} ימים</td>
-        </tr>`,
+        (t) =>
+          `• ${t.client_name} — ${t.title} (דדליין: ${t.due_date}, איחור: ${t.days_overdue} ימים)`,
       )
-      .join("");
+      .join("\n");
 
-    const html = `
-    <div dir="rtl" style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
-      <h2 style="color:#1e293b;">שלום ${assignee.full_name},</h2>
-      <p style="color:#475569;font-size:16px;">יש לך <strong>${assignee.tasks.length}</strong> משימות שעברו את הדדליין:</p>
-      <table style="width:100%;border-collapse:collapse;margin:16px 0;">
-        <thead>
-          <tr style="background:#f8fafc;">
-            <th style="padding:8px 12px;text-align:right;border-bottom:2px solid #e2e8f0;">לקוח</th>
-            <th style="padding:8px 12px;text-align:right;border-bottom:2px solid #e2e8f0;">משימה</th>
-            <th style="padding:8px 12px;text-align:right;border-bottom:2px solid #e2e8f0;">דדליין</th>
-            <th style="padding:8px 12px;text-align:right;border-bottom:2px solid #e2e8f0;">איחור</th>
-          </tr>
-        </thead>
-        <tbody>${taskRows}</tbody>
-      </table>
-      <p style="color:#64748b;font-size:14px;">נשלח אוטומטית מ-BrightCRM</p>
-    </div>`;
+    const text = `⚠️ יש לך ${assignee.tasks.length} משימות שעברו דדליין:\n\n${taskLines}`;
 
-    const fromAddress =
-      process.env.RESEND_FROM_EMAIL ?? "BrightCRM <onboarding@resend.dev>";
-
-    const { error: sendErr } = await resend.emails.send({
-      from: fromAddress,
-      to: assignee.email,
-      subject: `⚠️ יש לך ${assignee.tasks.length} משימות שעברו דדליין`,
-      html,
-    });
-
-    if (sendErr) {
-      console.error(
-        `[Overdue] Failed to send to ${assignee.email}:`,
-        sendErr,
-      );
-    } else {
-      emailsSent++;
-    }
+    const ok = await sendTelegramMessage(assignee.telegram_user_id, text);
+    if (ok) messagesSent++;
   }
 
-  return { tasksFound: rows.length, emailsSent };
+  return { tasksFound: rows.length, messagesSent };
 }
