@@ -18,6 +18,16 @@ type Sender = {
   full_name: string;
 };
 
+function cleanJsonResponse(text: string): string {
+  let cleaned = text.trim();
+  if (cleaned.startsWith("```")) {
+    cleaned = cleaned
+      .replace(/^```(?:json)?\s*\n?/, "")
+      .replace(/\n?\s*```$/, "");
+  }
+  return cleaned.trim();
+}
+
 export async function parseTaskFromText(
   text: string,
   sender: Sender,
@@ -69,7 +79,7 @@ ${memberList}
   const anthropic = new Anthropic();
 
   const response = await anthropic.messages.create({
-    model: "claude-sonnet-4-20250514",
+    model: "claude-sonnet-4-6-20250520",
     max_tokens: 512,
     system: systemPrompt,
     messages: [{ role: "user", content: text }],
@@ -80,5 +90,5 @@ ${memberList}
     throw new Error("Unexpected response type from Claude API");
   }
 
-  return JSON.parse(content.text) as ParsedTask;
+  return JSON.parse(cleanJsonResponse(content.text)) as ParsedTask;
 }
