@@ -6,34 +6,34 @@ import { Button } from "@/components/ui/button";
 import { Input, Textarea } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/toaster";
+import { cn } from "@/lib/utils";
 import { createTask, updateTask, type TaskInput } from "./actions";
 import type { Client, TaskWithRelations, TeamMember } from "@/lib/data";
 
-const STATUSES: TaskInput["status"][] = ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח", "אישור מנהל", "בוצע", "בוטל"];
+const STATUS_OPTIONS: { value: TaskInput["status"]; label: string; dot: string }[] = [
+  { value: "מחכה לטיפול", label: "ממתין", dot: "bg-amber-500" },
+  { value: "נכנס לעבודה", label: "נכנס לעבודה", dot: "bg-blue-500" },
+  { value: "בעבודה", label: "בעבודה", dot: "bg-purple-500" },
+  { value: "אישור לקוח", label: "אישור לקוח", dot: "bg-orange-500" },
+  { value: "אישור מנהל", label: "אישור מנהל", dot: "bg-pink-500" },
+  { value: "בוצע", label: "בוצע", dot: "bg-green-500" },
+  { value: "בוטל", label: "בוטל", dot: "bg-gray-400" },
+];
+
+function getInitials(name: string): string {
+  return name.split(/\s+/).map((w) => w[0]).join("").toUpperCase().slice(0, 2);
+}
 
 export function TaskForm({
-  task,
-  clients,
-  team,
-  onDone,
-  compact = false,
+  task, clients, team, onDone, compact = false,
 }: {
   task?: TaskWithRelations;
   clients: Client[];
   team: TeamMember[];
   onDone: () => void;
-  /**
-   * Default layout fills its parent and scrolls fields internally (Dialog).
-   * compact=true: intrinsic height, no internal scroll — for Sheet contexts
-   * where the parent is itself scrollable and stacks more sections after.
-   */
   compact?: boolean;
 }) {
   const router = useRouter();
@@ -43,7 +43,7 @@ export function TaskForm({
   const [clientId, setClientId] = React.useState(task?.client_id ?? clients[0]?.id ?? "");
   const [description, setDescription] = React.useState(task?.description ?? "");
   const [status, setStatus] = React.useState<TaskInput["status"]>(
-    (task?.status as TaskInput["status"]) ?? "בעבודה",
+    (task?.status as TaskInput["status"]) ?? "נכנס לעבודה",
   );
   const [dueDate, setDueDate] = React.useState(task?.due_date ?? "");
   const [assigneeIds, setAssigneeIds] = React.useState<string[]>(
@@ -51,151 +51,108 @@ export function TaskForm({
   );
 
   function toggleAssignee(id: string) {
-    setAssigneeIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
+    setAssigneeIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
   }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim()) {
-      toast.error("חסרה כותרת");
-      return;
-    }
-    if (!clientId) {
-      toast.error("בחר לקוח");
-      return;
-    }
+    if (!title.trim()) { toast.error("חסרה כותרת"); return; }
+    if (!clientId) { toast.error("בחר לקוח"); return; }
     setPending(true);
     const payload: TaskInput = {
-      title: title.trim(),
-      client_id: clientId,
-      description: description.trim() || null,
-      status,
-      due_date: dueDate || null,
-      assignee_ids: assigneeIds,
+      title: title.trim(), client_id: clientId, description: description.trim() || null,
+      status, due_date: dueDate || null, assignee_ids: assigneeIds,
     };
     const res = task ? await updateTask(task.id, payload) : await createTask(payload);
     setPending(false);
-    if ("error" in res) {
-      toast.error(res.error);
-      return;
-    }
+    if ("error" in res) { toast.error(res.error); return; }
     toast.success(task ? "המשימה עודכנה" : "המשימה נוצרה");
     router.refresh();
     onDone();
   }
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className={
-        compact ? "flex flex-col" : "flex min-h-0 flex-1 flex-col"
-      }
-    >
-      <div
-        className={
-          compact
-            ? "flex flex-col gap-4"
-            : "-mx-1 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-1 pb-1"
-        }
-      >
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="title">כותרת</Label>
-        <Input
-          id="title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="מה צריך לעשות?"
-          autoFocus
-        />
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <Label>לקוח</Label>
-        <Select value={clientId} onValueChange={setClientId}>
-          <SelectTrigger>
-            <SelectValue placeholder="בחר לקוח" />
-          </SelectTrigger>
-          <SelectContent>
-            {clients.map((c) => (
-              <SelectItem key={c.id} value={c.id}>
-                {c.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="description">תיאור</Label>
-        <Textarea
-          id="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="פרטים נוספים (לא חובה)"
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
+    <form onSubmit={onSubmit} className={compact ? "flex flex-col" : "flex min-h-0 flex-1 flex-col"}>
+      <div className={compact ? "flex flex-col gap-4" : "-mx-1 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-1 pb-1"}>
+        {/* Title */}
         <div className="flex flex-col gap-1.5">
-          <Label>סטטוס</Label>
-          <Select value={status} onValueChange={(v) => setStatus(v as TaskInput["status"])}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
+          <Label htmlFor="title">כותרת</Label>
+          <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="מה צריך לעשות?" autoFocus />
+        </div>
+
+        {/* Client */}
+        <div className="flex flex-col gap-1.5">
+          <Label>לקוח</Label>
+          <Select value={clientId} onValueChange={setClientId}>
+            <SelectTrigger><SelectValue placeholder="בחר לקוח" /></SelectTrigger>
             <SelectContent>
-              {STATUSES.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {s}
-                </SelectItem>
-              ))}
+              {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
 
+        {/* Description */}
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="description">תיאור</Label>
+          <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="פרטים נוספים (לא חובה)" />
+        </div>
+
+        {/* Status — visual pills */}
+        <div className="flex flex-col gap-1.5">
+          <Label>סטטוס</Label>
+          <div className="flex flex-wrap gap-1.5">
+            {STATUS_OPTIONS.map((opt) => (
+              <button key={opt.value} type="button" onClick={() => setStatus(opt.value)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-caption transition-all duration-200",
+                  status === opt.value
+                    ? "bg-gray-900 font-medium text-white shadow-sm"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200",
+                )}>
+                <span className={cn("h-2 w-2 rounded-full", status === opt.value ? "bg-white" : opt.dot)} />
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Due date */}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="due">תאריך יעד</Label>
-          <Input
-            id="due"
-            type="date"
-            value={dueDate ?? ""}
-            onChange={(e) => setDueDate(e.target.value)}
-          />
+          <Input id="due" type="date" value={dueDate ?? ""} onChange={(e) => setDueDate(e.target.value)} />
+        </div>
+
+        {/* Assignees */}
+        <div className="flex flex-col gap-1.5">
+          <Label>אחראים</Label>
+          <div className="flex flex-wrap gap-2">
+            {team.map((m) => {
+              const active = assigneeIds.includes(m.id);
+              return (
+                <button key={m.id} type="button" onClick={() => toggleAssignee(m.id)}
+                  className={cn(
+                    "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-caption transition-all duration-200",
+                    active ? "bg-brand text-white shadow-sm" : "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50",
+                  )}>
+                  <span className={cn(
+                    "flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-semibold",
+                    active ? "bg-white/20 text-white" : "bg-blue-100 text-blue-700",
+                  )}>
+                    {getInitials(m.full_name)}
+                  </span>
+                  {m.full_name}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <Label>אחראים</Label>
-        <div className="flex flex-wrap gap-2">
-          {team.map((m) => {
-            const active = assigneeIds.includes(m.id);
-            return (
-              <button
-                key={m.id}
-                type="button"
-                onClick={() => toggleAssignee(m.id)}
-                className={
-                  active
-                    ? "rounded-full bg-[color:var(--color-brand)] px-3 py-1 text-xs text-white"
-                    : "rounded-full border border-[color:var(--color-hairline)] bg-white px-3 py-1 text-xs text-[color:var(--color-ink)] hover:bg-black/5"
-                }
-              >
-                {m.full_name}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      </div>
-      <div className="mt-3 flex shrink-0 flex-row-reverse gap-2 border-t border-[color:var(--color-hairline)] pt-3">
+      <div className="mt-3 flex shrink-0 flex-row-reverse gap-2 border-t border-gray-200 pt-3">
         <Button type="submit" disabled={pending}>
           {pending ? "שומר..." : task ? "שמירה" : "צור משימה"}
         </Button>
-        <Button type="button" variant="ghost" onClick={onDone} disabled={pending}>
-          ביטול
-        </Button>
+        <Button type="button" variant="ghost" onClick={onDone} disabled={pending}>ביטול</Button>
       </div>
     </form>
   );

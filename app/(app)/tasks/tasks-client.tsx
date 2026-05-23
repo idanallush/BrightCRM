@@ -14,7 +14,6 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Badge, statusVariant } from "@/components/ui/badge";
 import { toast } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/empty-state";
@@ -27,12 +26,12 @@ import { deleteTask } from "./actions";
 import type { Client, TaskWithRelations, TeamMember } from "@/lib/data";
 
 const STATUS_PILLS = [
-  { key: "__all__", label: "הכל" },
-  { key: "מחכה לטיפול", label: "ממתין" },
-  { key: "נכנס לעבודה", label: "נכנס" },
-  { key: "בעבודה", label: "בעבודה" },
-  { key: "אישור לקוח", label: "אישור" },
-  { key: "בוצע", label: "בוצע" },
+  { key: "__all__", label: "הכל", dot: "" },
+  { key: "מחכה לטיפול", label: "ממתין", dot: "bg-amber-500" },
+  { key: "נכנס לעבודה", label: "נכנס", dot: "bg-blue-500" },
+  { key: "בעבודה", label: "בעבודה", dot: "bg-purple-500" },
+  { key: "אישור לקוח", label: "אישור", dot: "bg-orange-500" },
+  { key: "בוצע", label: "בוצע", dot: "bg-green-500" },
 ] as const;
 const VIEW_KEY = "brightcrm:tasks-view";
 
@@ -72,8 +71,7 @@ export function TasksClient({
       setCreateOpen(true);
       const params = new URLSearchParams(searchParams.toString());
       params.delete("new");
-      const qs = params.toString();
-      router.replace(qs ? `/tasks?${qs}` : "/tasks");
+      router.replace(params.toString() ? `/tasks?${params}` : "/tasks");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
@@ -81,16 +79,12 @@ export function TasksClient({
   const filteredTasks = React.useMemo(() => {
     if (!searchText.trim()) return tasks;
     const q = searchText.toLowerCase();
-    return tasks.filter(
-      (t) => t.title.toLowerCase().includes(q) || t.client?.name?.toLowerCase().includes(q),
-    );
+    return tasks.filter((t) => t.title.toLowerCase().includes(q) || t.client?.name?.toLowerCase().includes(q));
   }, [tasks, searchText]);
 
   const activeFilterCount =
-    (filters.status !== "__all__" ? 1 : 0) +
-    (filters.clientId !== "__all__" ? 1 : 0) +
-    (filters.assigneeId !== "__all__" ? 1 : 0) +
-    (filters.overdue ? 1 : 0);
+    (filters.status !== "__all__" ? 1 : 0) + (filters.clientId !== "__all__" ? 1 : 0) +
+    (filters.assigneeId !== "__all__" ? 1 : 0) + (filters.overdue ? 1 : 0);
 
   function clearFilters() {
     setFilters({ status: "__all__", clientId: "__all__", assigneeId: "__all__", overdue: false });
@@ -108,8 +102,7 @@ export function TasksClient({
     if (next.clientId && next.clientId !== "__all__") params.set("client", next.clientId);
     if (next.assigneeId && next.assigneeId !== "__all__") params.set("assignee", next.assigneeId);
     if (next.overdue) params.set("overdue", "true");
-    const qs = params.toString();
-    router.push(qs ? `/tasks?${qs}` : "/tasks");
+    router.push(params.toString() ? `/tasks?${params}` : "/tasks");
   }
 
   function closeSheet() {
@@ -117,8 +110,7 @@ export function TasksClient({
     setConfirmingDelete(false);
     const params = new URLSearchParams(searchParams.toString());
     params.delete("task");
-    const qs = params.toString();
-    router.replace(qs ? `/tasks?${qs}` : "/tasks");
+    router.replace(params.toString() ? `/tasks?${params}` : "/tasks");
   }
 
   async function onDelete() {
@@ -131,11 +123,11 @@ export function TasksClient({
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-baseline gap-3">
-          <h1 className="text-xl font-semibold text-ink md:text-2xl">משימות</h1>
+          <h1 className="text-2xl font-bold text-gray-900">משימות</h1>
           {activeFilterCount > 0 && (
             <button type="button" onClick={clearFilters}
               className="rounded-full bg-brand px-3 py-1 text-[11px] font-medium text-white transition-colors hover:bg-brand-hover">
@@ -147,12 +139,12 @@ export function TasksClient({
           <div className="inline-flex rounded-xl bg-gray-100 p-1">
             <button type="button" onClick={() => changeView("table")}
               className={cn("flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-caption transition-all duration-200",
-                view === "table" ? "bg-white font-medium text-ink shadow-sm" : "text-ink-secondary")}>
+                view === "table" ? "bg-white font-medium text-gray-900 shadow-sm" : "text-gray-500")}>
               <Rows3 className="h-4 w-4" /><span className="hidden sm:inline">טבלה</span>
             </button>
             <button type="button" onClick={() => changeView("kanban")}
               className={cn("flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-caption transition-all duration-200",
-                view === "kanban" ? "bg-white font-medium text-ink shadow-sm" : "text-ink-secondary")}>
+                view === "kanban" ? "bg-white font-medium text-gray-900 shadow-sm" : "text-gray-500")}>
               <LayoutGrid className="h-4 w-4" /><span className="hidden sm:inline">קנבן</span>
             </button>
           </div>
@@ -162,60 +154,51 @@ export function TasksClient({
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        {/* Status pills */}
-        <div className="flex gap-1 overflow-x-auto pb-1">
-          {STATUS_PILLS.map((pill) => (
-            <button key={pill.key} type="button" onClick={() => updateFilter("status", pill.key)}
-              className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-caption transition-all duration-200",
-                filters.status === pill.key
-                  ? pill.key === "__all__"
-                    ? "bg-ink text-white"
-                    : `bg-white font-medium text-ink shadow-sm ring-1 ring-border`
-                  : "text-ink-secondary hover:bg-gray-100")}>
-              {pill.key !== "__all__" && (
-                <span className={`mr-1.5 inline-block h-2 w-2 rounded-full ${
-                  pill.key === "מחכה לטיפול" ? "bg-st-waiting" :
-                  pill.key === "נכנס לעבודה" ? "bg-st-incoming" :
-                  pill.key === "בעבודה" ? "bg-st-working" :
-                  pill.key === "אישור לקוח" ? "bg-st-approval" :
-                  "bg-st-done"
-                }`} />
-              )}
-              {pill.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex flex-1 flex-wrap items-center gap-2">
-          <div className="relative min-w-[160px] flex-1 sm:max-w-[220px]">
-            <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
-            <Input value={searchText} onChange={(e) => setSearchText(e.target.value)}
-              placeholder="חיפוש..." className="h-9 pr-9" />
+      {/* Filter bar — card with visual depth */}
+      <div className="rounded-xl border border-gray-200/60 bg-white p-4 shadow-sm">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="flex gap-1 overflow-x-auto pb-1">
+            {STATUS_PILLS.map((pill) => (
+              <button key={pill.key} type="button" onClick={() => updateFilter("status", pill.key)}
+                className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-caption transition-all duration-200",
+                  filters.status === pill.key
+                    ? pill.key === "__all__" ? "bg-gray-900 text-white" : "bg-white font-medium text-gray-900 shadow-sm ring-1 ring-gray-200"
+                    : "text-gray-500 hover:bg-gray-100")}>
+                {pill.dot && <span className={`mr-1.5 inline-block h-2 w-2 rounded-full ${pill.dot}`} />}
+                {pill.label}
+              </button>
+            ))}
           </div>
 
-          <Select value={filters.clientId} onValueChange={(v) => updateFilter("clientId", v)}>
-            <SelectTrigger className="h-9 w-auto min-w-[130px]"><SelectValue placeholder="לקוח" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__all__">כל הלקוחות</SelectItem>
-              {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-            </SelectContent>
-          </Select>
+          <div className="flex flex-1 flex-wrap items-center gap-2">
+            <div className="relative min-w-[140px] flex-1 sm:max-w-[200px]">
+              <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Input value={searchText} onChange={(e) => setSearchText(e.target.value)}
+                placeholder="חיפוש..." className="h-9 pr-9" />
+            </div>
 
-          <Select value={filters.assigneeId} onValueChange={(v) => updateFilter("assigneeId", v)}>
-            <SelectTrigger className="h-9 w-auto min-w-[110px]"><SelectValue placeholder="אחראי" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__all__">כל האחראים</SelectItem>
-              {team.map((m) => <SelectItem key={m.id} value={m.id}>{m.full_name}</SelectItem>)}
-            </SelectContent>
-          </Select>
+            <Select value={filters.clientId} onValueChange={(v) => updateFilter("clientId", v)}>
+              <SelectTrigger className="h-9 w-auto min-w-[120px]"><SelectValue placeholder="לקוח" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">כל הלקוחות</SelectItem>
+                {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+              </SelectContent>
+            </Select>
 
-          <button type="button" onClick={() => updateFilter("overdue", !filters.overdue)}
-            className={cn("flex h-9 items-center gap-1.5 rounded-lg border px-3 text-caption transition-colors duration-200",
-              filters.overdue ? "border-overdue/30 bg-overdue-bg text-overdue" : "border-border bg-white text-ink-secondary hover:bg-surface-hover")}>
-            <AlertTriangle className="h-3.5 w-3.5" />עבר דדליין
-          </button>
+            <Select value={filters.assigneeId} onValueChange={(v) => updateFilter("assigneeId", v)}>
+              <SelectTrigger className="h-9 w-auto min-w-[100px]"><SelectValue placeholder="אחראי" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">כל האחראים</SelectItem>
+                {team.map((m) => <SelectItem key={m.id} value={m.id}>{m.full_name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+
+            <button type="button" onClick={() => updateFilter("overdue", !filters.overdue)}
+              className={cn("flex h-9 items-center gap-1.5 rounded-lg border px-3 text-caption transition-colors duration-200",
+                filters.overdue ? "border-red-300 bg-red-50 text-red-600" : "border-gray-200 bg-white text-gray-500 hover:bg-gray-50")}>
+              <AlertTriangle className="h-3.5 w-3.5" />עבר דדליין
+            </button>
+          </div>
         </div>
       </div>
 
@@ -239,7 +222,7 @@ export function TasksClient({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>משימה חדשה</DialogTitle>
-            <DialogDescription>פתיחה מהירה. נשמרת כ-source=web.</DialogDescription>
+            <DialogDescription>מלא את הפרטים ולחץ צור משימה.</DialogDescription>
           </DialogHeader>
           <TaskForm clients={clients} team={team} onDone={() => setCreateOpen(false)} />
         </DialogContent>
@@ -258,27 +241,23 @@ export function TasksClient({
               </SheetHeader>
               <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-5 pb-6 md:px-6">
                 <TaskForm key={editing.id} task={editing} clients={clients} team={team} onDone={closeSheet} compact />
-
-                {/* Comments */}
-                <div className="border-t border-border pt-4">
+                <div className="border-t border-gray-200 pt-4">
                   <TaskComments taskId={editing.id} team={team} />
                 </div>
-
-                <div className="border-t border-border pt-4">
+                <div className="border-t border-gray-200 pt-4">
                   <TaskAttachments key={editing.id} taskId={editing.id} />
                 </div>
-
-                <div className="border-t border-border pt-3">
+                <div className="border-t border-gray-200 pt-3">
                   {confirmingDelete ? (
-                    <div className="flex flex-col gap-2 rounded-lg bg-overdue-bg p-3 text-right">
-                      <p className="text-sm text-overdue">למחוק את המשימה לצמיתות?</p>
+                    <div className="flex flex-col gap-2 rounded-lg bg-red-50 p-3 text-right">
+                      <p className="text-sm text-red-700">למחוק את המשימה לצמיתות?</p>
                       <div className="flex flex-row-reverse gap-2">
                         <Button variant="danger" size="sm" onClick={onDelete}>מחק</Button>
                         <Button variant="ghost" size="sm" onClick={() => setConfirmingDelete(false)}>ביטול</Button>
                       </div>
                     </div>
                   ) : (
-                    <Button variant="ghost" size="sm" onClick={() => setConfirmingDelete(true)} className="text-overdue">מחיקה</Button>
+                    <Button variant="ghost" size="sm" onClick={() => setConfirmingDelete(true)} className="text-red-600">מחיקה</Button>
                   )}
                 </div>
               </div>
