@@ -171,7 +171,7 @@ describe("parseTaskFromText", () => {
 
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({
-        model: "claude-sonnet-4-6-20250520",
+        model: "claude-sonnet-4-20250514",
         max_tokens: 512,
       }),
     );

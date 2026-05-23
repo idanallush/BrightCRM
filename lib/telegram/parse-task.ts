@@ -79,7 +79,7 @@ ${memberList}
   const anthropic = new Anthropic();
 
   const response = await anthropic.messages.create({
-    model: "claude-sonnet-4-6-20250520",
+    model: "claude-sonnet-4-20250514",
     max_tokens: 512,
     system: systemPrompt,
     messages: [{ role: "user", content: text }],
