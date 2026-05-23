@@ -99,13 +99,13 @@ function KanbanColumn({
       ref={setNodeRef}
       className={
         isOver
-          ? "min-h-[200px] rounded-xl border-2 border-dashed border-brand bg-brand-light/50 p-3"
-          : "min-h-[200px] rounded-xl border border-gray-200 bg-gray-50/50 p-3"
+          ? "min-h-[200px] rounded-lg border-2 border-dashed border-ink/30 bg-surface-card/50 p-3"
+          : "min-h-[200px] rounded-lg bg-surface-card/50 p-3"
       }
     >
       <div className="mb-3 flex items-center justify-between px-1">
         <h3 className="text-sm font-semibold text-ink">{label}</h3>
-        <span className="rounded-full bg-gray-200 px-2 py-0.5 text-xs font-medium text-ink-muted">
+        <span className="rounded-pill bg-surface-strong px-2 py-0.5 text-xs font-medium text-ink-muted">
           {tasks.length}
         </span>
       </div>
@@ -145,19 +145,19 @@ function KanbanCard({
         e.preventDefault();
         onClick();
       }}
-      className={`cursor-grab rounded-lg border bg-white p-3 text-right shadow-card transition-all duration-200 hover:shadow-card-hover active:cursor-grabbing ${overdue ? "border-l-2 border-l-red-500 border-t-gray-200 border-r-gray-200 border-b-gray-200" : "border-gray-200"}`}
+      className={`cursor-grab rounded-lg border bg-canvas p-3 text-right shadow-subtle transition-all duration-150 hover:shadow-card active:cursor-grabbing ${overdue ? "border-l-2 border-l-status-overdue border-t-hairline border-r-hairline border-b-hairline" : "border-hairline"}`}
     >
       <div className="text-sm font-medium leading-tight text-ink">{task.title}</div>
       <div className="mt-1 text-xs text-ink-muted">{task.client?.name ?? "\u2014"}</div>
       <div className="mt-2 flex items-center justify-between text-xs">
-        <span className={overdue ? "font-medium text-red-600" : "text-ink-muted"}>
+        <span className={overdue ? "font-medium text-status-overdue" : "text-ink-muted"}>
           {fmtDate(task.due_date)}
         </span>
         <div className="flex items-center gap-1">
           {task.assignees.slice(0, 2).map((a) => (
             <span
               key={a.id}
-              className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-light text-[10px] font-semibold text-brand"
+              className="flex h-6 w-6 items-center justify-center rounded-full bg-surface-card text-[10px] font-semibold text-ink"
               title={a.full_name}
             >
               {a.full_name

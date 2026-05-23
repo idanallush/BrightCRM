@@ -15,14 +15,14 @@ export const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-10 w-full items-center justify-between gap-2 rounded-md border border-[color:var(--color-hairline)] bg-white px-3 text-sm text-[color:var(--color-ink)] focus:border-[color:var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-brand-focus)]/30 disabled:opacity-50 [&>span]:line-clamp-1",
+      "flex h-10 w-full items-center justify-between gap-2 rounded-md border border-hairline bg-canvas px-3.5 text-sm text-ink focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink/20 disabled:opacity-50 [&>span]:line-clamp-1",
       className,
     )}
     {...props}
   >
     {children}
     <SelectPrimitive.Icon asChild>
-      <ChevronDown className="h-4 w-4 opacity-60" />
+      <ChevronDown className="h-4 w-4 text-ink-muted" />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ));
@@ -38,7 +38,7 @@ export const SelectContent = React.forwardRef<
       dir="rtl"
       position={position}
       className={cn(
-        "relative z-50 max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-md border border-[color:var(--color-hairline)] bg-white shadow-lg",
+        "relative z-50 max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-lg border border-hairline bg-canvas shadow-card",
         className,
       )}
       {...props}
@@ -56,7 +56,7 @@ export const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-pointer select-none items-center rounded-sm py-2 ps-8 pe-3 text-sm outline-none data-[disabled]:opacity-50 data-[highlighted]:bg-black/5",
+      "relative flex w-full cursor-pointer select-none items-center rounded-sm py-2 ps-8 pe-3 text-sm outline-none data-[disabled]:opacity-50 data-[highlighted]:bg-surface-card",
       className,
     )}
     {...props}

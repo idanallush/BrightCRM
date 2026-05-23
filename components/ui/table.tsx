@@ -13,7 +13,7 @@ export function THead({ className, ...props }: React.HTMLAttributes<HTMLTableSec
   return (
     <thead
       className={cn(
-        "border-b border-gray-200 text-xs font-medium uppercase tracking-wide text-ink-muted",
+        "border-b border-hairline text-xs font-medium uppercase tracking-wide text-ink-muted",
         className,
       )}
       {...props}
@@ -22,13 +22,13 @@ export function THead({ className, ...props }: React.HTMLAttributes<HTMLTableSec
 }
 
 export function TBody({ className, ...props }: React.HTMLAttributes<HTMLTableSectionElement>) {
-  return <tbody className={cn("divide-y divide-gray-100", className)} {...props} />;
+  return <tbody className={cn("divide-y divide-hairline-soft", className)} {...props} />;
 }
 
 export function TR({ className, ...props }: React.HTMLAttributes<HTMLTableRowElement>) {
   return (
     <tr
-      className={cn("group transition-colors duration-150 hover:bg-gray-50", className)}
+      className={cn("group transition-colors duration-150 hover:bg-surface-soft", className)}
       {...props}
     />
   );

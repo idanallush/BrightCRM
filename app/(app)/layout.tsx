@@ -26,7 +26,7 @@ export default async function AppLayout({
 
   return (
     <ShellProvider>
-      <div className="flex min-h-screen bg-surface-bg">
+      <div className="flex min-h-screen bg-canvas">
         <Sidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <Header userLabel={userLabel} />

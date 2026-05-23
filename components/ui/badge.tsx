@@ -4,13 +4,13 @@ import { cn } from "@/lib/utils";
 type Variant = "active" | "done" | "closed" | "neutral" | "warning" | "danger" | "good";
 
 const VARIANT_CLASSES: Record<Variant, string> = {
-  active: "bg-blue-50 text-blue-700",
-  done: "bg-green-50 text-green-700",
-  closed: "bg-gray-100 text-gray-500",
-  neutral: "bg-gray-100 text-gray-700",
-  warning: "bg-amber-50 text-amber-700",
-  danger: "bg-red-50 text-red-700",
-  good: "bg-green-50 text-green-700",
+  active: "bg-accent/10 text-accent",
+  done: "bg-status-done/10 text-status-done",
+  closed: "bg-surface-card text-ink-muted",
+  neutral: "bg-surface-card text-ink",
+  warning: "bg-status-warning/10 text-status-warning",
+  danger: "bg-status-overdue/10 text-status-overdue",
+  good: "bg-status-done/10 text-status-done",
 };
 
 export function Badge({
@@ -21,7 +21,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
+        "inline-flex items-center rounded-pill px-3 py-0.5 text-[13px] font-medium",
         VARIANT_CLASSES[variant],
         className,
       )}

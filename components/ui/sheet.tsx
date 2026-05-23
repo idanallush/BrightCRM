@@ -24,9 +24,6 @@ const SheetOverlay = React.forwardRef<
 ));
 SheetOverlay.displayName = "SheetOverlay";
 
-// RTL: sheet opens from the inline-start edge by default; in the dashboard
-// we explicitly use side="left" because clicking a list row in RTL feels
-// natural to bring the panel in from the opposite side.
 export const SheetContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
@@ -39,14 +36,14 @@ export const SheetContent = React.forwardRef<
       ref={ref}
       dir="rtl"
       className={cn(
-        "fixed top-0 z-50 flex h-full w-full max-w-md flex-col gap-4 bg-white p-6 shadow-2xl",
+        "fixed top-0 z-50 flex h-full w-full max-w-md flex-col gap-4 bg-canvas p-6 shadow-card",
         side === "left" ? "left-0" : "right-0",
         className,
       )}
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute end-4 top-4 rounded-md p-1 text-[color:var(--color-ink-muted)] hover:bg-black/5 focus:outline-none">
+      <DialogPrimitive.Close className="absolute end-4 top-4 rounded-md p-1 text-ink-muted hover:bg-surface-card focus:outline-none">
         <X className="h-4 w-4" />
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>
@@ -78,7 +75,7 @@ export const SheetTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
-    className={cn("text-lg font-semibold text-[color:var(--color-ink)]", className)}
+    className={cn("text-lg font-semibold tracking-display-tight text-ink", className)}
     {...props}
   />
 ));
@@ -90,7 +87,7 @@ export const SheetDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn("text-sm text-[color:var(--color-ink-muted)]", className)}
+    className={cn("text-sm text-ink-muted", className)}
     {...props}
   />
 ));

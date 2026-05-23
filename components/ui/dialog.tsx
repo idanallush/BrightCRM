@@ -16,7 +16,7 @@ const Overlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-black/40 backdrop-blur-sm data-[state=open]:animate-in data-[state=open]:fade-in",
+      "fixed inset-0 z-50 bg-black/40 data-[state=open]:animate-in data-[state=open]:fade-in",
       className,
     )}
     {...props}
@@ -34,16 +34,13 @@ export const DialogContent = React.forwardRef<
       ref={ref}
       dir="rtl"
       className={cn(
-        // physical left/top so centering works regardless of dir
-        // max-h-[85vh] + flex-col + overflow-hidden makes the dialog scrollable
-        // via an inner overflow-y-auto region without clipping the rounded corners.
-        "fixed left-1/2 top-1/2 z-50 flex max-h-[85vh] w-full max-w-lg -translate-x-1/2 -translate-y-1/2 flex-col gap-4 overflow-hidden rounded-2xl bg-white p-6 shadow-2xl",
+        "fixed left-1/2 top-1/2 z-50 flex max-h-[85vh] w-full max-w-lg -translate-x-1/2 -translate-y-1/2 flex-col gap-4 overflow-hidden rounded-xl bg-canvas p-6 shadow-card",
         className,
       )}
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute end-4 top-4 rounded-md p-1 text-[color:var(--color-ink-muted)] hover:bg-black/5 focus:outline-none">
+      <DialogPrimitive.Close className="absolute end-4 top-4 rounded-md p-1 text-ink-muted hover:bg-surface-card focus:outline-none">
         <X className="h-4 w-4" />
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>
@@ -75,7 +72,7 @@ export const DialogTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
-    className={cn("text-lg font-semibold text-[color:var(--color-ink)]", className)}
+    className={cn("text-lg font-semibold tracking-display-tight text-ink", className)}
     {...props}
   />
 ));
@@ -87,7 +84,7 @@ export const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn("text-sm text-[color:var(--color-ink-muted)]", className)}
+    className={cn("text-sm text-ink-muted", className)}
     {...props}
   />
 ));

@@ -16,38 +16,41 @@ function LoginInner() {
       provider: "google",
       options: {
         redirectTo,
-        queryParams: {
-          // Restrict Google sign-in to the Bright G-Suite domain.
-          hd: BRIGHT_DOMAIN,
-          prompt: "select_account",
-        },
+        queryParams: { hd: BRIGHT_DOMAIN, prompt: "select_account" },
       },
     });
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-6">
-      <div className="w-full max-w-sm bg-white rounded-2xl border border-black/5 p-8 text-center">
-        <h1 className="text-2xl font-semibold text-ink mb-2">BrightCRM</h1>
-        <p className="text-sm text-ink/60 mb-8">
+    <main className="flex min-h-screen items-center justify-center bg-canvas px-6">
+      <div className="w-full max-w-sm rounded-xl border border-hairline bg-canvas p-8 text-center">
+        <div className="mb-2 flex items-center justify-center gap-2">
+          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-sm font-bold text-white">
+            B
+          </span>
+          <h1 className="font-display text-xl font-semibold tracking-display text-ink">
+            BrightCRM
+          </h1>
+        </div>
+        <p className="mb-8 text-sm text-ink-muted">
           התחברות עם חשבון Google של Bright
         </p>
 
         <button
           type="button"
           onClick={signIn}
-          className="w-full rounded-full bg-brand text-white py-3 text-base font-medium transition active:scale-[0.97]"
+          className="w-full rounded-md bg-primary py-3 text-sm font-semibold text-white transition-colors duration-150 hover:bg-primary-active active:scale-[0.97]"
         >
           התחברות עם Google
         </button>
 
         {error === "domain" && (
-          <p className="mt-6 text-sm text-red-600">
+          <p className="mt-6 text-sm text-status-overdue">
             התחברות מותרת רק לחשבונות {`@${BRIGHT_DOMAIN}`}
           </p>
         )}
         {error === "oauth" && (
-          <p className="mt-6 text-sm text-red-600">
+          <p className="mt-6 text-sm text-status-overdue">
             ההתחברות נכשלה. נסה שוב.
           </p>
         )}

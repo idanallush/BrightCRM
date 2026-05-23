@@ -9,7 +9,6 @@ import {
   Clock,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge, statusVariant } from "@/components/ui/badge";
 import {
   getDashboardCounts,
   getMyTasks,
@@ -58,55 +57,48 @@ export default async function DashboardPage() {
   ]);
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold text-ink md:text-2xl">דשבורד</h1>
+    <div className="flex flex-col gap-8">
+      <h1 className="font-display text-2xl font-semibold tracking-display text-ink md:text-3xl">
+        דשבורד
+      </h1>
 
-      {/* Stats cards */}
-      <section className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
+      {/* Stats */}
+      <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard
           label="משימות פתוחות"
           value={counts.openTasks}
           Icon={CheckSquare}
-          color="text-brand"
-          bgColor="bg-brand-light"
           href="/tasks?status=בעבודה"
         />
         <StatCard
           label="עבר דדליין"
           value={counts.overdueTasks}
           Icon={AlertTriangle}
-          color={counts.overdueTasks > 0 ? "text-red-600" : "text-ink-muted"}
-          bgColor={counts.overdueTasks > 0 ? "bg-red-50" : "bg-gray-100"}
-          valueColor={counts.overdueTasks > 0 ? "text-red-600" : undefined}
+          accent={counts.overdueTasks > 0}
           href="/tasks?overdue=true"
         />
         <StatCard
           label="לקוחות"
           value={counts.totalClients}
           Icon={Users}
-          color="text-ink-muted"
-          bgColor="bg-gray-100"
           href="/clients"
         />
         <StatCard
           label="קמפיינים פעילים"
           value={counts.activeCampaigns}
           Icon={Megaphone}
-          color="text-green-600"
-          bgColor="bg-green-50"
           href="/campaigns?status=פעיל"
         />
       </section>
 
-      {/* Main content */}
-      <div className="grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-5">
-        {/* My tasks - 60% */}
+      {/* Content */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
         <Card className="lg:col-span-3">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>המשימות שלי</CardTitle>
             <Link
               href="/tasks"
-              className="text-xs text-brand transition-colors hover:text-brand-focus"
+              className="text-xs font-medium text-ink-muted transition-colors hover:text-ink"
             >
               לכל המשימות
             </Link>
@@ -119,8 +111,8 @@ export default async function DashboardPage() {
                 </p>
               </div>
             ) : (
-              <div className="flex flex-col gap-2">
-                {myTasks.map((task) => {
+              <div className="flex flex-col">
+                {myTasks.map((task, i) => {
                   const { text: dateText, overdue } = relativeDate(
                     task.due_date,
                   );
@@ -128,22 +120,20 @@ export default async function DashboardPage() {
                     <Link
                       key={task.id}
                       href={`/tasks?task=${task.id}`}
-                      className="group flex items-start gap-3 rounded-lg border border-transparent p-3 transition-all duration-200 hover:border-gray-200 hover:bg-gray-50"
+                      className={`group flex items-start gap-3 py-3 transition-colors duration-150 hover:bg-surface-soft ${i > 0 ? "border-t border-hairline-soft" : ""}`}
                     >
                       <div
-                        className={`mt-1 h-8 w-1 shrink-0 rounded-full ${overdue ? "bg-red-500" : "bg-brand"}`}
+                        className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${overdue ? "bg-status-overdue" : "bg-surface-strong"}`}
                       />
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-ink group-hover:text-brand">
+                        <p className="text-sm font-medium text-ink">
                           {task.title}
                         </p>
                         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-muted">
                           {task.client_name && <span>{task.client_name}</span>}
                           <span
                             className={
-                              overdue
-                                ? "font-medium text-red-600"
-                                : "text-ink-muted"
+                              overdue ? "font-medium text-status-overdue" : ""
                             }
                           >
                             <Clock className="mb-px ml-1 inline h-3 w-3" />
@@ -159,7 +149,6 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* Recent activity - 40% */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>פעילות אחרונה</CardTitle>
@@ -170,15 +159,15 @@ export default async function DashboardPage() {
                 אין פעילות אחרונה
               </p>
             ) : (
-              <div className="flex flex-col gap-3">
-                {recent.map((task) => (
+              <div className="flex flex-col">
+                {recent.map((task, i) => (
                   <Link
                     key={task.id}
                     href={`/tasks?task=${task.id}`}
-                    className="group flex items-start gap-3 rounded-lg p-2 transition-all duration-200 hover:bg-gray-50"
+                    className={`group flex items-start gap-3 py-3 transition-colors duration-150 hover:bg-surface-soft ${i > 0 ? "border-t border-hairline-soft" : ""}`}
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-ink group-hover:text-brand">
+                      <p className="truncate text-sm font-medium text-ink">
                         {task.title}
                       </p>
                       <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-muted">
@@ -203,35 +192,31 @@ function StatCard({
   label,
   value,
   Icon,
-  color,
-  bgColor,
-  valueColor,
+  accent = false,
   href,
 }: {
   label: string;
   value: number;
   Icon: React.ComponentType<{ className?: string }>;
-  color: string;
-  bgColor: string;
-  valueColor?: string;
+  accent?: boolean;
   href?: string;
 }) {
   const inner = (
-    <Card className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover">
-      <CardContent className="flex items-start justify-between p-4 md:p-5">
+    <div className="rounded-lg bg-surface-card p-5 transition-colors duration-150">
+      <div className="flex items-start justify-between">
         <div className="flex flex-col gap-1">
-          <span className="text-xs text-ink-muted md:text-sm">{label}</span>
+          <span className="text-[13px] font-medium text-ink-muted">{label}</span>
           <span
-            className={`text-2xl font-bold tracking-tight md:text-3xl ${valueColor ?? "text-ink"}`}
+            className={`font-display text-3xl font-semibold tracking-display ${accent ? "text-status-overdue" : "text-ink"}`}
           >
             {value}
           </span>
         </div>
-        <div className={`rounded-lg p-2 ${bgColor}`}>
-          <Icon className={`h-4 w-4 md:h-5 md:w-5 ${color}`} />
-        </div>
-      </CardContent>
-    </Card>
+        <Icon
+          className={`h-5 w-5 ${accent ? "text-status-overdue" : "text-ink-muted"}`}
+        />
+      </div>
+    </div>
   );
   return href ? <Link href={href}>{inner}</Link> : inner;
 }
@@ -239,14 +224,14 @@ function StatCard({
 function SourceBadge({ source }: { source: string }) {
   if (source === "telegram") {
     return (
-      <span className="flex shrink-0 items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-600">
+      <span className="flex shrink-0 items-center gap-1 rounded-pill bg-accent/10 px-2.5 py-0.5 text-[11px] font-medium text-accent">
         <Send className="h-3 w-3" />
         Telegram
       </span>
     );
   }
   return (
-    <span className="flex shrink-0 items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-ink-muted">
+    <span className="flex shrink-0 items-center gap-1 rounded-pill bg-surface-card px-2.5 py-0.5 text-[11px] font-medium text-ink-muted">
       <Globe className="h-3 w-3" />
       Web
     </span>

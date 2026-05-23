@@ -30,12 +30,11 @@ export function Header({ userLabel }: { userLabel: string }) {
   const initials = getInitials(userLabel);
 
   return (
-    <header className="flex h-14 items-center gap-3 border-b border-gray-200 bg-white px-4 md:px-6">
-      {/* Mobile hamburger */}
+    <header className="flex h-14 items-center gap-3 border-b border-hairline bg-canvas px-4 md:px-6">
       <button
         type="button"
         onClick={() => setMobileOpen(true)}
-        className="flex h-9 w-9 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-gray-100 hover:text-ink md:hidden"
+        className="flex h-9 w-9 items-center justify-center rounded-md text-ink-muted transition-colors hover:bg-surface-card hover:text-ink md:hidden"
         aria-label="תפריט"
       >
         <Menu className="h-5 w-5" />
@@ -45,12 +44,11 @@ export function Header({ userLabel }: { userLabel: string }) {
         <GlobalSearch />
       </div>
 
-      {/* User avatar + name */}
       <div className="flex items-center gap-2">
         <span className="hidden text-sm text-ink-muted sm:block">
           {userLabel}
         </span>
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-light text-xs font-semibold text-brand">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-card text-xs font-semibold text-ink">
           {initials}
         </div>
         <Button variant="ghost" size="sm" onClick={signOut} title="התנתקות">

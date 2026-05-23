@@ -9,39 +9,73 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: [
-          "Heebo",
-          "system-ui",
+        display: [
+          "Inter",
           "-apple-system",
+          "BlinkMacSystemFont",
           "Segoe UI",
-          "Arial",
+          "Roboto",
+          "sans-serif",
+        ],
+        sans: [
+          "Inter",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
+          "Roboto",
           "sans-serif",
         ],
       },
       colors: {
-        ink: { DEFAULT: "#111827", muted: "#6b7280" },
-        surface: { DEFAULT: "#ffffff", bg: "#f8f9fb" },
-        brand: {
-          DEFAULT: "#2563eb",
-          light: "#dbeafe",
-          focus: "#1d4ed8",
+        // Cal.com adapted palette
+        ink: { DEFAULT: "#111111", body: "#374151", muted: "#6b7280", soft: "#898989" },
+        canvas: "#ffffff",
+        surface: {
+          DEFAULT: "#ffffff",
+          soft: "#f8f9fa",
+          card: "#f5f5f5",
+          strong: "#e5e7eb",
+          dark: "#101010",
+          "dark-elevated": "#1a1a1a",
         },
+        hairline: { DEFAULT: "#e5e7eb", soft: "#f3f4f6" },
+        primary: { DEFAULT: "#111111", active: "#242424" },
+        accent: "#3b82f6",
+        // Status colors
         status: {
-          active: "#2563eb",
-          done: "#16a34a",
+          active: "#3b82f6",
+          done: "#10b981",
           closed: "#9ca3af",
-          overdue: "#dc2626",
+          overdue: "#ef4444",
           warning: "#f59e0b",
+        },
+        // Badge pastels
+        badge: {
+          orange: "#fb923c",
+          pink: "#ec4899",
+          violet: "#8b5cf6",
+          emerald: "#34d399",
         },
       },
       borderRadius: {
-        xl: "0.75rem",
-        "2xl": "1rem",
+        xs: "4px",
+        sm: "6px",
+        md: "8px",
+        lg: "12px",
+        xl: "16px",
+        pill: "9999px",
       },
       boxShadow: {
-        card: "0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.04)",
-        "card-hover":
-          "0 4px 6px -1px rgb(0 0 0 / 0.06), 0 2px 4px -2px rgb(0 0 0 / 0.04)",
+        subtle: "0 1px 2px rgba(0,0,0,0.05)",
+        card: "0 1px 2px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.08)",
+        "card-hover": "0 4px 12px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06)",
+      },
+      spacing: {
+        "section": "96px",
+      },
+      letterSpacing: {
+        display: "-0.04em",
+        "display-tight": "-0.03em",
       },
     },
   },

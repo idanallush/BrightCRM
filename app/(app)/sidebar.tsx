@@ -27,22 +27,20 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = React.useState(false);
   const { mobileOpen, setMobileOpen } = useMobileMenu();
 
-  // Close mobile sidebar on navigation
   React.useEffect(() => {
     setMobileOpen(false);
   }, [pathname, setMobileOpen]);
 
   const navContent = (isMobile: boolean) => (
     <>
-      {/* Logo */}
-      <div className="flex h-16 items-center justify-between px-4">
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-sm font-bold text-white">
+      <div className="flex h-16 items-center justify-between border-b border-hairline-soft px-4">
+        <Link href="/dashboard" className="flex items-center gap-2.5">
+          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-sm font-bold text-white">
             B
           </span>
           {(!collapsed || isMobile) && (
-            <span className="text-base font-semibold text-ink">
-              Bright<span className="text-brand">CRM</span>
+            <span className="font-display text-[15px] font-semibold tracking-display-tight text-ink">
+              BrightCRM
             </span>
           )}
         </Link>
@@ -50,7 +48,7 @@ export function Sidebar() {
           <button
             type="button"
             onClick={() => setCollapsed((v) => !v)}
-            className="text-ink-muted transition-colors hover:text-ink"
+            className="rounded-md p-1 text-ink-muted transition-colors hover:bg-surface-card hover:text-ink"
           >
             {collapsed ? (
               <PanelRightClose className="h-4 w-4" />
@@ -63,15 +61,14 @@ export function Sidebar() {
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
-            className="text-ink-muted"
+            className="rounded-md p-1 text-ink-muted"
           >
             <X className="h-5 w-5" />
           </button>
         )}
       </div>
 
-      {/* Nav items */}
-      <nav className="mt-2 flex flex-col gap-1 px-3">
+      <nav className="mt-3 flex flex-col gap-0.5 px-3">
         {NAV.map(({ href, label, Icon }) => {
           const active = pathname === href || pathname.startsWith(href + "/");
           return (
@@ -80,15 +77,15 @@ export function Sidebar() {
               href={href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200",
+                "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors duration-150",
                 active
-                  ? "bg-brand-light font-semibold text-brand"
-                  : "text-ink-muted hover:bg-gray-100 hover:text-ink",
+                  ? "bg-surface-card font-semibold text-ink"
+                  : "text-ink-muted hover:bg-surface-soft hover:text-ink",
                 !isMobile && collapsed && "justify-center px-0",
               )}
               title={label}
             >
-              <Icon className="h-5 w-5 shrink-0" />
+              <Icon className="h-[18px] w-[18px] shrink-0" />
               {(isMobile || !collapsed) && <span>{label}</span>}
             </Link>
           );
@@ -99,28 +96,25 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Desktop sidebar */}
       <aside
         className={cn(
-          "hidden shrink-0 flex-col border-l border-gray-200 bg-white transition-all duration-300 md:flex",
-          collapsed ? "w-16" : "w-64",
+          "hidden shrink-0 flex-col border-l border-hairline bg-canvas transition-all duration-300 md:flex",
+          collapsed ? "w-16" : "w-60",
         )}
       >
         {navContent(false)}
       </aside>
 
-      {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/30 transition-opacity md:hidden"
+          className="fixed inset-0 z-40 bg-black/40 md:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
-      {/* Mobile sidebar drawer */}
       <aside
         className={cn(
-          "fixed inset-y-0 right-0 z-50 w-72 transform bg-white shadow-xl transition-transform duration-300 md:hidden",
+          "fixed inset-y-0 right-0 z-50 w-72 transform bg-canvas shadow-card transition-transform duration-300 md:hidden",
           mobileOpen ? "translate-x-0" : "translate-x-full",
         )}
       >

@@ -18,7 +18,7 @@ export function TaskTable({
   const today = new Date().toISOString().slice(0, 10);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+    <div className="overflow-hidden rounded-lg border border-hairline bg-canvas">
       <Table>
         <THead>
           <TR className="hover:bg-transparent">
@@ -51,7 +51,6 @@ export function TaskTable({
                       {t.description}
                     </div>
                   )}
-                  {/* Client name visible on mobile only */}
                   <div className="mt-0.5 text-xs text-ink-muted md:hidden">
                     {t.client?.name ?? ""}
                   </div>
@@ -68,7 +67,7 @@ export function TaskTable({
                   <span
                     className={
                       overdue
-                        ? "inline-flex items-center gap-1 font-medium text-red-600"
+                        ? "inline-flex items-center gap-1 font-medium text-status-overdue"
                         : "text-ink-muted"
                     }
                   >
@@ -79,7 +78,7 @@ export function TaskTable({
                 <TD className="hidden sm:table-cell">
                   <SourceIcon source={t.source} />
                 </TD>
-                <TD className="w-10 text-end text-brand opacity-0 transition-opacity group-hover:opacity-100">
+                <TD className="w-10 text-end text-ink-muted opacity-0 transition-opacity group-hover:opacity-100">
                   <ChevronLeft className="ms-auto h-4 w-4" />
                 </TD>
               </TR>
@@ -94,14 +93,14 @@ export function TaskTable({
 function SourceIcon({ source }: { source: string }) {
   if (source === "telegram") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-600">
+      <span className="inline-flex items-center rounded-pill bg-accent/10 p-1.5 text-accent">
         <Send className="h-3 w-3" />
       </span>
     );
   }
   if (source === "web") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-ink-muted">
+      <span className="inline-flex items-center rounded-pill bg-surface-card p-1.5 text-ink-muted">
         <Globe className="h-3 w-3" />
       </span>
     );

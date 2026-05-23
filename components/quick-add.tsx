@@ -41,10 +41,9 @@ export function QuickAdd() {
       ref={wrapRef}
       className="fixed bottom-20 start-6 z-40 flex flex-col items-start gap-2 md:bottom-6"
     >
-      {/* Menu */}
       <div
         className={cn(
-          "flex origin-bottom-right flex-col gap-1 rounded-xl border border-gray-200 bg-white p-2 shadow-lg transition-all duration-200",
+          "flex origin-bottom-right flex-col gap-0.5 rounded-lg border border-hairline bg-canvas p-1.5 shadow-card transition-all duration-200",
           open
             ? "scale-100 opacity-100"
             : "pointer-events-none scale-95 opacity-0",
@@ -55,7 +54,7 @@ export function QuickAdd() {
             key={href}
             type="button"
             onClick={() => go(href)}
-            className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-right text-sm text-ink transition-all duration-200 hover:bg-gray-50"
+            className="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-right text-sm text-ink transition-colors duration-150 hover:bg-surface-card"
           >
             <Icon className="h-4 w-4 text-ink-muted" />
             {label}
@@ -63,17 +62,16 @@ export function QuickAdd() {
         ))}
       </div>
 
-      {/* FAB */}
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         title="יצירה מהירה"
         aria-label="יצירה מהירה"
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white shadow-lg transition-all duration-200 hover:bg-brand-focus hover:shadow-xl active:scale-95"
+        className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white shadow-subtle transition-all duration-150 hover:bg-primary-active active:scale-95"
       >
         <Plus
           className={cn(
-            "h-6 w-6 transition-transform duration-200",
+            "h-5 w-5 transition-transform duration-200",
             open && "rotate-45",
           )}
         />

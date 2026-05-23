@@ -100,12 +100,7 @@ export function TasksClient({
     (filters.overdue ? 1 : 0);
 
   function clearFilters() {
-    setFilters({
-      status: "__all__",
-      clientId: "__all__",
-      assigneeId: "__all__",
-      overdue: false,
-    });
+    setFilters({ status: "__all__", clientId: "__all__", assigneeId: "__all__", overdue: false });
     router.push("/tasks");
   }
 
@@ -120,8 +115,7 @@ export function TasksClient({
     const params = new URLSearchParams();
     if (next.status && next.status !== "__all__") params.set("status", next.status);
     if (next.clientId && next.clientId !== "__all__") params.set("client", next.clientId);
-    if (next.assigneeId && next.assigneeId !== "__all__")
-      params.set("assignee", next.assigneeId);
+    if (next.assigneeId && next.assigneeId !== "__all__") params.set("assignee", next.assigneeId);
     if (next.overdue) params.set("overdue", "true");
     const qs = params.toString();
     router.push(qs ? `/tasks?${qs}` : "/tasks");
@@ -139,42 +133,41 @@ export function TasksClient({
   async function onDelete() {
     if (!editing) return;
     const res = await deleteTask(editing.id);
-    if ("error" in res) {
-      toast.error(res.error);
-      return;
-    }
+    if ("error" in res) { toast.error(res.error); return; }
     toast.success("המשימה נמחקה");
     closeSheet();
     router.refresh();
   }
 
   return (
-    <div className="flex flex-col gap-4 md:gap-5">
+    <div className="flex flex-col gap-5">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-baseline gap-3">
-          <h1 className="text-xl font-semibold text-ink md:text-2xl">משימות</h1>
+          <h1 className="font-display text-xl font-semibold tracking-display text-ink md:text-2xl">
+            משימות
+          </h1>
           {activeFilterCount > 0 && (
             <button
               type="button"
               onClick={clearFilters}
-              className="inline-flex items-center gap-1 rounded-full bg-brand px-2.5 py-0.5 text-xs font-medium text-white transition-colors hover:bg-brand-focus"
+              className="rounded-pill bg-primary px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-primary-active"
             >
               {activeFilterCount} פילטרים · נקה
             </button>
           )}
         </div>
         <div className="flex items-center gap-2">
-          {/* View toggle */}
-          <div className="inline-flex rounded-lg border border-gray-200 bg-white p-0.5">
+          {/* Nav pill group (Cal.com signature) */}
+          <div className="inline-flex rounded-pill bg-surface-soft p-1">
             <button
               type="button"
               onClick={() => changeView("table")}
               className={cn(
-                "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-all duration-200",
+                "flex items-center gap-1.5 rounded-pill px-3 py-1.5 text-sm transition-all duration-150",
                 view === "table"
-                  ? "bg-brand-light font-medium text-brand"
-                  : "text-ink-muted hover:text-ink",
+                  ? "bg-canvas font-medium text-ink shadow-subtle"
+                  : "text-ink-muted",
               )}
             >
               <Rows3 className="h-4 w-4" />
@@ -184,10 +177,10 @@ export function TasksClient({
               type="button"
               onClick={() => changeView("kanban")}
               className={cn(
-                "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-all duration-200",
+                "flex items-center gap-1.5 rounded-pill px-3 py-1.5 text-sm transition-all duration-150",
                 view === "kanban"
-                  ? "bg-brand-light font-medium text-brand"
-                  : "text-ink-muted hover:text-ink",
+                  ? "bg-canvas font-medium text-ink shadow-subtle"
+                  : "text-ink-muted",
               )}
             >
               <LayoutGrid className="h-4 w-4" />
@@ -202,18 +195,18 @@ export function TasksClient({
 
       {/* Filters */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        {/* Status tabs */}
-        <div className="flex gap-1 overflow-x-auto rounded-lg border border-gray-200 bg-white p-1">
+        {/* Status pill group */}
+        <div className="flex gap-0.5 overflow-x-auto rounded-pill bg-surface-soft p-1">
           {STATUS_TABS.map((tab) => (
             <button
               key={tab.key}
               type="button"
               onClick={() => updateFilter("status", tab.key)}
               className={cn(
-                "whitespace-nowrap rounded-md px-3 py-1.5 text-sm transition-all duration-200",
+                "whitespace-nowrap rounded-pill px-3 py-1.5 text-sm transition-all duration-150",
                 filters.status === tab.key
-                  ? "bg-brand-light font-medium text-brand"
-                  : "text-ink-muted hover:text-ink",
+                  ? "bg-canvas font-medium text-ink shadow-subtle"
+                  : "text-ink-muted",
               )}
             >
               {tab.label}
@@ -222,36 +215,26 @@ export function TasksClient({
         </div>
 
         <div className="flex flex-1 flex-wrap items-center gap-2">
-          <Select
-            value={filters.clientId}
-            onValueChange={(v) => updateFilter("clientId", v)}
-          >
+          <Select value={filters.clientId} onValueChange={(v) => updateFilter("clientId", v)}>
             <SelectTrigger className="h-9 w-auto min-w-[140px]">
               <SelectValue placeholder="לקוח" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="__all__">כל הלקוחות</SelectItem>
               {clients.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {c.name}
-                </SelectItem>
+                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
 
-          <Select
-            value={filters.assigneeId}
-            onValueChange={(v) => updateFilter("assigneeId", v)}
-          >
+          <Select value={filters.assigneeId} onValueChange={(v) => updateFilter("assigneeId", v)}>
             <SelectTrigger className="h-9 w-auto min-w-[120px]">
               <SelectValue placeholder="אחראי" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="__all__">כל האחראים</SelectItem>
               {team.map((m) => (
-                <SelectItem key={m.id} value={m.id}>
-                  {m.full_name}
-                </SelectItem>
+                <SelectItem key={m.id} value={m.id}>{m.full_name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -260,10 +243,10 @@ export function TasksClient({
             type="button"
             onClick={() => updateFilter("overdue", !filters.overdue)}
             className={cn(
-              "flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm transition-all duration-200",
+              "flex h-9 items-center gap-1.5 rounded-md border px-3 text-sm transition-colors duration-150",
               filters.overdue
-                ? "border-red-300 bg-red-50 text-red-600"
-                : "border-gray-200 bg-white text-ink-muted hover:bg-gray-50",
+                ? "border-status-overdue/30 bg-status-overdue/5 text-status-overdue"
+                : "border-hairline bg-canvas text-ink-muted hover:bg-surface-soft",
             )}
           >
             <AlertTriangle className="h-3.5 w-3.5" />
@@ -278,21 +261,13 @@ export function TasksClient({
           <EmptyState
             title="לא נמצאו משימות תואמות"
             description="נסה לשנות את הפילטרים או לנקות את כולם."
-            action={
-              <Button variant="outline" size="sm" onClick={clearFilters}>
-                נקה פילטרים
-              </Button>
-            }
+            action={<Button variant="secondary" size="sm" onClick={clearFilters}>נקה פילטרים</Button>}
           />
         ) : (
           <EmptyState
             title="אין משימות עדיין"
             description="פתח משימה ראשונה דרך הכפתור או דרך בוט הטלגרם."
-            action={
-              <Button onClick={() => setCreateOpen(true)}>
-                <Plus className="h-4 w-4" /> משימה חדשה
-              </Button>
-            }
+            action={<Button onClick={() => setCreateOpen(true)}><Plus className="h-4 w-4" /> משימה חדשה</Button>}
           />
         )
       ) : view === "table" ? (
@@ -301,80 +276,47 @@ export function TasksClient({
         <TaskKanban tasks={tasks} onCardClick={setEditing} />
       )}
 
-      {/* Create dialog */}
+      {/* Create */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>משימה חדשה</DialogTitle>
-            <DialogDescription>
-              פתיחה מהירה. נשמרת כ-source=web.
-            </DialogDescription>
+            <DialogDescription>פתיחה מהירה. נשמרת כ-source=web.</DialogDescription>
           </DialogHeader>
-          <TaskForm
-            clients={clients}
-            team={team}
-            onDone={() => setCreateOpen(false)}
-          />
+          <TaskForm clients={clients} team={team} onDone={() => setCreateOpen(false)} />
         </DialogContent>
       </Dialog>
 
-      {/* Edit sheet */}
+      {/* Edit */}
       <Sheet open={!!editing} onOpenChange={(open) => !open && closeSheet()}>
         <SheetContent side="left" className="flex flex-col gap-0 p-0">
           {editing && (
             <>
               <SheetHeader className="px-5 pb-3 pt-5 md:px-6 md:pt-6">
                 <SheetTitle>עריכת משימה</SheetTitle>
-                <SheetDescription>
-                  שינויים נשמרים אחרי לחיצה על שמירה.
-                </SheetDescription>
+                <SheetDescription>שינויים נשמרים אחרי לחיצה על שמירה.</SheetDescription>
               </SheetHeader>
               <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-5 pb-6 md:px-6">
-                {/* Task metadata */}
                 <div className="flex flex-wrap gap-2 text-xs text-ink-muted">
                   <span>נוצר ב-{new Date(editing.created_at).toLocaleDateString("he-IL")}</span>
                   <span>·</span>
                   <span>מקור: {editing.source === "telegram" ? "טלגרם" : editing.source === "web" ? "ממשק" : "ייבוא"}</span>
                 </div>
-                <TaskForm
-                  key={editing.id}
-                  task={editing}
-                  clients={clients}
-                  team={team}
-                  onDone={closeSheet}
-                  compact
-                />
-                <div className="border-t border-gray-200 pt-4">
+                <TaskForm key={editing.id} task={editing} clients={clients} team={team} onDone={closeSheet} compact />
+                <div className="border-t border-hairline pt-4">
                   <TaskAttachments key={editing.id} taskId={editing.id} />
                 </div>
-                <div className="border-t border-gray-200 pt-3">
+                <div className="border-t border-hairline pt-3">
                   {confirmingDelete ? (
-                    <div className="flex flex-col gap-2 rounded-lg bg-red-50 p-3 text-right">
-                      <p className="text-sm text-red-700">
-                        למחוק את המשימה לצמיתות?
-                      </p>
+                    <div className="flex flex-col gap-2 rounded-md bg-status-overdue/5 p-3 text-right">
+                      <p className="text-sm text-status-overdue">למחוק את המשימה לצמיתות?</p>
                       <div className="flex flex-row-reverse gap-2">
-                        <Button variant="danger" size="sm" onClick={onDelete}>
-                          מחק
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setConfirmingDelete(false)}
-                        >
-                          ביטול
-                        </Button>
+                        <Button variant="danger" size="sm" onClick={onDelete}>מחק</Button>
+                        <Button variant="ghost" size="sm" onClick={() => setConfirmingDelete(false)}>ביטול</Button>
                       </div>
                     </div>
                   ) : (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setConfirmingDelete(true)}
-                      className="text-red-600"
-                    >
-                      מחיקה
-                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => setConfirmingDelete(true)} className="text-status-overdue">מחיקה</Button>
                   )}
                 </div>
               </div>
