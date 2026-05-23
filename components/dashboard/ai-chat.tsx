@@ -67,13 +67,13 @@ export function AiChat({ userEmail }: { userEmail: string }) {
   }
 
   return (
-    <div className="rounded-xl border border-gray-200/60 bg-white p-5 shadow-sm">
+    <div className="rounded-lg border border-hairline/60 bg-white p-5 shadow-subtle">
       {/* Header */}
       <div className="mb-4 flex items-center gap-2">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-light">
-          <Bot className="h-4 w-4 text-brand" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-tint-lavender">
+          <Bot className="h-4 w-4 text-primary" />
         </div>
-        <h2 className="text-sm font-semibold text-gray-800">עוזר BrightCRM</h2>
+        <h2 className="text-sm font-semibold text-ink">עוזר BrightCRM</h2>
       </div>
 
       {/* Quick actions */}
@@ -84,7 +84,7 @@ export function AiChat({ userEmail }: { userEmail: string }) {
             type="button"
             onClick={() => ask({ action: qa.action })}
             disabled={loading}
-            className="whitespace-nowrap rounded-full bg-gray-100 px-4 py-2 text-sm text-gray-600 transition-all duration-200 hover:bg-brand-light hover:text-brand disabled:opacity-50"
+            className="whitespace-nowrap rounded-full bg-surface px-4 py-2 text-sm text-slate transition-all duration-200 hover:bg-tint-lavender hover:text-primary disabled:opacity-50"
           >
             {qa.label}
           </button>
@@ -104,14 +104,14 @@ export function AiChat({ userEmail }: { userEmail: string }) {
           }}
           placeholder="שאל שאלה..."
           disabled={loading}
-          className="h-10 w-full rounded-lg border border-gray-200 bg-gray-50 pe-12 ps-4 text-sm text-gray-900 placeholder:text-gray-400 transition-colors focus:border-brand focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:opacity-50"
+          className="h-10 w-full rounded-lg border border-hairline bg-surface-soft pe-12 ps-4 text-sm text-ink placeholder:text-stone transition-colors focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
         />
         <Button
           size="icon"
           variant="ghost"
           onClick={() => question.trim() && ask({ question: question.trim() })}
           disabled={!question.trim() || loading}
-          className="absolute start-1 top-1/2 h-8 w-8 -translate-y-1/2 text-brand"
+          className="absolute start-1 top-1/2 h-8 w-8 -translate-y-1/2 text-primary"
         >
           <Send className="h-4 w-4" />
         </Button>
@@ -125,7 +125,7 @@ export function AiChat({ userEmail }: { userEmail: string }) {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="flex items-center gap-2 py-4 text-sm text-gray-400"
+            className="flex items-center gap-2 py-4 text-sm text-stone"
           >
             <Loader2 className="h-4 w-4 animate-spin" />
             חושב...
@@ -141,7 +141,7 @@ export function AiChat({ userEmail }: { userEmail: string }) {
             transition={{ duration: 0.2 }}
           >
             {/* Text */}
-            <div className={`rounded-lg p-4 text-sm leading-relaxed ${response.error ? "bg-red-50 text-red-700" : "bg-gray-50 text-gray-700"}`}>
+            <div className={`rounded-lg p-4 text-sm leading-relaxed ${response.error ? "bg-overdue-bg text-overdue" : "bg-surface-soft text-ink"}`}>
               <p className="whitespace-pre-wrap">{response.text}</p>
             </div>
 
@@ -155,23 +155,23 @@ export function AiChat({ userEmail }: { userEmail: string }) {
                     <Link
                       key={t.id}
                       href={`/tasks?task=${t.id}`}
-                      className="flex items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 transition-all duration-200 hover:shadow-sm"
+                      className="flex items-center gap-3 rounded-lg border border-hairline bg-white p-3 transition-all duration-200 hover:shadow-subtle"
                     >
                       <Badge variant={statusVariant(t.status)} className="shrink-0">
                         {t.status}
                       </Badge>
                       <div className="min-w-0 flex-1">
-                        <span className="text-sm font-medium text-gray-900">
+                        <span className="text-sm font-medium text-ink">
                           {t.title}
                         </span>
                         {t.client_name && (
-                          <span className="mr-2 text-caption text-gray-400">
+                          <span className="mr-2 text-caption text-stone">
                             {t.client_name}
                           </span>
                         )}
                       </div>
                       <span
-                        className={`text-caption ${overdue ? "font-medium text-red-500" : "text-gray-400"}`}
+                        className={`text-caption ${overdue ? "font-medium text-overdue" : "text-stone"}`}
                       >
                         {fmtDate(t.due_date)}
                       </span>
@@ -188,20 +188,20 @@ export function AiChat({ userEmail }: { userEmail: string }) {
                   <Link
                     key={c.id}
                     href={`/clients/${c.id}`}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm transition-all duration-200 hover:shadow-sm"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-hairline bg-white px-3 py-1.5 text-sm transition-all duration-200 hover:shadow-subtle"
                   >
                     <span
                       className={`h-2 w-2 rounded-full ${
                         c.health === "קריטי"
                           ? "bg-red-500"
                           : c.health === "אסטרטגיה צריכה"
-                            ? "bg-amber-500"
-                            : "bg-green-500"
+                            ? "bg-st-waiting"
+                            : "bg-st-done"
                       }`}
                     />
-                    <span className="font-medium text-gray-900">{c.name}</span>
+                    <span className="font-medium text-ink">{c.name}</span>
                     {c.health && (
-                      <span className="text-caption text-gray-400">
+                      <span className="text-caption text-stone">
                         {c.health}
                       </span>
                     )}

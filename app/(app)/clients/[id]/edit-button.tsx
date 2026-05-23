@@ -26,7 +26,7 @@ export function EditClientButton({
   const [open, setOpen] = React.useState(false);
   return (
     <>
-      <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
+      <Button variant="secondary" size="sm" onClick={() => setOpen(true)}>
         <Pencil className="h-4 w-4" /> עריכה
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>

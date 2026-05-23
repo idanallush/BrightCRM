@@ -14,20 +14,14 @@ const ITEMS = [
 
 export function MobileNav() {
   const pathname = usePathname();
-
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-white md:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-canvas md:hidden">
       <div className="flex h-14 items-stretch">
         {ITEMS.map(({ href, label, Icon }) => {
           const active = pathname === href || pathname.startsWith(href + "/");
           return (
-            <Link key={href} href={href}
-              className={cn(
-                "flex flex-1 flex-col items-center justify-center gap-0.5 text-[11px] transition-colors duration-200",
-                active ? "font-semibold text-brand" : "text-ink-muted",
-              )}>
-              <Icon className={cn("h-5 w-5", active && "text-brand")} />
-              <span>{label}</span>
+            <Link key={href} href={href} className={cn("flex flex-1 flex-col items-center justify-center gap-0.5 text-[11px] transition-colors duration-150", active ? "font-semibold text-primary" : "text-stone")}>
+              <Icon className={cn("h-5 w-5", active && "text-primary")} /><span>{label}</span>
             </Link>
           );
         })}

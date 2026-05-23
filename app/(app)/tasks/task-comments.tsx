@@ -141,15 +141,15 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
         <div className="flex flex-col gap-3">
           {comments.map((c) => (
             <div key={c.id} className="flex gap-2.5">
-              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-light text-[10px] font-semibold text-brand">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-tint-lavender text-[10px] font-semibold text-primary">
                 {c.author_name ? getInitials(c.author_name) : "?"}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline gap-2">
                   <span className="text-caption font-medium text-ink">{c.author_name ?? "לא ידוע"}</span>
-                  <span className="text-[11px] text-ink-muted">{timeAgo(c.created_at)}</span>
+                  <span className="text-[11px] text-stone">{timeAgo(c.created_at)}</span>
                 </div>
-                <p className="mt-0.5 text-sm text-ink-secondary whitespace-pre-wrap">{c.content}</p>
+                <p className="mt-0.5 text-sm text-slate whitespace-pre-wrap">{c.content}</p>
               </div>
             </div>
           ))}
@@ -167,29 +167,29 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
           }}
           placeholder="כתוב תגובה... (@ לאזכור)"
           rows={2}
-          className="w-full resize-none rounded-lg border border-border bg-white p-3 pe-12 text-sm text-ink placeholder:text-ink-muted transition-colors focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+          className="w-full resize-none rounded-lg border border-hairline bg-white p-3 pe-12 text-sm text-ink placeholder:text-stone transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
         />
         <Button
           size="icon"
           variant="ghost"
           onClick={handleSend}
           disabled={!text.trim() || sending}
-          className="absolute bottom-2 start-2 h-8 w-8 text-brand"
+          className="absolute bottom-2 start-2 h-8 w-8 text-primary"
         >
           <Send className="h-4 w-4" />
         </Button>
 
         {/* Mention dropdown */}
         {showMentions && filteredMembers.length > 0 && (
-          <div className="absolute bottom-full mb-1 start-0 w-52 rounded-lg border border-border bg-white p-1 shadow-overlay">
+          <div className="absolute bottom-full mb-1 start-0 w-52 rounded-lg border border-hairline bg-white p-1 shadow-overlay">
             {filteredMembers.map((m) => (
               <button
                 key={m.id}
                 type="button"
                 onClick={() => insertMention(m)}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-ink transition-colors hover:bg-surface-hover"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-ink transition-colors hover:bg-surface"
               >
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-light text-[10px] font-semibold text-brand">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-tint-lavender text-[10px] font-semibold text-primary">
                   {getInitials(m.full_name)}
                 </span>
                 {m.full_name}

@@ -95,7 +95,7 @@ export function FileUpload({
         </p>
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           size="sm"
           onClick={() => inputRef.current?.click()}
           disabled={pending}

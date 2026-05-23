@@ -4,55 +4,40 @@ import { cn } from "@/lib/utils";
 type Variant =
   | "waiting" | "incoming" | "working" | "approval" | "manager"
   | "done" | "cancelled" | "overdue"
-  | "neutral" | "good" | "warning" | "danger";
-
-const DOT_COLORS: Partial<Record<Variant, string>> = {
-  waiting:   "bg-amber-500",
-  incoming:  "bg-blue-500",
-  working:   "bg-purple-500",
-  approval:  "bg-orange-500",
-  manager:   "bg-pink-500",
-  done:      "bg-green-500",
-  cancelled: "bg-gray-400",
-  overdue:   "bg-red-500",
-  good:      "bg-green-500",
-  warning:   "bg-amber-500",
-  danger:    "bg-red-500",
-};
+  | "neutral" | "good" | "warning" | "danger"
+  | "purple" | "pink" | "orange";
 
 const VARIANT_CLASSES: Record<Variant, string> = {
-  waiting:   "bg-amber-100 text-amber-700",
-  incoming:  "bg-blue-100 text-blue-700",
-  working:   "bg-purple-100 text-purple-700",
-  approval:  "bg-orange-100 text-orange-700",
-  manager:   "bg-pink-100 text-pink-700",
-  done:      "bg-green-100 text-green-700",
-  cancelled: "bg-gray-100 text-gray-500",
-  overdue:   "bg-red-100 text-red-700",
-  neutral:   "bg-gray-100 text-gray-500",
-  good:      "bg-green-100 text-green-700",
-  warning:   "bg-amber-100 text-amber-700",
-  danger:    "bg-red-100 text-red-700",
+  waiting:   "bg-tint-yellow text-st-waiting",
+  incoming:  "bg-tint-sky text-st-incoming",
+  working:   "bg-tint-lavender text-st-working",
+  approval:  "bg-tint-peach text-st-approval",
+  manager:   "bg-tint-rose text-st-manager",
+  done:      "bg-tint-mint text-st-done",
+  cancelled: "bg-surface text-slate",
+  overdue:   "bg-overdue-bg text-overdue",
+  neutral:   "bg-surface text-slate",
+  good:      "bg-tint-mint text-b-green",
+  warning:   "bg-tint-yellow text-b-orange",
+  danger:    "bg-overdue-bg text-overdue",
+  purple:    "bg-primary text-white",
+  pink:      "bg-b-pink text-white",
+  orange:    "bg-b-orange text-white",
+};
+
+const DOT_COLORS: Partial<Record<Variant, string>> = {
+  waiting: "bg-st-waiting", incoming: "bg-st-incoming", working: "bg-st-working",
+  approval: "bg-st-approval", manager: "bg-st-manager", done: "bg-st-done",
+  cancelled: "bg-slate", overdue: "bg-overdue", good: "bg-b-green",
+  warning: "bg-b-orange", danger: "bg-overdue",
 };
 
 export function Badge({
-  variant = "neutral",
-  dot = true,
-  className,
-  ...props
+  variant = "neutral", dot = true, className, ...props
 }: { variant?: Variant; dot?: boolean } & React.HTMLAttributes<HTMLSpanElement>) {
   return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-caption font-medium",
-        VARIANT_CLASSES[variant],
-        className,
-      )}
-      {...props}
-    >
-      {dot && DOT_COLORS[variant] && (
-        <span className={cn("h-2 w-2 shrink-0 rounded-full", DOT_COLORS[variant])} />
-      )}
+    <span className={cn("inline-flex items-center gap-1.5 rounded-sm px-2 py-0.5 text-caption", VARIANT_CLASSES[variant], className)} {...props}>
+      {dot && DOT_COLORS[variant] && <span className={cn("h-2 w-2 shrink-0 rounded-full", DOT_COLORS[variant])} />}
       {props.children}
     </span>
   );
@@ -65,8 +50,7 @@ export function statusVariant(status: string): Variant {
   if (status === "אישור לקוח") return "approval";
   if (status === "אישור מנהל") return "manager";
   if (status === "בוצע") return "done";
-  if (status === "בוטל") return "cancelled";
-  if (status === "סגור") return "cancelled";
+  if (status === "בוטל" || status === "סגור") return "cancelled";
   return "neutral";
 }
 

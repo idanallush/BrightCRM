@@ -3,64 +3,63 @@
 @tailwind utilities;
 
 :root {
-  --st-waiting:   #f59e0b;
-  --st-incoming:  #3b82f6;
-  --st-working:   #8b5cf6;
-  --st-approval:  #f97316;
-  --st-manager:   #ec4899;
-  --st-done:      #22c55e;
-  --st-cancelled: #6b7280;
-  --st-overdue:   #ef4444;
+  /* Status CSS vars */
+  --st-waiting: #D97706;
+  --st-incoming: #0077D4;
+  --st-working: #6C3FC5;
+  --st-approval: #D97706;
+  --st-manager: #E9528B;
+  --st-done: #0F9D58;
+  --st-cancelled: #787774;
+  --st-overdue: #E03E3E;
 
   /* Legacy compat */
-  --color-bg: #f8f9fa;
-  --color-hairline: #e5e7eb;
-  --color-ink: #111827;
-  --color-ink-muted: #6b7280;
-  --color-brand: #2563eb;
-  --color-brand-focus: #1d4ed8;
-  --color-brand-light: #eff6ff;
-  --color-border: #e5e7eb;
-  --color-surface-card: #f3f4f6;
-  --color-canvas: #ffffff;
-  --color-primary: #2563eb;
-  --color-primary-active: #1d4ed8;
-  --color-accent: #2563eb;
-
-  --color-status-active: #3b82f6;
-  --color-status-done: #22c55e;
-  --color-status-closed: #6b7280;
-  --color-health-good: #22c55e;
-  --color-health-strategy: #f59e0b;
-  --color-health-critical: #ef4444;
+  --color-bg: #F7F6F3;
+  --color-hairline: #E3E2DE;
+  --color-ink: #37352F;
+  --color-ink-muted: #787774;
+  --color-brand: #6C3FC5;
+  --color-brand-focus: #5B34A8;
+  --color-brand-light: #E8DEEE;
+  --color-border: #E3E2DE;
+  --color-surface-card: #F7F6F3;
+  --color-canvas: #FFFFFF;
+  --color-primary: #6C3FC5;
+  --color-primary-active: #5B34A8;
+  --color-accent: #6C3FC5;
+  --color-status-active: #0077D4;
+  --color-status-done: #0F9D58;
+  --color-status-closed: #787774;
+  --color-health-good: #0F9D58;
+  --color-health-strategy: #D97706;
+  --color-health-critical: #E03E3E;
 }
 
 @layer base {
   html {
     font-family: theme("fontFamily.sans");
-    font-size: 15px;
+    font-size: 16px;
+    background: #FFFFFF;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
 
   body {
-    background: linear-gradient(180deg, #f8f9fb 0%, #f0f2f5 100%);
-    background-attachment: fixed;
-    color: #111827;
-    line-height: 1.6;
-    min-height: 100vh;
+    background: #FFFFFF;
+    color: #37352F;
+    line-height: 1.55;
   }
 
   h1, h2, h3 {
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: -0.02em;
-    color: #111827;
+    color: #37352F;
   }
 }
 
 @layer utilities {
   .skeleton {
-    background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+    background: linear-gradient(90deg, #F7F6F3 25%, #E3E2DE 50%, #F7F6F3 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s ease-in-out infinite;
   }

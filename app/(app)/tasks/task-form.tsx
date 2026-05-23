@@ -14,13 +14,13 @@ import { createTask, updateTask, type TaskInput } from "./actions";
 import type { Client, TaskWithRelations, TeamMember } from "@/lib/data";
 
 const STATUS_OPTIONS: { value: TaskInput["status"]; label: string; dot: string }[] = [
-  { value: "מחכה לטיפול", label: "ממתין", dot: "bg-amber-500" },
+  { value: "מחכה לטיפול", label: "ממתין", dot: "bg-st-waiting" },
   { value: "נכנס לעבודה", label: "נכנס לעבודה", dot: "bg-blue-500" },
   { value: "בעבודה", label: "בעבודה", dot: "bg-purple-500" },
-  { value: "אישור לקוח", label: "אישור לקוח", dot: "bg-orange-500" },
-  { value: "אישור מנהל", label: "אישור מנהל", dot: "bg-pink-500" },
-  { value: "בוצע", label: "בוצע", dot: "bg-green-500" },
-  { value: "בוטל", label: "בוטל", dot: "bg-gray-400" },
+  { value: "אישור לקוח", label: "אישור לקוח", dot: "bg-st-approval" },
+  { value: "אישור מנהל", label: "אישור מנהל", dot: "bg-b-pink" },
+  { value: "בוצע", label: "בוצע", dot: "bg-st-done" },
+  { value: "בוטל", label: "בוטל", dot: "bg-stone" },
 ];
 
 function getInitials(name: string): string {
@@ -106,8 +106,8 @@ export function TaskForm({
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-caption transition-all duration-200",
                   status === opt.value
-                    ? "bg-gray-900 font-medium text-white shadow-sm"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200",
+                    ? "bg-ink-deep font-medium text-white shadow-subtle"
+                    : "bg-surface text-slate hover:bg-gray-200",
                 )}>
                 <span className={cn("h-2 w-2 rounded-full", status === opt.value ? "bg-white" : opt.dot)} />
                 {opt.label}
@@ -132,11 +132,11 @@ export function TaskForm({
                 <button key={m.id} type="button" onClick={() => toggleAssignee(m.id)}
                   className={cn(
                     "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-caption transition-all duration-200",
-                    active ? "bg-brand text-white shadow-sm" : "border border-gray-200 bg-white text-gray-700 hover:bg-gray-50",
+                    active ? "bg-primary text-white shadow-subtle" : "border border-hairline bg-white text-ink hover:bg-surface-soft",
                   )}>
                   <span className={cn(
                     "flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-semibold",
-                    active ? "bg-white/20 text-white" : "bg-blue-100 text-blue-700",
+                    active ? "bg-white/20 text-white" : "bg-tint-sky text-link",
                   )}>
                     {getInitials(m.full_name)}
                   </span>
@@ -148,7 +148,7 @@ export function TaskForm({
         </div>
       </div>
 
-      <div className="mt-3 flex shrink-0 flex-row-reverse gap-2 border-t border-gray-200 pt-3">
+      <div className="mt-3 flex shrink-0 flex-row-reverse gap-2 border-t border-hairline pt-3">
         <Button type="submit" disabled={pending}>
           {pending ? "שומר..." : task ? "שמירה" : "צור משימה"}
         </Button>

@@ -7,26 +7,14 @@ import { useMobileMenu } from "./shell-context";
 
 export function Header() {
   const { setMobileOpen } = useMobileMenu();
-
   return (
-    <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-border bg-white px-4 md:px-6">
-      <button
-        type="button"
-        onClick={() => setMobileOpen(true)}
-        className="flex h-10 w-10 items-center justify-center rounded-lg text-ink-secondary transition-colors duration-200 hover:bg-surface-hover hover:text-ink md:hidden"
-        aria-label="תפריט"
-      >
+    <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-hairline bg-canvas px-4 md:px-6">
+      <button type="button" onClick={() => setMobileOpen(true)}
+        className="flex h-10 w-10 items-center justify-center rounded-md text-slate transition-colors duration-150 hover:bg-surface hover:text-ink md:hidden" aria-label="תפריט">
         <Menu className="h-5 w-5" />
       </button>
-
-      <div className="min-w-0 flex-1">
-        <GlobalSearch />
-      </div>
-
-      {/* Mobile notification bell (desktop bell is in sidebar) */}
-      <div className="md:hidden">
-        <NotificationBell />
-      </div>
+      <div className="min-w-0 flex-1"><GlobalSearch /></div>
+      <div className="md:hidden"><NotificationBell /></div>
     </header>
   );
 }

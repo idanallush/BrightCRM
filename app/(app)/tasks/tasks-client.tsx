@@ -27,11 +27,11 @@ import type { Client, TaskWithRelations, TeamMember } from "@/lib/data";
 
 const STATUS_PILLS = [
   { key: "__all__", label: "הכל", dot: "" },
-  { key: "מחכה לטיפול", label: "ממתין", dot: "bg-amber-500" },
+  { key: "מחכה לטיפול", label: "ממתין", dot: "bg-st-waiting" },
   { key: "נכנס לעבודה", label: "נכנס", dot: "bg-blue-500" },
   { key: "בעבודה", label: "בעבודה", dot: "bg-purple-500" },
-  { key: "אישור לקוח", label: "אישור", dot: "bg-orange-500" },
-  { key: "בוצע", label: "בוצע", dot: "bg-green-500" },
+  { key: "אישור לקוח", label: "אישור", dot: "bg-st-approval" },
+  { key: "בוצע", label: "בוצע", dot: "bg-st-done" },
 ] as const;
 const VIEW_KEY = "brightcrm:tasks-view";
 
@@ -127,24 +127,24 @@ export function TasksClient({
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-baseline gap-3">
-          <h1 className="text-2xl font-bold text-gray-900">משימות</h1>
+          <h1 className="text-2xl font-bold text-ink">משימות</h1>
           {activeFilterCount > 0 && (
             <button type="button" onClick={clearFilters}
-              className="rounded-full bg-brand px-3 py-1 text-[11px] font-medium text-white transition-colors hover:bg-brand-hover">
+              className="rounded-full bg-primary px-3 py-1 text-[11px] font-medium text-white transition-colors hover:bg-primary-pressed">
               {activeFilterCount} פילטרים · נקה
             </button>
           )}
         </div>
         <div className="flex items-center gap-2">
-          <div className="inline-flex rounded-xl bg-gray-100 p-1">
+          <div className="inline-flex rounded-lg bg-surface p-1">
             <button type="button" onClick={() => changeView("table")}
               className={cn("flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-caption transition-all duration-200",
-                view === "table" ? "bg-white font-medium text-gray-900 shadow-sm" : "text-gray-500")}>
+                view === "table" ? "bg-white font-medium text-ink shadow-subtle" : "text-slate")}>
               <Rows3 className="h-4 w-4" /><span className="hidden sm:inline">טבלה</span>
             </button>
             <button type="button" onClick={() => changeView("kanban")}
               className={cn("flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-caption transition-all duration-200",
-                view === "kanban" ? "bg-white font-medium text-gray-900 shadow-sm" : "text-gray-500")}>
+                view === "kanban" ? "bg-white font-medium text-ink shadow-subtle" : "text-slate")}>
               <LayoutGrid className="h-4 w-4" /><span className="hidden sm:inline">קנבן</span>
             </button>
           </div>
@@ -155,15 +155,15 @@ export function TasksClient({
       </div>
 
       {/* Filter bar — card with visual depth */}
-      <div className="rounded-xl border border-gray-200/60 bg-white p-4 shadow-sm">
+      <div className="rounded-lg border border-hairline/60 bg-white p-4 shadow-subtle">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="flex gap-1 overflow-x-auto pb-1">
             {STATUS_PILLS.map((pill) => (
               <button key={pill.key} type="button" onClick={() => updateFilter("status", pill.key)}
                 className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-caption transition-all duration-200",
                   filters.status === pill.key
-                    ? pill.key === "__all__" ? "bg-gray-900 text-white" : "bg-white font-medium text-gray-900 shadow-sm ring-1 ring-gray-200"
-                    : "text-gray-500 hover:bg-gray-100")}>
+                    ? pill.key === "__all__" ? "bg-ink-deep text-white" : "bg-white font-medium text-ink shadow-subtle ring-1 ring-gray-200"
+                    : "text-slate hover:bg-surface")}>
                 {pill.dot && <span className={`mr-1.5 inline-block h-2 w-2 rounded-full ${pill.dot}`} />}
                 {pill.label}
               </button>
@@ -172,7 +172,7 @@ export function TasksClient({
 
           <div className="flex flex-1 flex-wrap items-center gap-2">
             <div className="relative min-w-[140px] flex-1 sm:max-w-[200px]">
-              <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone" />
               <Input value={searchText} onChange={(e) => setSearchText(e.target.value)}
                 placeholder="חיפוש..." className="h-9 pr-9" />
             </div>
@@ -195,7 +195,7 @@ export function TasksClient({
 
             <button type="button" onClick={() => updateFilter("overdue", !filters.overdue)}
               className={cn("flex h-9 items-center gap-1.5 rounded-lg border px-3 text-caption transition-colors duration-200",
-                filters.overdue ? "border-red-300 bg-red-50 text-red-600" : "border-gray-200 bg-white text-gray-500 hover:bg-gray-50")}>
+                filters.overdue ? "border-overdue/40 bg-overdue-bg text-overdue" : "border-hairline bg-white text-slate hover:bg-surface-soft")}>
               <AlertTriangle className="h-3.5 w-3.5" />עבר דדליין
             </button>
           </div>
@@ -241,23 +241,23 @@ export function TasksClient({
               </SheetHeader>
               <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-5 pb-6 md:px-6">
                 <TaskForm key={editing.id} task={editing} clients={clients} team={team} onDone={closeSheet} compact />
-                <div className="border-t border-gray-200 pt-4">
+                <div className="border-t border-hairline pt-4">
                   <TaskComments taskId={editing.id} team={team} />
                 </div>
-                <div className="border-t border-gray-200 pt-4">
+                <div className="border-t border-hairline pt-4">
                   <TaskAttachments key={editing.id} taskId={editing.id} />
                 </div>
-                <div className="border-t border-gray-200 pt-3">
+                <div className="border-t border-hairline pt-3">
                   {confirmingDelete ? (
-                    <div className="flex flex-col gap-2 rounded-lg bg-red-50 p-3 text-right">
-                      <p className="text-sm text-red-700">למחוק את המשימה לצמיתות?</p>
+                    <div className="flex flex-col gap-2 rounded-lg bg-overdue-bg p-3 text-right">
+                      <p className="text-sm text-overdue">למחוק את המשימה לצמיתות?</p>
                       <div className="flex flex-row-reverse gap-2">
                         <Button variant="danger" size="sm" onClick={onDelete}>מחק</Button>
                         <Button variant="ghost" size="sm" onClick={() => setConfirmingDelete(false)}>ביטול</Button>
                       </div>
                     </div>
                   ) : (
-                    <Button variant="ghost" size="sm" onClick={() => setConfirmingDelete(true)} className="text-red-600">מחיקה</Button>
+                    <Button variant="ghost" size="sm" onClick={() => setConfirmingDelete(true)} className="text-overdue">מחיקה</Button>
                   )}
                 </div>
               </div>

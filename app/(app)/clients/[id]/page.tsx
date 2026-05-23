@@ -45,7 +45,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-baseline gap-3">
-          <Link href="/clients" className="inline-flex items-center gap-1 text-sm text-ink-secondary transition-colors hover:text-ink">
+          <Link href="/clients" className="inline-flex items-center gap-1 text-sm text-slate transition-colors hover:text-ink">
             <ArrowRight className="h-4 w-4" /> חזרה
           </Link>
           <h1 className="text-xl font-semibold text-ink md:text-2xl">{client.name}</h1>
@@ -57,7 +57,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
         </div>
       </div>
 
-      <div className="rounded-lg bg-gray-50 p-5">
+      <div className="rounded-lg bg-surface-soft p-5">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           <Field label="איש קשר" value={client.contact_name} />
           <Field label="מנהל לקוח" value={manager?.full_name ?? null} />
@@ -85,7 +85,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
       <section className="flex flex-col gap-2">
         <div className="flex items-baseline justify-between">
           <h3 className="text-sm font-semibold text-ink">משימות ({tasks.length})</h3>
-          <Link href={`/tasks?client=${client.id}`} className="text-xs font-medium text-ink-secondary transition-colors hover:text-ink">לכל המשימות</Link>
+          <Link href={`/tasks?client=${client.id}`} className="text-xs font-medium text-slate transition-colors hover:text-ink">לכל המשימות</Link>
         </div>
         {tasks.length === 0 ? (
           <EmptyBox text="אין משימות ללקוח." />
@@ -97,9 +97,9 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
                 <TBody>
                   {tasks.map((t) => (
                     <TR key={t.id} className="cursor-pointer">
-                      <TD className="font-medium"><Link href={`/tasks?task=${t.id}`} className="block transition-colors hover:text-brand">{t.title}</Link></TD>
+                      <TD className="font-medium"><Link href={`/tasks?task=${t.id}`} className="block transition-colors hover:text-primary">{t.title}</Link></TD>
                       <TD><Badge variant={statusVariant(t.status)}>{t.status}</Badge></TD>
-                      <TD className="hidden text-ink-secondary sm:table-cell">{fmtDate(t.due_date)}</TD>
+                      <TD className="hidden text-slate sm:table-cell">{fmtDate(t.due_date)}</TD>
                     </TR>
                   ))}
                 </TBody>
@@ -121,13 +121,13 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
 function Field({ label, value }: { label: string; value: string | null }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-xs text-ink-secondary">{label}</span>
+      <span className="text-xs text-slate">{label}</span>
       <span className="text-sm text-ink">{value ?? "\u2014"}</span>
     </div>
   );
 }
 
 function EmptyBox({ text }: { text: string }) {
-  return <div className="rounded-lg bg-gray-50 p-6 text-center text-sm text-ink-secondary">{text}</div>;
+  return <div className="rounded-lg bg-surface-soft p-6 text-center text-sm text-slate">{text}</div>;
 }
 
