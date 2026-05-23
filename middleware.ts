@@ -2,8 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
 export async function middleware(request: NextRequest) {
-  // Telegram webhook is server-to-server — no user session, skip auth
-  if (request.nextUrl.pathname.startsWith("/api/telegram/")) {
+  // Server-to-server routes — no user session, skip auth
+  if (
+    request.nextUrl.pathname.startsWith("/api/telegram/") ||
+    request.nextUrl.pathname.startsWith("/api/cron/")
+  ) {
     return NextResponse.next();
   }
 
