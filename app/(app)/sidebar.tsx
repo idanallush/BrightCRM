@@ -107,19 +107,21 @@ export function Sidebar({ userLabel }: { userLabel: string }) {
       </div>
 
       {/* Main nav */}
-      <nav className="mt-2 flex flex-1 flex-col gap-1 px-3">
+      <nav className="mt-2 flex flex-col gap-1 px-3">
         {NAV_MAIN.map((item, i) => (
           <NavLink key={item.href} {...item} isMobile={isMobile} index={i} />
         ))}
-        {/* Spacer */}
-        <div className="flex-1" />
-        {/* Bottom nav items */}
-        <div className="flex flex-col gap-1 border-t border-border pt-2">
-          {NAV_BOTTOM.map((item, i) => (
-            <NavLink key={item.href} {...item} isMobile={isMobile} index={NAV_MAIN.length + i} />
-          ))}
-        </div>
       </nav>
+
+      {/* Spacer */}
+      <div className="flex-1" />
+
+      {/* Bottom nav items */}
+      <div className="flex flex-col gap-1 border-t border-border px-3 pt-2 pb-1">
+        {NAV_BOTTOM.map((item, i) => (
+          <NavLink key={item.href} {...item} isMobile={isMobile} index={NAV_MAIN.length + i} />
+        ))}
+      </div>
 
       {/* User */}
       <div className="shrink-0 border-t border-border p-3">
