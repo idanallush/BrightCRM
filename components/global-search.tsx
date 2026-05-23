@@ -21,7 +21,6 @@ export function GlobalSearch() {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const wrapRef = React.useRef<HTMLDivElement>(null);
 
-  // Cmd/Ctrl+K opens the search.
   React.useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -37,7 +36,6 @@ export function GlobalSearch() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // Close on outside click.
   React.useEffect(() => {
     function onClick(e: MouseEvent) {
       if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
@@ -46,7 +44,6 @@ export function GlobalSearch() {
     return () => window.removeEventListener("mousedown", onClick);
   }, []);
 
-  // Debounced search.
   React.useEffect(() => {
     const text = q.trim();
     if (text.length < MIN_LEN) {
@@ -75,7 +72,7 @@ export function GlobalSearch() {
   return (
     <div ref={wrapRef} className="relative w-full max-w-md">
       <div className="relative">
-        <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--color-ink-muted)]" />
+        <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
         <input
           ref={inputRef}
           type="search"
@@ -83,28 +80,25 @@ export function GlobalSearch() {
           onChange={(e) => setQ(e.target.value)}
           onFocus={() => setOpen(true)}
           placeholder="חיפוש משימות, לקוחות, קמפיינים..."
-          className="h-9 w-full rounded-md border border-[color:var(--color-hairline)] bg-white pr-9 ps-12 text-sm focus:border-[color:var(--color-brand)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-brand-focus)]/30"
+          className="h-9 w-full rounded-lg border border-gray-200 bg-white pr-9 ps-12 text-sm transition-all duration-200 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
         />
-        <span className="pointer-events-none absolute start-2 top-1/2 hidden -translate-y-1/2 rounded border border-[color:var(--color-hairline)] bg-black/[0.03] px-1.5 py-0.5 text-[10px] text-[color:var(--color-ink-muted)] sm:inline">
+        <span className="pointer-events-none absolute start-2 top-1/2 hidden -translate-y-1/2 rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[10px] text-ink-muted sm:inline">
           ⌘K
         </span>
       </div>
 
       {open && q.trim().length >= MIN_LEN && (
-        <div
-          className="absolute end-0 top-full z-50 mt-1 w-[min(28rem,calc(100vw-2rem))] overflow-hidden rounded-lg border border-[color:var(--color-hairline)] bg-white shadow-xl"
-          dir="rtl"
-        >
+        <div className="absolute end-0 top-full z-50 mt-1 w-[min(28rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
           {loading && (
-            <div className="flex items-center justify-center gap-2 p-4 text-sm text-[color:var(--color-ink-muted)]">
+            <div className="flex items-center justify-center gap-2 p-4 text-sm text-ink-muted">
               <Loader2 className="h-4 w-4 animate-spin" />
               מחפש...
             </div>
           )}
 
           {!loading && totalCount === 0 && (
-            <div className="p-4 text-center text-sm text-[color:var(--color-ink-muted)]">
-              לא נמצאו תוצאות עבור "{q.trim()}".
+            <div className="p-4 text-center text-sm text-ink-muted">
+              לא נמצאו תוצאות עבור &quot;{q.trim()}&quot;.
             </div>
           )}
 
@@ -118,7 +112,7 @@ export function GlobalSearch() {
                     title={t.title}
                     sub={t.client_name}
                     badge="משימה"
-                    badgeClass="bg-[color:var(--color-brand)]/10 text-[color:var(--color-brand)]"
+                    badgeClass="bg-blue-50 text-blue-700"
                   />
                 ))}
               </Group>
@@ -130,7 +124,7 @@ export function GlobalSearch() {
                     title={c.name}
                     sub={null}
                     badge="לקוח"
-                    badgeClass="bg-amber-500/10 text-amber-700"
+                    badgeClass="bg-amber-50 text-amber-700"
                   />
                 ))}
               </Group>
@@ -142,7 +136,7 @@ export function GlobalSearch() {
                     title={c.name}
                     sub={c.client_name}
                     badge="קמפיין"
-                    badgeClass="bg-purple-500/10 text-purple-700"
+                    badgeClass="bg-purple-50 text-purple-700"
                   />
                 ))}
               </Group>
@@ -166,7 +160,7 @@ function Group({
   if (items === 0) return null;
   return (
     <div className="py-1">
-      <div className="px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-[color:var(--color-ink-muted)]">
+      <div className="px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-ink-muted">
         {label}
       </div>
       {children}
@@ -191,14 +185,12 @@ function Item({
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-right hover:bg-black/[0.03]"
+      className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-right transition-colors duration-200 hover:bg-gray-50"
     >
       <div className="min-w-0 flex-1">
         <div className="truncate text-sm font-medium">{title}</div>
         {sub && (
-          <div className="truncate text-xs text-[color:var(--color-ink-muted)]">
-            {sub}
-          </div>
+          <div className="truncate text-xs text-ink-muted">{sub}</div>
         )}
       </div>
       <span

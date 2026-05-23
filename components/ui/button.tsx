@@ -6,20 +6,17 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-brand-focus)] disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all duration-200 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        primary:
-          "rounded-full bg-[color:var(--color-brand)] text-white hover:opacity-90",
+        primary: "rounded-lg bg-brand text-white hover:bg-brand-focus",
         secondary:
-          "rounded-full border border-[color:var(--color-brand)] text-[color:var(--color-brand)] hover:bg-[color:var(--color-brand)]/5",
-        ghost:
-          "rounded-md text-[color:var(--color-ink)] hover:bg-black/5",
+          "rounded-lg border border-brand text-brand hover:bg-brand-light",
+        ghost: "rounded-lg text-ink hover:bg-gray-100",
         outline:
-          "rounded-md border border-[color:var(--color-hairline)] bg-white text-[color:var(--color-ink)] hover:bg-black/5",
-        danger:
-          "rounded-md bg-red-600 text-white hover:bg-red-700",
+          "rounded-lg border border-gray-200 bg-white text-ink hover:bg-gray-50",
+        danger: "rounded-lg bg-red-600 text-white hover:bg-red-700",
       },
       size: {
         sm: "h-8 px-3 text-sm",

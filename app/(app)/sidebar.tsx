@@ -2,34 +2,76 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, ListTodo, Users, Megaphone } from "lucide-react";
+import {
+  LayoutDashboard,
+  CheckSquare,
+  Users,
+  Megaphone,
+  PanelRightOpen,
+  PanelRightClose,
+  X,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useMobileMenu } from "./shell-context";
+import * as React from "react";
 
 const NAV = [
-  { href: "/dashboard", label: "דשבורד", Icon: Home },
-  { href: "/tasks", label: "משימות", Icon: ListTodo },
+  { href: "/dashboard", label: "דשבורד", Icon: LayoutDashboard },
+  { href: "/tasks", label: "משימות", Icon: CheckSquare },
   { href: "/clients", label: "לקוחות", Icon: Users },
   { href: "/campaigns", label: "קמפיינים", Icon: Megaphone },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const [collapsed, setCollapsed] = React.useState(false);
+  const { mobileOpen, setMobileOpen } = useMobileMenu();
 
-  return (
-    <aside
-      className={cn(
-        "shrink-0 border-l border-[color:var(--color-hairline)] bg-white",
-        // Collapsed on mobile (icons only), full on md+
-        "w-16 md:w-56",
-      )}
-    >
-      <div className="flex h-14 items-center px-4 md:px-5">
-        <div className="font-semibold tracking-tight text-[color:var(--color-ink)]">
-          <span className="hidden md:inline">BrightCRM</span>
-          <span className="text-[color:var(--color-brand)] md:hidden">B</span>
-        </div>
+  // Close mobile sidebar on navigation
+  React.useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname, setMobileOpen]);
+
+  const navContent = (isMobile: boolean) => (
+    <>
+      {/* Logo */}
+      <div className="flex h-16 items-center justify-between px-4">
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand text-sm font-bold text-white">
+            B
+          </span>
+          {(!collapsed || isMobile) && (
+            <span className="text-base font-semibold text-ink">
+              Bright<span className="text-brand">CRM</span>
+            </span>
+          )}
+        </Link>
+        {!isMobile && (
+          <button
+            type="button"
+            onClick={() => setCollapsed((v) => !v)}
+            className="text-ink-muted transition-colors hover:text-ink"
+          >
+            {collapsed ? (
+              <PanelRightClose className="h-4 w-4" />
+            ) : (
+              <PanelRightOpen className="h-4 w-4" />
+            )}
+          </button>
+        )}
+        {isMobile && (
+          <button
+            type="button"
+            onClick={() => setMobileOpen(false)}
+            className="text-ink-muted"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        )}
       </div>
-      <nav className="flex flex-col gap-1 px-2 md:px-3">
+
+      {/* Nav items */}
+      <nav className="mt-2 flex flex-col gap-1 px-3">
         {NAV.map(({ href, label, Icon }) => {
           const active = pathname === href || pathname.startsWith(href + "/");
           return (
@@ -38,19 +80,52 @@ export function Sidebar() {
               href={href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition",
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200",
                 active
-                  ? "bg-[color:var(--color-brand)]/10 text-[color:var(--color-brand)]"
-                  : "text-[color:var(--color-ink)] hover:bg-black/5",
+                  ? "bg-brand-light font-semibold text-brand"
+                  : "text-ink-muted hover:bg-gray-100 hover:text-ink",
+                !isMobile && collapsed && "justify-center px-0",
               )}
               title={label}
             >
-              <Icon className="h-4 w-4 shrink-0" />
-              <span className="hidden md:inline">{label}</span>
+              <Icon className="h-5 w-5 shrink-0" />
+              {(isMobile || !collapsed) && <span>{label}</span>}
             </Link>
           );
         })}
       </nav>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside
+        className={cn(
+          "hidden shrink-0 flex-col border-l border-gray-200 bg-white transition-all duration-300 md:flex",
+          collapsed ? "w-16" : "w-64",
+        )}
+      >
+        {navContent(false)}
+      </aside>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/30 transition-opacity md:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* Mobile sidebar drawer */}
+      <aside
+        className={cn(
+          "fixed inset-y-0 right-0 z-50 w-72 transform bg-white shadow-xl transition-transform duration-300 md:hidden",
+          mobileOpen ? "translate-x-0" : "translate-x-full",
+        )}
+      >
+        {navContent(true)}
+      </aside>
+    </>
   );
 }

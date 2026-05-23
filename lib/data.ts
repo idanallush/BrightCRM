@@ -304,6 +304,61 @@ export async function getRecentTasks(limit = 5) {
   }));
 }
 
+export async function getRecentTasksDetailed(limit = 5) {
+  const sb = createClient();
+  const { data } = await sb
+    .from("tasks")
+    .select(
+      "id,title,status,due_date,source,created_at,client:clients(name),assignees:task_assignees(member:team_members(full_name))",
+    )
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return ((data ?? []) as any[]).map((r) => ({
+    id: r.id as string,
+    title: r.title as string,
+    status: r.status as string,
+    due_date: r.due_date as string | null,
+    source: r.source as string,
+    created_at: r.created_at as string,
+    client_name: (r.client?.name as string | undefined) ?? null,
+    created_by:
+      (r.assignees?.[0]?.member?.full_name as string | undefined) ?? null,
+  }));
+}
+
+export async function getMyTasks(userEmail: string) {
+  const sb = createClient();
+
+  // Find team member by email
+  const { data: member } = await sb
+    .from("team_members")
+    .select("id")
+    .eq("email", userEmail)
+    .maybeSingle();
+
+  if (!member) return [];
+
+  const { data } = await sb
+    .from("tasks")
+    .select(
+      "id,title,due_date,client:clients(name),assignees:task_assignees(member:team_members(id))",
+    )
+    .eq("status", "בעבודה")
+    .order("due_date", { ascending: true, nullsFirst: false });
+
+  // Filter to only tasks assigned to this member
+  return ((data ?? []) as any[])
+    .filter((t: any) =>
+      (t.assignees ?? []).some((a: any) => a.member?.id === member.id),
+    )
+    .map((t: any) => ({
+      id: t.id as string,
+      title: t.title as string,
+      due_date: t.due_date as string | null,
+      client_name: (t.client?.name as string | undefined) ?? null,
+    }));
+}
+
 export async function getCriticalClients() {
   const sb = createClient();
   const { data } = await sb

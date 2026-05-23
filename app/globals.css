@@ -3,25 +3,23 @@
 @tailwind utilities;
 
 :root {
-  --color-bg: #f5f5f7;
+  --color-bg: #f8f9fb;
   --color-surface: #ffffff;
-  --color-ink: #1d1d1f;
-  --color-ink-muted: #6e6e73;
-  --color-hairline: rgba(0, 0, 0, 0.08);
-  --color-brand: #0066cc;
-  --color-brand-focus: #0071e3;
+  --color-ink: #111827;
+  --color-ink-muted: #6b7280;
+  --color-border: #e5e7eb;
+  --color-hairline: #e5e7eb;
+  --color-brand: #2563eb;
+  --color-brand-light: #dbeafe;
+  --color-brand-focus: #1d4ed8;
 
-  --color-status-active: #0066cc;
-  --color-status-done: #34c759;
-  --color-status-closed: #6e6e73;
+  --color-status-active: #2563eb;
+  --color-status-done: #16a34a;
+  --color-status-closed: #9ca3af;
 
-  --color-health-good: #34c759;
-  --color-health-strategy: #ff9500;
-  --color-health-critical: #ff3b30;
-
-  --radius-sm: 8px;
-  --radius-md: 11px;
-  --radius-lg: 18px;
+  --color-health-good: #16a34a;
+  --color-health-strategy: #f59e0b;
+  --color-health-critical: #dc2626;
 }
 
 html {
@@ -36,8 +34,9 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Smooth transitions on all interactive elements */
 @layer utilities {
-  .hairline {
-    border: 1px solid var(--color-hairline);
+  .interact {
+    @apply transition-all duration-200 ease-out;
   }
 }

@@ -4,13 +4,13 @@ import { cn } from "@/lib/utils";
 type Variant = "active" | "done" | "closed" | "neutral" | "warning" | "danger" | "good";
 
 const VARIANT_CLASSES: Record<Variant, string> = {
-  active: "bg-[color:var(--color-status-active)]/10 text-[color:var(--color-status-active)]",
-  done: "bg-[color:var(--color-status-done)]/10 text-[color:var(--color-status-done)]",
-  closed: "bg-black/5 text-[color:var(--color-ink-muted)]",
-  neutral: "bg-black/5 text-[color:var(--color-ink)]",
-  warning: "bg-[color:var(--color-health-strategy)]/15 text-[color:var(--color-health-strategy)]",
-  danger: "bg-[color:var(--color-health-critical)]/10 text-[color:var(--color-health-critical)]",
-  good: "bg-[color:var(--color-health-good)]/10 text-[color:var(--color-health-good)]",
+  active: "bg-blue-50 text-blue-700",
+  done: "bg-green-50 text-green-700",
+  closed: "bg-gray-100 text-gray-500",
+  neutral: "bg-gray-100 text-gray-700",
+  warning: "bg-amber-50 text-amber-700",
+  danger: "bg-red-50 text-red-700",
+  good: "bg-green-50 text-green-700",
 };
 
 export function Badge({
