@@ -1,17 +1,24 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-type Variant = "active" | "pending" | "done" | "closed" | "neutral" | "warning" | "danger" | "good";
+type Variant =
+  | "waiting" | "incoming" | "working" | "approval" | "manager"
+  | "done" | "cancelled" | "overdue"
+  | "neutral" | "good" | "warning" | "danger";
 
 const VARIANT_CLASSES: Record<Variant, string> = {
-  active: "bg-accent/10 text-accent",
-  pending: "bg-status-warning/10 text-status-warning",
-  done: "bg-status-done/10 text-status-done",
-  closed: "bg-surface-card text-ink-muted",
-  neutral: "bg-surface-card text-ink",
-  warning: "bg-status-warning/10 text-status-warning",
-  danger: "bg-status-overdue/10 text-status-overdue",
-  good: "bg-status-done/10 text-status-done",
+  waiting:   "bg-st-waiting-bg text-st-waiting",
+  incoming:  "bg-st-incoming-bg text-st-incoming",
+  working:   "bg-st-working-bg text-st-working",
+  approval:  "bg-st-approval-bg text-st-approval",
+  manager:   "bg-st-manager-bg text-st-manager",
+  done:      "bg-st-done-bg text-st-done",
+  cancelled: "bg-st-cancelled-bg text-st-cancelled",
+  overdue:   "bg-overdue-bg text-overdue",
+  neutral:   "bg-gray-100 text-ink-secondary",
+  good:      "bg-success-bg text-success",
+  warning:   "bg-warning-bg text-warning",
+  danger:    "bg-overdue-bg text-overdue",
 };
 
 export function Badge({
@@ -22,7 +29,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-pill px-3 py-0.5 text-[13px] font-medium",
+        "inline-flex items-center rounded-full px-2.5 py-0.5 text-caption font-medium",
         VARIANT_CLASSES[variant],
         className,
       )}
@@ -32,15 +39,14 @@ export function Badge({
 }
 
 export function statusVariant(status: string): Variant {
-  if (status === "מחכה לטיפול") return "pending";
-  if (status === "נכנס לעבודה") return "active";
-  if (status === "בעבודה") return "active";
-  if (status === "אישור לקוח") return "warning";
-  if (status === "אישור מנהל") return "warning";
+  if (status === "מחכה לטיפול") return "waiting";
+  if (status === "נכנס לעבודה") return "incoming";
+  if (status === "בעבודה") return "working";
+  if (status === "אישור לקוח") return "approval";
+  if (status === "אישור מנהל") return "manager";
   if (status === "בוצע") return "done";
-  if (status === "בוטל") return "closed";
-  // Legacy
-  if (status === "סגור") return "closed";
+  if (status === "בוטל") return "cancelled";
+  if (status === "סגור") return "cancelled";
   return "neutral";
 }
 

@@ -9,7 +9,6 @@ import type { SearchResults } from "@/lib/data";
 
 const DEBOUNCE_MS = 300;
 const MIN_LEN = 2;
-
 const EMPTY: SearchResults = { tasks: [], clients: [], campaigns: [] };
 
 export function GlobalSearch() {
@@ -46,11 +45,7 @@ export function GlobalSearch() {
 
   React.useEffect(() => {
     const text = q.trim();
-    if (text.length < MIN_LEN) {
-      setResults(EMPTY);
-      setLoading(false);
-      return;
-    }
+    if (text.length < MIN_LEN) { setResults(EMPTY); setLoading(false); return; }
     setLoading(true);
     const handle = window.setTimeout(async () => {
       const r = await globalSearch(text);
@@ -60,14 +55,9 @@ export function GlobalSearch() {
     return () => window.clearTimeout(handle);
   }, [q]);
 
-  function navigate(href: string) {
-    setOpen(false);
-    setQ("");
-    router.push(href);
-  }
+  function navigate(href: string) { setOpen(false); setQ(""); router.push(href); }
 
-  const totalCount =
-    results.tasks.length + results.clients.length + (results.campaigns?.length ?? 0);
+  const totalCount = results.tasks.length + results.clients.length + (results.campaigns?.length ?? 0);
 
   return (
     <div ref={wrapRef} className="relative w-full max-w-md">
@@ -79,53 +69,38 @@ export function GlobalSearch() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onFocus={() => setOpen(true)}
-          placeholder="חיפוש משימות, לקוחות, קמפיינים..."
-          className="h-9 w-full rounded-md border border-hairline bg-canvas pr-9 ps-12 text-sm text-ink transition-colors duration-150 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink/20"
+          placeholder="חיפוש משימות, לקוחות..."
+          className="h-9 w-full rounded-lg border border-border bg-white pr-9 ps-12 text-sm text-ink transition-colors duration-200 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
         />
-        <span className="pointer-events-none absolute start-2 top-1/2 hidden -translate-y-1/2 rounded border border-hairline bg-surface-soft px-1.5 py-0.5 text-[10px] text-ink-soft sm:inline">
+        <span className="pointer-events-none absolute start-2 top-1/2 hidden -translate-y-1/2 rounded border border-border bg-gray-50 px-1.5 py-0.5 text-[10px] text-ink-muted sm:inline">
           ⌘K
         </span>
       </div>
 
       {open && q.trim().length >= MIN_LEN && (
-        <div className="absolute end-0 top-full z-50 mt-1 w-[min(28rem,calc(100vw-2rem))] overflow-hidden rounded-lg border border-hairline bg-canvas shadow-card">
+        <div className="absolute end-0 top-full z-50 mt-1 w-[min(28rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-border bg-white shadow-overlay">
           {loading && (
-            <div className="flex items-center justify-center gap-2 p-4 text-sm text-ink-muted">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              מחפש...
+            <div className="flex items-center justify-center gap-2 p-4 text-sm text-ink-secondary">
+              <Loader2 className="h-4 w-4 animate-spin" /> מחפש...
             </div>
           )}
-
           {!loading && totalCount === 0 && (
-            <div className="p-4 text-center text-sm text-ink-muted">
+            <div className="p-4 text-center text-sm text-ink-secondary">
               לא נמצאו תוצאות עבור &quot;{q.trim()}&quot;.
             </div>
           )}
-
           {!loading && totalCount > 0 && (
             <div className="max-h-[60vh] overflow-y-auto p-1">
               <Group label="משימות" items={results.tasks.length}>
                 {results.tasks.map((t) => (
-                  <Item
-                    key={t.id}
-                    onClick={() => navigate(`/tasks?task=${t.id}`)}
-                    title={t.title}
-                    sub={t.client_name}
-                    badge="משימה"
-                    badgeClass="bg-accent/10 text-accent"
-                  />
+                  <Item key={t.id} onClick={() => navigate(`/tasks?task=${t.id}`)}
+                    title={t.title} sub={t.client_name} badge="משימה" badgeClass="bg-brand-light text-brand" />
                 ))}
               </Group>
               <Group label="לקוחות" items={results.clients.length}>
                 {results.clients.map((c) => (
-                  <Item
-                    key={c.id}
-                    onClick={() => navigate(`/clients/${c.id}`)}
-                    title={c.name}
-                    sub={null}
-                    badge="לקוח"
-                    badgeClass="bg-badge-orange/10 text-badge-orange"
-                  />
+                  <Item key={c.id} onClick={() => navigate(`/clients/${c.id}`)}
+                    title={c.name} sub={null} badge="לקוח" badgeClass="bg-amber-50 text-amber-600" />
                 ))}
               </Group>
             </div>
@@ -136,59 +111,27 @@ export function GlobalSearch() {
   );
 }
 
-function Group({
-  label,
-  items,
-  children,
-}: {
-  label: string;
-  items: number;
-  children: React.ReactNode;
-}) {
+function Group({ label, items, children }: { label: string; items: number; children: React.ReactNode }) {
   if (items === 0) return null;
   return (
     <div className="py-1">
-      <div className="px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-ink-muted">
-        {label}
-      </div>
+      <div className="px-3 py-1 text-[11px] font-medium uppercase tracking-wide text-ink-muted">{label}</div>
       {children}
     </div>
   );
 }
 
-function Item({
-  title,
-  sub,
-  badge,
-  badgeClass,
-  onClick,
-}: {
-  title: string;
-  sub: string | null;
-  badge: string;
-  badgeClass: string;
-  onClick: () => void;
+function Item({ title, sub, badge, badgeClass, onClick }: {
+  title: string; sub: string | null; badge: string; badgeClass: string; onClick: () => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-right transition-colors duration-150 hover:bg-surface-card"
-    >
+    <button type="button" onClick={onClick}
+      className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2 text-right transition-colors duration-200 hover:bg-surface-hover">
       <div className="min-w-0 flex-1">
         <div className="truncate text-sm font-medium text-ink">{title}</div>
-        {sub && (
-          <div className="truncate text-xs text-ink-muted">{sub}</div>
-        )}
+        {sub && <div className="truncate text-xs text-ink-secondary">{sub}</div>}
       </div>
-      <span
-        className={cn(
-          "shrink-0 rounded-pill px-2.5 py-0.5 text-[11px] font-medium",
-          badgeClass,
-        )}
-      >
-        {badge}
-      </span>
+      <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium", badgeClass)}>{badge}</span>
     </button>
   );
 }

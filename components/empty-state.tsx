@@ -17,7 +17,7 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center gap-3 rounded-lg border border-hairline bg-canvas px-6 py-12 text-center",
+        "flex flex-col items-center justify-center gap-3 rounded-xl border border-border bg-white px-6 py-12 text-center",
         className,
       )}
     >
@@ -25,7 +25,7 @@ export function EmptyState({
       <div className="flex flex-col gap-1">
         <h3 className="text-base font-semibold text-ink">{title}</h3>
         {description && (
-          <p className="text-sm text-ink-muted">{description}</p>
+          <p className="text-sm text-ink-secondary">{description}</p>
         )}
       </div>
       {action && <div className="mt-2">{action}</div>}

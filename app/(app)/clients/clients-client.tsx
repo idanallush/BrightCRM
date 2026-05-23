@@ -59,10 +59,10 @@ export function ClientsClient({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-baseline gap-3">
           <h1 className="font-display text-xl font-semibold tracking-display text-ink md:text-2xl">לקוחות</h1>
-          <span className="text-sm text-ink-muted">{filtered.length} מתוך {clients.length}</span>
+          <span className="text-sm text-ink-secondary">{filtered.length} מתוך {clients.length}</span>
           {activeFilterCount > 0 && (
             <button type="button" onClick={clearFilters}
-              className="rounded-pill bg-primary px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-primary-active">
+              className="rounded-full bg-brand px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-brand-hover">
               {activeFilterCount} פילטרים · נקה
             </button>
           )}
@@ -74,7 +74,7 @@ export function ClientsClient({
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div className="relative">
-          <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+          <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-secondary" />
           <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="חיפוש שם לקוח" className="pr-9" />
         </div>
         <Select value={health} onValueChange={setHealth}>
@@ -117,7 +117,7 @@ export function ClientsClient({
             return (
               <div
                 key={c.id}
-                className="cursor-pointer rounded-lg bg-surface-card p-5 transition-all duration-150 hover:shadow-subtle"
+                className="cursor-pointer rounded-lg bg-gray-50 p-5 transition-all duration-150 hover:shadow-card"
                 onClick={() => router.push(`/clients/${c.id}`)}
               >
                 <div className="flex items-start justify-between gap-2">
@@ -126,23 +126,23 @@ export function ClientsClient({
                 </div>
 
                 <div className="mt-3 flex items-center justify-between text-sm">
-                  <span className="text-ink-muted">{c.manager_name ?? "ללא מנהל"}</span>
+                  <span className="text-ink-secondary">{c.manager_name ?? "ללא מנהל"}</span>
                   <span className={cn(
-                    "rounded-pill px-2.5 py-0.5 text-xs font-medium",
-                    openCount === 0 ? "bg-surface-strong/50 text-ink-muted"
-                      : openCount <= 3 ? "bg-accent/10 text-accent"
-                      : "bg-status-overdue/10 text-status-overdue",
+                    "rounded-full px-2.5 py-0.5 text-xs font-medium",
+                    openCount === 0 ? "bg-gray-100 text-ink-secondary"
+                      : openCount <= 3 ? "bg-brand-light text-brand"
+                      : "bg-overdue-bg text-overdue",
                   )}>
                     {openCount} משימות
                   </span>
                 </div>
 
                 {links.length > 0 && (
-                  <div className="mt-3 flex gap-1.5 border-t border-hairline-soft pt-3">
+                  <div className="mt-3 flex gap-1.5 border-t border-border-soft pt-3">
                     {links.map((l) => (
                       <a key={l.label} href={l.url} target="_blank" rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="flex h-7 items-center gap-1 rounded-md border border-hairline bg-canvas px-2 text-xs text-ink-muted transition-colors hover:text-ink"
+                        className="flex h-7 items-center gap-1 rounded-md border border-border bg-white px-2 text-xs text-ink-secondary transition-colors hover:text-ink"
                         title={l.label}>
                         {l.icon}
                         <span className="hidden sm:inline">{l.label}</span>

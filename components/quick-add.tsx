@@ -4,6 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Plus, CheckSquare, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 const ITEMS = [
   { href: "/tasks?new=true", label: "משימה חדשה", Icon: CheckSquare },
@@ -38,35 +39,39 @@ export function QuickAdd() {
   return (
     <div
       ref={wrapRef}
-      className="fixed bottom-20 start-6 z-40 flex flex-col items-start gap-2 md:bottom-6"
+      className="fixed bottom-[4.5rem] start-5 z-40 flex flex-col items-start gap-2 md:bottom-6"
     >
-      <div
-        className={cn(
-          "flex origin-bottom-right flex-col gap-0.5 rounded-lg border border-hairline bg-canvas p-1.5 shadow-card transition-all duration-200",
-          open
-            ? "scale-100 opacity-100"
-            : "pointer-events-none scale-95 opacity-0",
-        )}
-      >
-        {ITEMS.map(({ href, label, Icon }) => (
-          <button
-            key={href}
-            type="button"
-            onClick={() => go(href)}
-            className="flex items-center gap-2.5 rounded-md px-3 py-2.5 text-right text-sm text-ink transition-colors duration-150 hover:bg-surface-card"
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 10 }}
+            transition={{ duration: 0.15 }}
+            className="flex flex-col gap-0.5 rounded-xl border border-border bg-white p-1.5 shadow-overlay"
           >
-            <Icon className="h-4 w-4 text-ink-muted" />
-            {label}
-          </button>
-        ))}
-      </div>
+            {ITEMS.map(({ href, label, Icon }) => (
+              <button
+                key={href}
+                type="button"
+                onClick={() => go(href)}
+                className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-right text-sm text-ink transition-colors duration-200 hover:bg-surface-hover"
+              >
+                <Icon className="h-4 w-4 text-ink-secondary" />
+                {label}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      <button
+      <motion.button
         type="button"
         onClick={() => setOpen((v) => !v)}
         title="יצירה מהירה"
         aria-label="יצירה מהירה"
-        className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white shadow-subtle transition-all duration-150 hover:bg-primary-active active:scale-95"
+        whileTap={{ scale: 0.92 }}
+        className="flex h-12 w-12 items-center justify-center rounded-full bg-brand text-white shadow-card transition-all duration-200 hover:bg-brand-hover hover:shadow-card-hover"
       >
         <Plus
           className={cn(
@@ -74,7 +79,7 @@ export function QuickAdd() {
             open && "rotate-45",
           )}
         />
-      </button>
+      </motion.button>
     </div>
   );
 }

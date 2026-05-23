@@ -15,7 +15,7 @@ export const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-10 w-full items-center justify-between gap-2 rounded-md border border-hairline bg-canvas px-3.5 text-sm text-ink focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink/20 disabled:opacity-50 [&>span]:line-clamp-1",
+      "flex h-10 w-full items-center justify-between gap-2 rounded-lg border border-border bg-white px-3.5 text-sm text-ink transition-colors duration-200 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:opacity-50 [&>span]:line-clamp-1",
       className,
     )}
     {...props}
@@ -38,7 +38,7 @@ export const SelectContent = React.forwardRef<
       dir="rtl"
       position={position}
       className={cn(
-        "relative z-50 max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-lg border border-hairline bg-canvas shadow-card",
+        "relative z-50 max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-xl border border-border bg-white shadow-overlay",
         className,
       )}
       {...props}
@@ -56,14 +56,14 @@ export const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-pointer select-none items-center rounded-sm py-2 ps-8 pe-3 text-sm outline-none data-[disabled]:opacity-50 data-[highlighted]:bg-surface-card",
+      "relative flex w-full cursor-pointer select-none items-center rounded-lg py-2 ps-8 pe-3 text-sm outline-none transition-colors data-[disabled]:opacity-50 data-[highlighted]:bg-surface-hover",
       className,
     )}
     {...props}
   >
     <span className="absolute start-2 flex h-3.5 w-3.5 items-center justify-center">
       <SelectPrimitive.ItemIndicator>
-        <Check className="h-3.5 w-3.5" />
+        <Check className="h-3.5 w-3.5 text-brand" />
       </SelectPrimitive.ItemIndicator>
     </span>
     <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>

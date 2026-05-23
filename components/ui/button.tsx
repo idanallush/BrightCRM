@@ -6,20 +6,20 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-semibold transition-all duration-150 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/20 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all duration-200 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/30 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        primary: "rounded-md bg-primary text-white hover:bg-primary-active",
+        primary: "rounded-lg bg-brand text-white shadow-sm hover:bg-brand-hover",
         secondary:
-          "rounded-md border border-hairline bg-canvas text-ink hover:bg-surface-card",
-        ghost: "rounded-md text-ink hover:bg-surface-card",
+          "rounded-lg border border-border bg-white text-ink hover:bg-surface-hover hover:border-border-hover",
+        ghost: "rounded-lg text-ink hover:bg-surface-hover",
         outline:
-          "rounded-md border border-hairline bg-canvas text-ink hover:bg-surface-soft",
-        danger: "rounded-md bg-red-600 text-white hover:bg-red-700",
+          "rounded-lg border border-border bg-white text-ink hover:bg-surface-hover",
+        danger: "rounded-lg bg-red-600 text-white shadow-sm hover:bg-red-700",
       },
       size: {
-        sm: "h-8 px-3 text-sm",
+        sm: "h-8 px-3 text-[13px]",
         md: "h-10 px-5",
         lg: "h-12 px-6 text-base",
         icon: "h-9 w-9",

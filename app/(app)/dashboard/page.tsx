@@ -23,9 +23,7 @@ function relativeDate(iso: string | null): { text: string; overdue: boolean } {
   const now = new Date();
   const diffMs = due.getTime() - now.getTime();
   const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffDays < 0)
-    return { text: `באיחור של ${Math.abs(diffDays)} ימים`, overdue: true };
+  if (diffDays < 0) return { text: `באיחור של ${Math.abs(diffDays)} ימים`, overdue: true };
   if (diffDays === 0) return { text: "היום", overdue: false };
   if (diffDays === 1) return { text: "מחר", overdue: false };
   return { text: `עוד ${diffDays} ימים`, overdue: false };
@@ -44,9 +42,7 @@ function timeAgo(iso: string): string {
 
 export default async function DashboardPage() {
   const sb = createClient();
-  const {
-    data: { user },
-  } = await sb.auth.getUser();
+  const { data: { user } } = await sb.auth.getUser();
   const userEmail = user?.email ?? "";
 
   const [counts, myTasks, recent] = await Promise.all([
@@ -56,81 +52,42 @@ export default async function DashboardPage() {
   ]);
 
   return (
-    <div className="flex flex-col gap-8">
-      <h1 className="font-display text-2xl font-semibold tracking-display text-ink md:text-3xl">
-        דשבורד
-      </h1>
+    <div className="flex flex-col gap-6">
+      <h1 className="text-2xl font-semibold text-ink">דשבורד</h1>
 
       {/* Stats */}
-      <section className="grid grid-cols-2 gap-4 lg:grid-cols-3">
-        <StatCard
-          label="משימות פתוחות"
-          value={counts.openTasks}
-          Icon={CheckSquare}
-          href="/tasks"
-        />
-        <StatCard
-          label="עבר דדליין"
-          value={counts.overdueTasks}
-          Icon={AlertTriangle}
-          accent={counts.overdueTasks > 0}
-          href="/tasks?overdue=true"
-        />
-        <StatCard
-          label="לקוחות"
-          value={counts.totalClients}
-          Icon={Users}
-          href="/clients"
-        />
+      <section className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+        <StatCard label="משימות פתוחות" value={counts.openTasks} Icon={CheckSquare} color="text-brand" bg="bg-brand-light" href="/tasks" />
+        <StatCard label="עבר דדליין" value={counts.overdueTasks} Icon={AlertTriangle}
+          color={counts.overdueTasks > 0 ? "text-overdue" : "text-ink-muted"} bg={counts.overdueTasks > 0 ? "bg-overdue-bg" : "bg-gray-50"}
+          valueColor={counts.overdueTasks > 0 ? "text-overdue" : undefined} href="/tasks?overdue=true" />
+        <StatCard label="לקוחות" value={counts.totalClients} Icon={Users} color="text-ink-secondary" bg="bg-gray-50" href="/clients" />
       </section>
 
       {/* Content */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
         <Card className="lg:col-span-3">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>המשימות שלי</CardTitle>
-            <Link
-              href="/tasks"
-              className="text-xs font-medium text-ink-muted transition-colors hover:text-ink"
-            >
-              לכל המשימות
-            </Link>
+            <Link href="/tasks" className="text-caption font-medium text-ink-secondary transition-colors hover:text-brand">לכל המשימות</Link>
           </CardHeader>
           <CardContent>
             {myTasks.length === 0 ? (
-              <div className="py-8 text-center">
-                <p className="text-sm text-ink-muted">
-                  אין משימות פתוחות. יום שקט!
-                </p>
-              </div>
+              <div className="py-8 text-center"><p className="text-sm text-ink-secondary">אין משימות פתוחות. יום שקט!</p></div>
             ) : (
-              <div className="flex flex-col">
-                {myTasks.map((task, i) => {
-                  const { text: dateText, overdue } = relativeDate(
-                    task.due_date,
-                  );
+              <div className="flex flex-col divide-y divide-gray-100">
+                {myTasks.map((task) => {
+                  const { text: dateText, overdue } = relativeDate(task.due_date);
                   return (
-                    <Link
-                      key={task.id}
-                      href={`/tasks?task=${task.id}`}
-                      className={`group flex items-start gap-3 py-3 transition-colors duration-150 hover:bg-surface-soft ${i > 0 ? "border-t border-hairline-soft" : ""}`}
-                    >
-                      <div
-                        className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${overdue ? "bg-status-overdue" : "bg-surface-strong"}`}
-                      />
+                    <Link key={task.id} href={`/tasks?task=${task.id}`}
+                      className="group flex items-start gap-3 py-3 transition-colors duration-200 hover:bg-surface-hover -mx-2 px-2 rounded-lg">
+                      <div className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${overdue ? "bg-overdue" : "bg-border"}`} />
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-ink">
-                          {task.title}
-                        </p>
-                        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-muted">
+                        <p className="text-sm font-medium text-ink">{task.title}</p>
+                        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-caption text-ink-secondary">
                           {task.client_name && <span>{task.client_name}</span>}
-                          <span
-                            className={
-                              overdue ? "font-medium text-status-overdue" : ""
-                            }
-                          >
-                            <Clock className="mb-px ml-1 inline h-3 w-3" />
-                            {dateText}
+                          <span className={overdue ? "font-medium text-overdue" : ""}>
+                            <Clock className="mb-px ml-1 inline h-3 w-3" />{dateText}
                           </span>
                         </div>
                       </div>
@@ -143,27 +100,18 @@ export default async function DashboardPage() {
         </Card>
 
         <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>פעילות אחרונה</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>פעילות אחרונה</CardTitle></CardHeader>
           <CardContent>
             {recent.length === 0 ? (
-              <p className="py-4 text-center text-sm text-ink-muted">
-                אין פעילות אחרונה
-              </p>
+              <p className="py-4 text-center text-sm text-ink-secondary">אין פעילות אחרונה</p>
             ) : (
-              <div className="flex flex-col">
-                {recent.map((task, i) => (
-                  <Link
-                    key={task.id}
-                    href={`/tasks?task=${task.id}`}
-                    className={`group flex items-start gap-3 py-3 transition-colors duration-150 hover:bg-surface-soft ${i > 0 ? "border-t border-hairline-soft" : ""}`}
-                  >
+              <div className="flex flex-col divide-y divide-gray-100">
+                {recent.map((task) => (
+                  <Link key={task.id} href={`/tasks?task=${task.id}`}
+                    className="group flex items-start gap-3 py-3 transition-colors duration-200 hover:bg-surface-hover -mx-2 px-2 rounded-lg">
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-ink">
-                        {task.title}
-                      </p>
-                      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-muted">
+                      <p className="truncate text-sm font-medium text-ink">{task.title}</p>
+                      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-caption text-ink-secondary">
                         {task.client_name && <span>{task.client_name}</span>}
                         {task.client_name && <span>·</span>}
                         <span>{timeAgo(task.created_at)}</span>
@@ -181,35 +129,20 @@ export default async function DashboardPage() {
   );
 }
 
-function StatCard({
-  label,
-  value,
-  Icon,
-  accent = false,
-  href,
-}: {
-  label: string;
-  value: number;
-  Icon: React.ComponentType<{ className?: string }>;
-  accent?: boolean;
-  href?: string;
+function StatCard({ label, value, Icon, color, bg, valueColor, href }: {
+  label: string; value: number; Icon: React.ComponentType<{ className?: string }>;
+  color: string; bg: string; valueColor?: string; href?: string;
 }) {
   const inner = (
-    <div className="rounded-lg bg-surface-card p-5 transition-colors duration-150">
-      <div className="flex items-start justify-between">
+    <Card className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover">
+      <CardContent className="flex items-start justify-between p-4 md:p-5">
         <div className="flex flex-col gap-1">
-          <span className="text-[13px] font-medium text-ink-muted">{label}</span>
-          <span
-            className={`font-display text-3xl font-semibold tracking-display ${accent ? "text-status-overdue" : "text-ink"}`}
-          >
-            {value}
-          </span>
+          <span className="text-caption text-ink-secondary">{label}</span>
+          <span className={`text-2xl font-semibold md:text-3xl ${valueColor ?? "text-ink"}`}>{value}</span>
         </div>
-        <Icon
-          className={`h-5 w-5 ${accent ? "text-status-overdue" : "text-ink-muted"}`}
-        />
-      </div>
-    </div>
+        <div className={`rounded-xl p-2.5 ${bg}`}><Icon className={`h-5 w-5 ${color}`} /></div>
+      </CardContent>
+    </Card>
   );
   return href ? <Link href={href}>{inner}</Link> : inner;
 }
@@ -217,16 +150,14 @@ function StatCard({
 function SourceBadge({ source }: { source: string }) {
   if (source === "telegram") {
     return (
-      <span className="flex shrink-0 items-center gap-1 rounded-pill bg-accent/10 px-2.5 py-0.5 text-[11px] font-medium text-accent">
-        <Send className="h-3 w-3" />
-        Telegram
+      <span className="flex shrink-0 items-center gap-1 rounded-full bg-brand-light px-2 py-0.5 text-[11px] font-medium text-brand">
+        <Send className="h-3 w-3" /> Telegram
       </span>
     );
   }
   return (
-    <span className="flex shrink-0 items-center gap-1 rounded-pill bg-surface-card px-2.5 py-0.5 text-[11px] font-medium text-ink-muted">
-      <Globe className="h-3 w-3" />
-      Web
+    <span className="flex shrink-0 items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-ink-secondary">
+      <Globe className="h-3 w-3" /> Web
     </span>
   );
 }

@@ -146,14 +146,14 @@ export function TasksClient({
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-baseline gap-3">
-          <h1 className="font-display text-xl font-semibold tracking-display text-ink md:text-2xl">
+          <h1 className="text-xl font-semibold text-ink md:text-2xl">
             משימות
           </h1>
           {activeFilterCount > 0 && (
             <button
               type="button"
               onClick={clearFilters}
-              className="rounded-pill bg-primary px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-primary-active"
+              className="rounded-full bg-brand px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-brand-hover"
             >
               {activeFilterCount} פילטרים · נקה
             </button>
@@ -161,15 +161,15 @@ export function TasksClient({
         </div>
         <div className="flex items-center gap-2">
           {/* Nav pill group (Cal.com signature) */}
-          <div className="inline-flex rounded-pill bg-surface-soft p-1">
+          <div className="inline-flex rounded-xl bg-gray-50 p-1">
             <button
               type="button"
               onClick={() => changeView("table")}
               className={cn(
-                "flex items-center gap-1.5 rounded-pill px-3 py-1.5 text-sm transition-all duration-150",
+                "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition-all duration-150",
                 view === "table"
-                  ? "bg-canvas font-medium text-ink shadow-subtle"
-                  : "text-ink-muted",
+                  ? "bg-white font-medium text-ink shadow-sm"
+                  : "text-ink-secondary",
               )}
             >
               <Rows3 className="h-4 w-4" />
@@ -179,10 +179,10 @@ export function TasksClient({
               type="button"
               onClick={() => changeView("kanban")}
               className={cn(
-                "flex items-center gap-1.5 rounded-pill px-3 py-1.5 text-sm transition-all duration-150",
+                "flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm transition-all duration-150",
                 view === "kanban"
-                  ? "bg-canvas font-medium text-ink shadow-subtle"
-                  : "text-ink-muted",
+                  ? "bg-white font-medium text-ink shadow-sm"
+                  : "text-ink-secondary",
               )}
             >
               <LayoutGrid className="h-4 w-4" />
@@ -198,17 +198,17 @@ export function TasksClient({
       {/* Filters */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         {/* Status pill group */}
-        <div className="flex gap-0.5 overflow-x-auto rounded-pill bg-surface-soft p-1">
+        <div className="flex gap-0.5 overflow-x-auto rounded-xl bg-gray-50 p-1">
           {STATUS_TABS.map((tab) => (
             <button
               key={tab.key}
               type="button"
               onClick={() => updateFilter("status", tab.key)}
               className={cn(
-                "whitespace-nowrap rounded-pill px-3 py-1.5 text-sm transition-all duration-150",
+                "whitespace-nowrap rounded-lg px-3 py-1.5 text-sm transition-all duration-150",
                 filters.status === tab.key
-                  ? "bg-canvas font-medium text-ink shadow-subtle"
-                  : "text-ink-muted",
+                  ? "bg-white font-medium text-ink shadow-sm"
+                  : "text-ink-secondary",
               )}
             >
               {tab.label}
@@ -247,8 +247,8 @@ export function TasksClient({
             className={cn(
               "flex h-9 items-center gap-1.5 rounded-md border px-3 text-sm transition-colors duration-150",
               filters.overdue
-                ? "border-status-overdue/30 bg-status-overdue/5 text-status-overdue"
-                : "border-hairline bg-canvas text-ink-muted hover:bg-surface-soft",
+                ? "border-overdue/30 bg-overdue-bg text-overdue"
+                : "border-border bg-white text-ink-secondary hover:bg-surface-hover",
             )}
           >
             <AlertTriangle className="h-3.5 w-3.5" />
@@ -299,26 +299,26 @@ export function TasksClient({
                 <SheetDescription>שינויים נשמרים אחרי לחיצה על שמירה.</SheetDescription>
               </SheetHeader>
               <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-5 pb-6 md:px-6">
-                <div className="flex flex-wrap gap-2 text-xs text-ink-muted">
+                <div className="flex flex-wrap gap-2 text-xs text-ink-secondary">
                   <span>נוצר ב-{new Date(editing.created_at).toLocaleDateString("he-IL")}</span>
                   <span>·</span>
                   <span>מקור: {editing.source === "telegram" ? "טלגרם" : editing.source === "web" ? "ממשק" : "ייבוא"}</span>
                 </div>
                 <TaskForm key={editing.id} task={editing} clients={clients} team={team} onDone={closeSheet} compact />
-                <div className="border-t border-hairline pt-4">
+                <div className="border-t border-border pt-4">
                   <TaskAttachments key={editing.id} taskId={editing.id} />
                 </div>
-                <div className="border-t border-hairline pt-3">
+                <div className="border-t border-border pt-3">
                   {confirmingDelete ? (
-                    <div className="flex flex-col gap-2 rounded-md bg-status-overdue/5 p-3 text-right">
-                      <p className="text-sm text-status-overdue">למחוק את המשימה לצמיתות?</p>
+                    <div className="flex flex-col gap-2 rounded-md bg-overdue-bg p-3 text-right">
+                      <p className="text-sm text-overdue">למחוק את המשימה לצמיתות?</p>
                       <div className="flex flex-row-reverse gap-2">
                         <Button variant="danger" size="sm" onClick={onDelete}>מחק</Button>
                         <Button variant="ghost" size="sm" onClick={() => setConfirmingDelete(false)}>ביטול</Button>
                       </div>
                     </div>
                   ) : (
-                    <Button variant="ghost" size="sm" onClick={() => setConfirmingDelete(true)} className="text-status-overdue">מחיקה</Button>
+                    <Button variant="ghost" size="sm" onClick={() => setConfirmingDelete(true)} className="text-overdue">מחיקה</Button>
                   )}
                 </div>
               </div>

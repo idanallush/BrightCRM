@@ -2,44 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Cal.com-inspired design system adapted for BrightCRM */
-
 :root {
-  /* Surface */
-  --color-canvas: #ffffff;
-  --color-surface-soft: #f8f9fa;
-  --color-surface-card: #f5f5f5;
-  --color-surface-strong: #e5e7eb;
-  --color-surface-dark: #101010;
+  /* Status colors — CSS vars for dynamic use */
+  --st-waiting:   #f59e0b;
+  --st-incoming:  #3b82f6;
+  --st-working:   #8b5cf6;
+  --st-approval:  #f97316;
+  --st-manager:   #ec4899;
+  --st-done:      #22c55e;
+  --st-cancelled: #6b7280;
+  --st-overdue:   #ef4444;
 
-  /* Hairline */
-  --color-hairline: #e5e7eb;
-  --color-hairline-soft: #f3f4f6;
-
-  /* Text */
-  --color-ink: #111111;
-  --color-ink-muted: #6b7280;
-  --color-body: #374151;
-  --color-muted-soft: #898989;
-
-  /* Brand */
-  --color-primary: #111111;
-  --color-primary-active: #242424;
-  --color-accent: #3b82f6;
-
-  /* Legacy compat aliases */
+  /* Legacy compat */
   --color-bg: #f8f9fa;
+  --color-hairline: #e5e7eb;
+  --color-ink: #111827;
+  --color-ink-muted: #6b7280;
+  --color-brand: #2563eb;
+  --color-brand-focus: #1d4ed8;
+  --color-brand-light: #eff6ff;
   --color-border: #e5e7eb;
-  --color-brand: #111111;
-  --color-brand-focus: #242424;
-  --color-brand-light: #f5f5f5;
+  --color-surface-card: #f3f4f6;
+  --color-canvas: #ffffff;
+  --color-primary: #2563eb;
+  --color-primary-active: #1d4ed8;
+  --color-accent: #2563eb;
 
-  /* Status */
   --color-status-active: #3b82f6;
-  --color-status-done: #10b981;
-  --color-status-closed: #9ca3af;
-
-  --color-health-good: #10b981;
+  --color-status-done: #22c55e;
+  --color-status-closed: #6b7280;
+  --color-health-good: #22c55e;
   --color-health-strategy: #f59e0b;
   --color-health-critical: #ef4444;
 }
@@ -47,21 +39,29 @@
 @layer base {
   html {
     font-family: theme("fontFamily.sans");
-    background: var(--color-canvas);
+    font-size: 15px;
+    background: #f8f9fa;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
 
   body {
-    background: var(--color-canvas);
-    color: var(--color-body);
+    background: #f8f9fa;
+    color: #111827;
+    line-height: 1.6;
   }
 
-  /* Display type: Inter 600 with negative tracking (Cal Sans substitute) */
   h1, h2, h3 {
-    font-family: theme("fontFamily.display");
     font-weight: 600;
-    letter-spacing: -0.04em;
-    color: var(--color-ink);
+    letter-spacing: -0.02em;
+    color: #111827;
+  }
+}
+
+@layer utilities {
+  .skeleton {
+    background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
   }
 }

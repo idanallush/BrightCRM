@@ -9,73 +9,74 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        display: [
-          "Inter",
-          "-apple-system",
-          "BlinkMacSystemFont",
-          "Segoe UI",
-          "Roboto",
-          "sans-serif",
-        ],
         sans: [
-          "Inter",
+          "Heebo",
+          "system-ui",
           "-apple-system",
-          "BlinkMacSystemFont",
           "Segoe UI",
-          "Roboto",
+          "Arial",
           "sans-serif",
         ],
       },
+      fontSize: {
+        body: ["15px", "1.6"],
+        caption: ["13px", "1.4"],
+      },
       colors: {
-        // Cal.com adapted palette
-        ink: { DEFAULT: "#111111", body: "#374151", muted: "#6b7280", soft: "#898989" },
+        // Text
+        ink: { DEFAULT: "#111827", secondary: "#6b7280", muted: "#9ca3af" },
+        // Surfaces
         canvas: "#ffffff",
         surface: {
           DEFAULT: "#ffffff",
-          soft: "#f8f9fa",
-          card: "#f5f5f5",
-          strong: "#e5e7eb",
-          dark: "#101010",
-          "dark-elevated": "#1a1a1a",
+          bg: "#f8f9fa",
+          hover: "#f3f4f6",
         },
-        hairline: { DEFAULT: "#e5e7eb", soft: "#f3f4f6" },
-        primary: { DEFAULT: "#111111", active: "#242424" },
-        accent: "#3b82f6",
-        // Status colors
-        status: {
-          active: "#3b82f6",
-          done: "#10b981",
-          closed: "#9ca3af",
-          overdue: "#ef4444",
-          warning: "#f59e0b",
+        // Primary action
+        brand: {
+          DEFAULT: "#2563eb",
+          hover: "#1d4ed8",
+          light: "#eff6ff",
         },
-        // Badge pastels
-        badge: {
-          orange: "#fb923c",
-          pink: "#ec4899",
-          violet: "#8b5cf6",
-          emerald: "#34d399",
+        // Borders
+        border: { DEFAULT: "#e5e7eb", hover: "#d1d5db" },
+        // Status — per status, with bg variant
+        "st-waiting":   { DEFAULT: "#f59e0b", bg: "#fffbeb" },
+        "st-incoming":  { DEFAULT: "#3b82f6", bg: "#eff6ff" },
+        "st-working":   { DEFAULT: "#8b5cf6", bg: "#f5f3ff" },
+        "st-approval":  { DEFAULT: "#f97316", bg: "#fff7ed" },
+        "st-manager":   { DEFAULT: "#ec4899", bg: "#fdf2f8" },
+        "st-done":      { DEFAULT: "#22c55e", bg: "#f0fdf4" },
+        "st-cancelled": { DEFAULT: "#6b7280", bg: "#f9fafb" },
+        // Semantic
+        overdue: { DEFAULT: "#ef4444", bg: "#fef2f2" },
+        success: { DEFAULT: "#22c55e", bg: "#f0fdf4" },
+        warning: { DEFAULT: "#f59e0b", bg: "#fffbeb" },
+        // Health
+        health: {
+          good: "#22c55e",
+          strategy: "#f59e0b",
+          critical: "#ef4444",
         },
       },
       borderRadius: {
-        xs: "4px",
-        sm: "6px",
-        md: "8px",
-        lg: "12px",
-        xl: "16px",
-        pill: "9999px",
+        lg: "0.75rem",
+        xl: "1rem",
       },
       boxShadow: {
-        subtle: "0 1px 2px rgba(0,0,0,0.05)",
-        card: "0 1px 2px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.08)",
-        "card-hover": "0 4px 12px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.06)",
+        sm: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+        card: "0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06)",
+        "card-hover": "0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05)",
+        overlay: "0 8px 30px rgb(0 0 0 / 0.12)",
       },
-      spacing: {
-        "section": "96px",
+      keyframes: {
+        shimmer: {
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
       },
-      letterSpacing: {
-        display: "-0.04em",
-        "display-tight": "-0.03em",
+      animation: {
+        shimmer: "shimmer 1.5s ease-in-out infinite",
       },
     },
   },

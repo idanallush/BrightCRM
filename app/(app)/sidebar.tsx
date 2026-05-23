@@ -6,13 +6,17 @@ import {
   LayoutDashboard,
   CheckSquare,
   Users,
-  PanelRightOpen,
-  PanelRightClose,
+  ChevronsLeft,
+  ChevronsRight,
   X,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMobileMenu } from "./shell-context";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 import * as React from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const NAV = [
   { href: "/dashboard", label: "דשבורד", Icon: LayoutDashboard },
@@ -20,8 +24,18 @@ const NAV = [
   { href: "/clients", label: "לקוחות", Icon: Users },
 ];
 
-export function Sidebar() {
+function getInitials(name: string): string {
+  return name
+    .split(/\s+/)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+export function Sidebar({ userLabel }: { userLabel: string }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [collapsed, setCollapsed] = React.useState(false);
   const { mobileOpen, setMobileOpen } = useMobileMenu();
 
@@ -29,16 +43,26 @@ export function Sidebar() {
     setMobileOpen(false);
   }, [pathname, setMobileOpen]);
 
-  const navContent = (isMobile: boolean) => (
-    <>
-      <div className="flex h-16 items-center justify-between border-b border-hairline-soft px-4">
+  async function signOut() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  }
+
+  const initials = getInitials(userLabel);
+
+  const sidebarContent = (isMobile: boolean) => (
+    <div className="flex h-full flex-col">
+      {/* Logo */}
+      <div className="flex h-16 shrink-0 items-center justify-between px-4">
         <Link href="/dashboard" className="flex items-center gap-2.5">
-          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-sm font-bold text-white">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand text-sm font-bold text-white shadow-sm">
             B
           </span>
           {(!collapsed || isMobile) && (
-            <span className="font-display text-[15px] font-semibold tracking-display-tight text-ink">
-              BrightCRM
+            <span className="text-[15px] font-semibold text-ink">
+              Bright<span className="text-brand">CRM</span>
             </span>
           )}
         </Link>
@@ -46,12 +70,12 @@ export function Sidebar() {
           <button
             type="button"
             onClick={() => setCollapsed((v) => !v)}
-            className="rounded-md p-1 text-ink-muted transition-colors hover:bg-surface-card hover:text-ink"
+            className="rounded-lg p-1.5 text-ink-muted transition-colors duration-200 hover:bg-surface-hover hover:text-ink"
           >
             {collapsed ? (
-              <PanelRightClose className="h-4 w-4" />
+              <ChevronsRight className="h-4 w-4" />
             ) : (
-              <PanelRightOpen className="h-4 w-4" />
+              <ChevronsLeft className="h-4 w-4" />
             )}
           </button>
         )}
@@ -59,64 +83,118 @@ export function Sidebar() {
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
-            className="rounded-md p-1 text-ink-muted"
+            className="rounded-lg p-1.5 text-ink-muted"
           >
             <X className="h-5 w-5" />
           </button>
         )}
       </div>
 
-      <nav className="mt-3 flex flex-col gap-0.5 px-3">
-        {NAV.map(({ href, label, Icon }) => {
+      {/* Nav items */}
+      <nav className="mt-2 flex flex-1 flex-col gap-1 px-3">
+        {NAV.map(({ href, label, Icon }, i) => {
           const active = pathname === href || pathname.startsWith(href + "/");
-          return (
+          const item = (
             <Link
               key={href}
               href={href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors duration-150",
+                "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all duration-200",
                 active
-                  ? "bg-surface-card font-semibold text-ink"
-                  : "text-ink-muted hover:bg-surface-soft hover:text-ink",
+                  ? "bg-brand-light font-semibold text-brand"
+                  : "text-ink-secondary hover:bg-surface-hover hover:text-ink",
                 !isMobile && collapsed && "justify-center px-0",
               )}
               title={label}
             >
+              {/* Active indicator bar */}
+              {active && (
+                <span className="absolute right-0 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-l-full bg-brand" />
+              )}
               <Icon className="h-[18px] w-[18px] shrink-0" />
               {(isMobile || !collapsed) && <span>{label}</span>}
             </Link>
           );
+          if (isMobile) {
+            return (
+              <motion.div
+                key={href}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.05, duration: 0.2 }}
+              >
+                {item}
+              </motion.div>
+            );
+          }
+          return item;
         })}
       </nav>
-    </>
+
+      {/* User section at bottom */}
+      <div className="shrink-0 border-t border-border p-3">
+        <div
+          className={cn(
+            "flex items-center gap-3 rounded-lg px-2 py-2",
+            collapsed && !isMobile && "justify-center px-0",
+          )}
+        >
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-light text-[11px] font-semibold text-brand">
+            {initials}
+          </div>
+          {(isMobile || !collapsed) && (
+            <div className="flex min-w-0 flex-1 items-center justify-between">
+              <span className="truncate text-sm text-ink">{userLabel}</span>
+              <button
+                type="button"
+                onClick={signOut}
+                className="rounded-lg p-1.5 text-ink-muted transition-colors duration-200 hover:bg-surface-hover hover:text-ink"
+                title="התנתקות"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 
   return (
     <>
+      {/* Desktop sidebar */}
       <aside
         className={cn(
-          "hidden shrink-0 flex-col border-l border-hairline bg-canvas transition-all duration-300 md:flex",
+          "hidden shrink-0 flex-col border-l border-border bg-white transition-all duration-300 md:flex",
           collapsed ? "w-16" : "w-60",
         )}
       >
-        {navContent(false)}
+        {sidebarContent(false)}
       </aside>
 
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/40 md:hidden"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
+      {/* Mobile overlay */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm md:hidden"
+            onClick={() => setMobileOpen(false)}
+          />
+        )}
+      </AnimatePresence>
 
+      {/* Mobile drawer */}
       <aside
         className={cn(
-          "fixed inset-y-0 right-0 z-50 w-72 transform bg-canvas shadow-card transition-transform duration-300 md:hidden",
+          "fixed inset-y-0 right-0 z-50 w-72 transform bg-white shadow-overlay transition-transform duration-300 md:hidden",
           mobileOpen ? "translate-x-0" : "translate-x-full",
         )}
       >
-        {navContent(true)}
+        {sidebarContent(true)}
       </aside>
     </>
   );
