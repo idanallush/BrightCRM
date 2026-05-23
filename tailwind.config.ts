@@ -24,10 +24,10 @@ const config: Config = {
         "button": ["14px", { lineHeight: "1.30", fontWeight: "500" }],
       },
       colors: {
-        // Notion primary
-        primary: { DEFAULT: "#6C3FC5", pressed: "#5B34A8", deep: "#4A2A8C" },
-        // Navy
-        navy: { DEFAULT: "#191919", deep: "#111111", mid: "#2D2D2D" },
+        // Primary action: near-black
+        primary: { DEFAULT: "#1A1A1A", pressed: "#333333", deep: "#000000" },
+        // Accent: Bright yellow
+        accent: { DEFAULT: "#FFDF4F", hover: "#f5d43a", dark: "#e6c833" },
         // Links
         link: { DEFAULT: "#0077D4", pressed: "#005FA3" },
 
@@ -43,7 +43,7 @@ const config: Config = {
         surface: { DEFAULT: "#F7F6F3", soft: "#FBFBFA" },
         hairline: { DEFAULT: "#E3E2DE", soft: "#F1F0EC", strong: "#DBDAD6" },
 
-        // Card tints (Notion pastel palette)
+        // Card tints
         tint: {
           peach: "#FDECC8",
           rose: "#F5E0E9",
@@ -51,7 +51,7 @@ const config: Config = {
           lavender: "#E8DEEE",
           sky: "#D3E5EF",
           yellow: "#FBF3DB",
-          "yellow-bold": "#F5C518",
+          "yellow-bold": "#FFDF4F",
           cream: "#EBE4D2",
           gray: "#E3E2DE",
         },
@@ -62,12 +62,12 @@ const config: Config = {
         "b-purple": { DEFAULT: "#9B59B6", 300: "#C4B5FD", 800: "#553C9A" },
         "b-teal": "#0F766E",
         "b-green": "#0F9D58",
-        "b-yellow": "#F5C518",
+        "b-yellow": "#FFDF4F",
 
-        // Status — per status, using Notion-style tints
+        // Status — semantic colors (NOT primary)
         "st-waiting":   { DEFAULT: "#D97706", bg: "#FBF3DB" },
         "st-incoming":  { DEFAULT: "#0077D4", bg: "#D3E5EF" },
-        "st-working":   { DEFAULT: "#6C3FC5", bg: "#E8DEEE" },
+        "st-working":   { DEFAULT: "#9B59B6", bg: "#E8DEEE" },
         "st-approval":  { DEFAULT: "#D97706", bg: "#FDECC8" },
         "st-manager":   { DEFAULT: "#E9528B", bg: "#F5E0E9" },
         "st-done":      { DEFAULT: "#0F9D58", bg: "#DBEDDB" },
@@ -79,7 +79,7 @@ const config: Config = {
         warning:  { DEFAULT: "#D97706", bg: "#FBF3DB" },
 
         // Legacy compat aliases
-        brand: { DEFAULT: "#6C3FC5", hover: "#5B34A8", light: "#E8DEEE" },
+        brand: { DEFAULT: "#1A1A1A", hover: "#333333", light: "#F7F6F3" },
         border: { DEFAULT: "#E3E2DE", hover: "#DBDAD6" },
         "ink-secondary": "#787774",
         "ink-muted": "#9B9A97",

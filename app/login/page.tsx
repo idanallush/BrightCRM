@@ -22,7 +22,7 @@ function LoginInner() {
       <div className="w-full max-w-sm rounded-lg border border-hairline bg-canvas p-8 text-center shadow-card">
         <div className="mb-2 flex items-center justify-center gap-2">
           <span className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-body-md font-bold text-white">B</span>
-          <h1 className="text-heading-4 text-ink">BrightCRM</h1>
+          <h1 className="text-heading-4 text-ink">Bright<span className="text-accent">.</span>CRM</h1>
         </div>
         <p className="mb-8 text-body-sm text-slate">התחברות עם חשבון Google של Bright</p>
         <button type="button" onClick={signIn}

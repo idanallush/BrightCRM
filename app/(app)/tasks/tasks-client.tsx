@@ -162,7 +162,7 @@ export function TasksClient({
               <button key={pill.key} type="button" onClick={() => updateFilter("status", pill.key)}
                 className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-caption transition-all duration-200",
                   filters.status === pill.key
-                    ? pill.key === "__all__" ? "bg-ink-deep text-white" : "bg-white font-medium text-ink shadow-subtle ring-1 ring-gray-200"
+                    ? pill.key === "__all__" ? "bg-primary text-white" : "bg-accent font-medium text-ink-deep shadow-subtle"
                     : "text-slate hover:bg-surface")}>
                 {pill.dot && <span className={`mr-1.5 inline-block h-2 w-2 rounded-full ${pill.dot}`} />}
                 {pill.label}

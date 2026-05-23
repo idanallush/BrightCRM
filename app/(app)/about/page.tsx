@@ -14,7 +14,7 @@ export default function AboutPage() {
           <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-lg font-bold text-white shadow-subtle">
             B
           </span>
-          <h1 className="text-3xl font-semibold text-ink md:text-4xl">BrightCRM</h1>
+          <h1 className="text-3xl font-semibold text-ink md:text-4xl">Bright<span className="text-accent">.</span>CRM</h1>
         </div>
         <p className="max-w-lg text-lg text-slate">
           הכלי הפנימי של סוכנות Bright לניהול משימות ולקוחות. נבנה לפתור בעיה אחת: חיכוך.

@@ -6,27 +6,29 @@
   /* Status CSS vars */
   --st-waiting: #D97706;
   --st-incoming: #0077D4;
-  --st-working: #6C3FC5;
+  --st-working: #9B59B6;
   --st-approval: #D97706;
   --st-manager: #E9528B;
   --st-done: #0F9D58;
   --st-cancelled: #787774;
   --st-overdue: #E03E3E;
 
+  /* Primary + accent */
+  --color-primary: #1A1A1A;
+  --color-primary-active: #333333;
+  --color-accent: #FFDF4F;
+
   /* Legacy compat */
   --color-bg: #F7F6F3;
   --color-hairline: #E3E2DE;
   --color-ink: #37352F;
   --color-ink-muted: #787774;
-  --color-brand: #6C3FC5;
-  --color-brand-focus: #5B34A8;
-  --color-brand-light: #E8DEEE;
+  --color-brand: #1A1A1A;
+  --color-brand-focus: #333333;
+  --color-brand-light: #F7F6F3;
   --color-border: #E3E2DE;
   --color-surface-card: #F7F6F3;
   --color-canvas: #FFFFFF;
-  --color-primary: #6C3FC5;
-  --color-primary-active: #5B34A8;
-  --color-accent: #6C3FC5;
   --color-status-active: #0077D4;
   --color-status-done: #0F9D58;
   --color-status-closed: #787774;

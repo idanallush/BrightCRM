@@ -41,7 +41,7 @@ export function Sidebar({ userLabel }: { userLabel: string }) {
           active ? "bg-surface font-medium text-ink" : "text-slate hover:bg-surface-soft hover:text-ink",
           !isMobile && collapsed && "justify-center px-0",
         )} title={label}>
-        {active && <span className="absolute right-0 top-1/2 h-5 w-[2px] -translate-y-1/2 rounded-l-full bg-primary" />}
+        {active && <span className="absolute right-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-l-full bg-accent" />}
         <Icon className="h-[18px] w-[18px] shrink-0" />
         {(isMobile || !collapsed) && <span>{label}</span>}
       </Link>
@@ -55,7 +55,7 @@ export function Sidebar({ userLabel }: { userLabel: string }) {
       <div className="flex h-16 shrink-0 items-center justify-between px-4">
         <Link href="/dashboard" className="flex items-center gap-2.5">
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary text-body-sm font-bold text-white">B</span>
-          {(!collapsed || isMobile) && <span className="text-body-sm font-semibold text-ink">Bright<span className="text-primary">CRM</span></span>}
+          {(!collapsed || isMobile) && <span className="text-body-sm font-semibold text-ink">Bright<span className="text-accent">.</span>CRM</span>}
         </Link>
         <div className="flex items-center gap-1">
           {(!collapsed || isMobile) && <NotificationBell />}

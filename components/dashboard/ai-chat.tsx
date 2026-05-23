@@ -70,8 +70,8 @@ export function AiChat({ userEmail }: { userEmail: string }) {
     <div className="rounded-lg border border-hairline/60 bg-white p-5 shadow-subtle">
       {/* Header */}
       <div className="mb-4 flex items-center gap-2">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-tint-lavender">
-          <Bot className="h-4 w-4 text-primary" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent/20">
+          <Bot className="h-4 w-4 text-ink" />
         </div>
         <h2 className="text-sm font-semibold text-ink">עוזר BrightCRM</h2>
       </div>
@@ -84,7 +84,7 @@ export function AiChat({ userEmail }: { userEmail: string }) {
             type="button"
             onClick={() => ask({ action: qa.action })}
             disabled={loading}
-            className="whitespace-nowrap rounded-full bg-surface px-4 py-2 text-sm text-slate transition-all duration-200 hover:bg-tint-lavender hover:text-primary disabled:opacity-50"
+            className="whitespace-nowrap rounded-full bg-surface px-4 py-2 text-sm text-slate transition-all duration-200 hover:bg-accent/20 hover:text-ink disabled:opacity-50"
           >
             {qa.label}
           </button>

@@ -159,7 +159,7 @@ export function ClientsClient({
             <button key={p.key} type="button" onClick={() => setHealth(p.key)}
               className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-caption transition-all duration-200",
                 health === p.key
-                  ? p.key === ALL ? "bg-ink-deep text-white" : "bg-white font-medium text-ink shadow-subtle ring-1 ring-gray-200"
+                  ? p.key === ALL ? "bg-primary text-white" : "bg-accent font-medium text-ink-deep shadow-subtle"
                   : "text-slate hover:bg-surface")}>
               {p.dot && <span className={`mr-1.5 inline-block h-2 w-2 rounded-full ${p.dot}`} />}
               {p.label}
@@ -196,7 +196,7 @@ export function ClientsClient({
           {myClients.length > 0 && (
             <div>
               <div className="mb-3 flex items-center gap-2">
-                <span className="h-5 w-[3px] rounded-full bg-primary" />
+                <span className="h-5 w-[3px] rounded-full bg-accent" />
                 <h2 className="text-lg font-semibold text-ink">הלקוחות שלי</h2>
                 <span className="text-caption text-stone">{myClients.length}</span>
               </div>

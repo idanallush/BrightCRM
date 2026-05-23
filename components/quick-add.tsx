@@ -36,7 +36,7 @@ export function QuickAdd() {
         )}
       </AnimatePresence>
       <motion.button type="button" onClick={() => setOpen((v) => !v)} title="יצירה מהירה" aria-label="יצירה מהירה" whileTap={{ scale: 0.92 }}
-        className="flex h-12 w-12 items-center justify-center rounded-md bg-primary text-white shadow-card transition-all duration-150 hover:bg-primary-pressed">
+        className="flex h-12 w-12 items-center justify-center rounded-md bg-accent text-ink-deep shadow-card transition-all duration-150 hover:bg-accent-hover">
         <Plus className={cn("h-5 w-5 transition-transform duration-200", open && "rotate-45")} />
       </motion.button>
     </div>

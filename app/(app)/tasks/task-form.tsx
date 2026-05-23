@@ -106,7 +106,7 @@ export function TaskForm({
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-caption transition-all duration-200",
                   status === opt.value
-                    ? "bg-ink-deep font-medium text-white shadow-subtle"
+                    ? "bg-primary font-medium text-white shadow-subtle"
                     : "bg-surface text-slate hover:bg-gray-200",
                 )}>
                 <span className={cn("h-2 w-2 rounded-full", status === opt.value ? "bg-white" : opt.dot)} />

@@ -57,7 +57,7 @@ export function NotificationBell() {
       <button type="button" onClick={() => { setOpen((v) => !v); if (!open) fetchNotifications(); }}
         className="relative flex h-9 w-9 items-center justify-center rounded-sm text-slate transition-colors duration-150 hover:bg-surface hover:text-ink">
         <Bell className="h-[18px] w-[18px]" />
-        {unreadCount > 0 && <span className="absolute -top-0.5 -start-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-overdue px-1 text-[10px] font-bold text-white">{unreadCount}</span>}
+        {unreadCount > 0 && <span className="absolute -top-0.5 -start-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-ink-deep">{unreadCount}</span>}
       </button>
       <AnimatePresence>
         {open && (
@@ -78,7 +78,7 @@ export function NotificationBell() {
                       <p className={cn("text-caption", n.read ? "text-slate" : "font-semibold text-ink")}>{n.content}</p>
                       <span className="text-[11px] text-stone">{timeAgo(n.created_at)}</span>
                     </div>
-                    {!n.read && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" />}
+                    {!n.read && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-accent" />}
                   </motion.button>
                 ))}
             </div>

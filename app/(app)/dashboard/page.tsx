@@ -68,14 +68,14 @@ export default async function DashboardPage() {
       {/* Stats */}
       <DashboardAnimations>
         <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <StatCard href="/tasks" topBorder="border-t-blue-500" iconBg="bg-tint-sky" iconColor="text-link"
+          <StatCard href="/tasks" topBorder="border-t-accent" iconBg="bg-tint-sky" iconColor="text-link"
             Icon={CheckSquare} label="משימות פתוחות" value={counts.openTasks} />
-          <StatCard href="/tasks?overdue=true" topBorder="border-t-red-500" iconBg={hasOverdue ? "bg-overdue-bg" : "bg-surface"} iconColor={hasOverdue ? "text-overdue" : "text-stone"}
+          <StatCard href="/tasks?overdue=true" topBorder="border-t-accent" iconBg={hasOverdue ? "bg-overdue-bg" : "bg-surface"} iconColor={hasOverdue ? "text-overdue" : "text-stone"}
             Icon={AlertTriangle} label="עבר דדליין" value={counts.overdueTasks}
             valueColor={hasOverdue ? "text-overdue" : undefined} cardBg={hasOverdue ? "bg-overdue-bg/50" : undefined} />
-          <StatCard href="/clients" topBorder="border-t-teal-500" iconBg="bg-teal-100" iconColor="text-teal-600"
+          <StatCard href="/clients" topBorder="border-t-accent" iconBg="bg-surface" iconColor="text-ink"
             Icon={Users} label="לקוחות פעילים" value={counts.totalClients} />
-          <StatCard href="/tasks" topBorder="border-t-purple-500" iconBg="bg-tint-lavender" iconColor="text-primary"
+          <StatCard href="/tasks" topBorder="border-t-accent" iconBg="bg-tint-lavender" iconColor="text-b-purple"
             Icon={Send} label="מטלגרם החודש" value={counts.telegramThisMonth} />
         </section>
       </DashboardAnimations>
