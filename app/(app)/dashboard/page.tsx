@@ -7,6 +7,7 @@ import { Badge, statusVariant } from "@/components/ui/badge";
 import { getDashboardCounts, getMyTasks, getRecentTasksDetailed } from "@/lib/data";
 import { createClient } from "@/lib/supabase/server";
 import { DashboardAnimations } from "./dashboard-animations";
+import { AiChat } from "@/components/dashboard/ai-chat";
 
 export const dynamic = "force-dynamic";
 
@@ -78,6 +79,9 @@ export default async function DashboardPage() {
             Icon={Send} label="מטלגרם החודש" value={counts.telegramThisMonth} />
         </section>
       </DashboardAnimations>
+
+      {/* AI Chat */}
+      <AiChat userEmail={user?.email ?? ""} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
         {/* My tasks */}
