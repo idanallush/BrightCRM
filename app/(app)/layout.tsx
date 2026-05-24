@@ -27,7 +27,7 @@ export default async function AppLayout({
 
   return (
     <ShellProvider>
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-surface">
         <Sidebar userLabel={userLabel} />
         <AppShellContent>
           <Header />

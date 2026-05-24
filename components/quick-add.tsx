@@ -27,10 +27,10 @@ export function QuickAdd() {
       <AnimatePresence>
         {open && (
           <motion.div initial={{ opacity: 0, scale: 0.95, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 8 }} transition={{ duration: 0.12 }}
-            className="flex flex-col gap-0.5 rounded-lg border border-border bg-white p-1 shadow-lg">
+            className="flex flex-col gap-0.5 rounded-lg border border-border bg-white p-1 shadow-sm">
             {ITEMS.map(({ href, label, Icon }) => (
               <button key={href} type="button" onClick={() => { setOpen(false); router.push(href); }}
-                className="flex items-center gap-2 rounded px-3 py-2 text-right text-body-sm text-ink transition-colors hover:bg-gray-50">
+                className="flex items-center gap-2 rounded-md px-3 py-2 text-right text-body-sm text-ink transition-colors hover:bg-surface">
                 <Icon className="h-4 w-4 text-ink-muted" />{label}
               </button>
             ))}
@@ -38,8 +38,8 @@ export function QuickAdd() {
         )}
       </AnimatePresence>
       <motion.button type="button" onClick={() => setOpen((v) => !v)} title="יצירה מהירה" aria-label="יצירה מהירה" whileTap={{ scale: 0.93 }}
-        className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#FFDF4F] text-[#1A1A1A] shadow-md transition-colors hover:bg-[#f5d43a]">
-        <Plus className={cn("h-5 w-5 font-bold transition-transform duration-150", open && "rotate-45")} strokeWidth={2.5} />
+        className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-white shadow-sm transition-colors hover:bg-primary-hover">
+        <Plus className={cn("h-5 w-5 transition-transform duration-150", open && "rotate-45")} strokeWidth={2.5} />
       </motion.button>
     </div>
   );

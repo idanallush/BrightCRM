@@ -13,14 +13,14 @@ import { cn } from "@/lib/utils";
 import { createTask, updateTask, type TaskInput } from "./actions";
 import type { Client, TaskWithRelations, TeamMember } from "@/lib/data";
 
-const STATUS_OPTIONS: { value: TaskInput["status"]; label: string; dot: string }[] = [
-  { value: "מחכה לטיפול", label: "ממתין", dot: "bg-st-waiting" },
-  { value: "נכנס לעבודה", label: "נכנס לעבודה", dot: "bg-blue-500" },
-  { value: "בעבודה", label: "בעבודה", dot: "bg-purple-500" },
-  { value: "אישור לקוח", label: "אישור לקוח", dot: "bg-st-approval" },
-  { value: "אישור מנהל", label: "אישור מנהל", dot: "bg-b-pink" },
-  { value: "בוצע", label: "בוצע", dot: "bg-st-done" },
-  { value: "בוטל", label: "בוטל", dot: "bg-stone" },
+const STATUS_OPTIONS: { value: TaskInput["status"]; label: string; color: string; textColor: string }[] = [
+  { value: "מחכה לטיפול", label: "ממתין", color: "#FDAB3D", textColor: "#fff" },
+  { value: "נכנס לעבודה", label: "נכנס לעבודה", color: "#0073EA", textColor: "#fff" },
+  { value: "בעבודה", label: "בעבודה", color: "#A25DDC", textColor: "#fff" },
+  { value: "אישור לקוח", label: "אישור לקוח", color: "#FFCB00", textColor: "#323338" },
+  { value: "אישור מנהל", label: "אישור מנהל", color: "#FF642E", textColor: "#fff" },
+  { value: "בוצע", label: "בוצע", color: "#00C875", textColor: "#fff" },
+  { value: "בוטל", label: "בוטל", color: "#C4C4C4", textColor: "#fff" },
 ];
 
 function getInitials(name: string): string {
@@ -74,13 +74,11 @@ export function TaskForm({
   return (
     <form onSubmit={onSubmit} className={compact ? "flex flex-col" : "flex min-h-0 flex-1 flex-col"}>
       <div className={compact ? "flex flex-col gap-4" : "-mx-1 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-1 pb-1"}>
-        {/* Title */}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="title">כותרת</Label>
           <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="מה צריך לעשות?" autoFocus />
         </div>
 
-        {/* Client */}
         <div className="flex flex-col gap-1.5">
           <Label>לקוח</Label>
           <Select value={clientId} onValueChange={setClientId}>
@@ -91,38 +89,37 @@ export function TaskForm({
           </Select>
         </div>
 
-        {/* Description */}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="description">תיאור</Label>
           <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="פרטים נוספים (לא חובה)" />
         </div>
 
-        {/* Status — visual pills */}
+        {/* Status — Monday.com colored pills */}
         <div className="flex flex-col gap-1.5">
           <Label>סטטוס</Label>
           <div className="flex flex-wrap gap-1.5">
             {STATUS_OPTIONS.map((opt) => (
               <button key={opt.value} type="button" onClick={() => setStatus(opt.value)}
                 className={cn(
-                  "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-caption transition-all duration-200",
-                  status === opt.value
-                    ? "bg-primary font-medium text-white shadow-subtle"
-                    : "bg-surface text-slate hover:bg-gray-200",
-                )}>
-                <span className={cn("h-2 w-2 rounded-full", status === opt.value ? "bg-white" : opt.dot)} />
+                  "rounded-md px-3 py-1.5 text-caption font-medium transition-all duration-200",
+                  status === opt.value ? "shadow-sm ring-2 ring-offset-1" : "opacity-60 hover:opacity-100",
+                )}
+                style={{
+                  backgroundColor: opt.color,
+                  color: opt.textColor,
+                  ...(status === opt.value ? { ringColor: opt.color } : {}),
+                }}>
                 {opt.label}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Due date */}
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="due">תאריך יעד</Label>
           <Input id="due" type="date" value={dueDate ?? ""} onChange={(e) => setDueDate(e.target.value)} />
         </div>
 
-        {/* Assignees */}
         <div className="flex flex-col gap-1.5">
           <Label>אחראים</Label>
           <div className="flex flex-wrap gap-2">
@@ -132,11 +129,11 @@ export function TaskForm({
                 <button key={m.id} type="button" onClick={() => toggleAssignee(m.id)}
                   className={cn(
                     "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-caption transition-all duration-200",
-                    active ? "bg-primary text-white shadow-subtle" : "border border-hairline bg-white text-ink hover:bg-surface-soft",
+                    active ? "bg-primary text-white" : "border border-border bg-white text-ink hover:bg-surface",
                   )}>
                   <span className={cn(
                     "flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-semibold",
-                    active ? "bg-white/20 text-white" : "bg-tint-sky text-link",
+                    active ? "bg-white/20 text-white" : "bg-[#CCEAFF] text-primary",
                   )}>
                     {getInitials(m.full_name)}
                   </span>
@@ -148,7 +145,7 @@ export function TaskForm({
         </div>
       </div>
 
-      <div className="mt-3 flex shrink-0 flex-row-reverse gap-2 border-t border-hairline pt-3">
+      <div className="mt-3 flex shrink-0 flex-row-reverse gap-2 border-t border-border pt-3">
         <Button type="submit" disabled={pending}>
           {pending ? "שומר..." : task ? "שמירה" : "צור משימה"}
         </Button>

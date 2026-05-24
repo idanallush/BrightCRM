@@ -1,15 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { AlertTriangle, Clock } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
+import { STATUS_COLORS } from "@/components/ui/badge";
 import type { TaskWithRelations } from "@/lib/data";
 
 const COLUMNS = [
-  { key: "מחכה לטיפול", label: "ממתין", dot: "bg-dot-waiting" },
-  { key: "נכנס לעבודה", label: "נכנס לעבודה", dot: "bg-dot-incoming" },
-  { key: "בעבודה", label: "בעבודה", dot: "bg-dot-working" },
-  { key: "אישור לקוח", label: "אישור לקוח", dot: "bg-dot-approval" },
-  { key: "אישור מנהל", label: "אישור מנהל", dot: "bg-dot-manager" },
+  { key: "מחכה לטיפול", label: "ממתין" },
+  { key: "נכנס לעבודה", label: "נכנס לעבודה" },
+  { key: "בעבודה", label: "בעבודה" },
+  { key: "אישור לקוח", label: "אישור לקוח" },
+  { key: "אישור מנהל", label: "אישור מנהל" },
 ];
 
 function relativeDate(iso: string | null): { text: string; overdue: boolean } {
@@ -40,16 +41,20 @@ export function TaskKanban({
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
       {COLUMNS.map((col) => {
         const colTasks = byStatus(col.key);
+        const color = STATUS_COLORS[col.key] ?? "#C4C4C4";
         return (
-          <div key={col.key} className="min-h-[50vh] rounded-lg bg-gray-50 p-3">
-            <div className="sticky top-0 z-10 mb-3 flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2.5">
-              <span className={`h-2.5 w-2.5 rounded-full ${col.dot}`} />
-              <h3 className="text-body-sm font-semibold text-ink">{col.label}</h3>
-              <span className="rounded-full bg-gray-100 px-2 py-0.5 text-caption text-ink-secondary">{colTasks.length}</span>
+          <div key={col.key} className="min-h-[50vh] rounded-lg bg-white border border-border shadow-sm">
+            {/* Colored header */}
+            <div
+              className="flex items-center gap-2 rounded-t-lg px-3 py-2.5"
+              style={{ backgroundColor: color }}
+            >
+              <h3 className="text-sm font-semibold text-white">{col.label}</h3>
+              <span className="rounded-full bg-white/20 px-2 py-0.5 text-caption font-medium text-white">{colTasks.length}</span>
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 p-2">
               {colTasks.map((t) => (
-                <KanbanCard key={t.id} task={t} onClick={() => onCardClick(t)} />
+                <KanbanCard key={t.id} task={t} color={color} onClick={() => onCardClick(t)} />
               ))}
             </div>
           </div>
@@ -59,14 +64,15 @@ export function TaskKanban({
   );
 }
 
-function KanbanCard({ task, onClick }: {
-  task: TaskWithRelations; onClick: () => void;
+function KanbanCard({ task, color, onClick }: {
+  task: TaskWithRelations; color: string; onClick: () => void;
 }) {
   const { text: dateText, overdue } = relativeDate(task.due_date);
 
   return (
     <button type="button" onClick={onClick}
-      className={`w-full rounded-lg border bg-white p-3 text-right transition-colors duration-150 hover:bg-gray-50 ${overdue ? "border-red-200" : "border-border"}`}>
+      className="w-full rounded-md border border-border bg-white p-3 text-right transition-all duration-150 hover:shadow-sm"
+      style={{ borderRightWidth: 3, borderRightColor: color }}>
       <div className="text-body-sm font-medium text-ink">{task.title}</div>
       <div className="mt-1 text-body-sm text-ink-secondary">{task.client?.name ?? "\u2014"}</div>
       <div className="mt-2 flex items-center justify-between">
@@ -76,7 +82,7 @@ function KanbanCard({ task, onClick }: {
         </span>
         <div className="flex items-center -space-x-1">
           {task.assignees.slice(0, 2).map((a) => (
-            <span key={a.id} className="flex h-5 w-5 items-center justify-center rounded-full border border-white bg-gray-100 text-[9px] font-medium text-ink" title={a.full_name}>
+            <span key={a.id} className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-[#CCEAFF] text-[9px] font-medium text-primary" title={a.full_name}>
               {getInitials(a.full_name)}
             </span>
           ))}

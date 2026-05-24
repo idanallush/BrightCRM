@@ -20,7 +20,7 @@ export function MobileNav() {
         {ITEMS.map(({ href, label, Icon }) => {
           const active = pathname === href || pathname.startsWith(href + "/");
           return (
-            <Link key={href} href={href} className={cn("flex flex-1 flex-col items-center justify-center gap-0.5 text-[11px] transition-colors", active ? "font-semibold text-ink" : "text-ink-muted")}>
+            <Link key={href} href={href} className={cn("flex flex-1 flex-col items-center justify-center gap-0.5 text-[11px] transition-colors", active ? "font-semibold text-primary" : "text-ink-muted")}>
               <Icon className="h-5 w-5" /><span>{label}</span>
             </Link>
           );

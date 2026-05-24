@@ -2,45 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --color-primary: #1A1A1A;
-  --color-accent: #FFDF4F;
-  --color-border: #E5E7EB;
-  --color-ink: #1A1A1A;
-  --color-ink-muted: #6B7280;
-
-  /* Legacy compat */
-  --color-bg: #F9FAFB;
-  --color-hairline: #E5E7EB;
-  --color-brand: #1A1A1A;
-  --color-brand-focus: #333333;
-  --color-brand-light: #F3F4F6;
-  --color-canvas: #FFFFFF;
-  --color-surface-card: #F9FAFB;
-  --color-primary-active: #333333;
-  --color-status-active: #2E7CF6;
-  --color-status-done: #0F9549;
-  --color-status-closed: #8C8C8C;
-  --color-health-good: #0F9549;
-  --color-health-strategy: #D29B00;
-  --color-health-critical: #DC2626;
-}
-
 @layer base {
   html {
     font-family: theme("fontFamily.sans");
     font-size: 15px;
-    background: #FFFFFF;
+    background: #F6F7FB;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
-  body { background: #FFFFFF; color: #1A1A1A; line-height: 1.55; }
-  h1, h2, h3 { font-weight: 600; color: #1A1A1A; }
+  body { background: #F6F7FB; color: #323338; line-height: 1.55; }
+  h1, h2, h3 { font-weight: 600; color: #323338; }
 }
 
 @layer utilities {
   .skeleton {
-    background: linear-gradient(90deg, #F3F4F6 25%, #E5E7EB 50%, #F3F4F6 75%);
+    background: linear-gradient(90deg, #F0F1F5 25%, #E6E9EF 50%, #F0F1F5 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s ease-in-out infinite;
   }

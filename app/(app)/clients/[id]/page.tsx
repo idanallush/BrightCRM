@@ -45,7 +45,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
-          <Link href="/clients" className="inline-flex items-center gap-1.5 text-sm text-slate transition-colors hover:text-ink">
+          <Link href="/clients" className="inline-flex items-center gap-1.5 text-sm text-ink-secondary transition-colors hover:text-ink">
             <ArrowRight className="h-4 w-4" /> חזרה
           </Link>
           <h1 className="text-xl font-semibold text-ink md:text-2xl">{client.name}</h1>

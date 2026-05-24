@@ -14,7 +14,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { StatusBadge } from "@/components/ui/badge";
+import { StatusCell, STATUS_COLORS } from "@/components/ui/badge";
 import { toast } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/empty-state";
@@ -27,24 +27,18 @@ import { deleteTask } from "./actions";
 import type { Client, TaskWithRelations, TeamMember } from "@/lib/data";
 
 const STATUS_PILLS = [
-  { key: "__all__", label: "הכל", dot: "" },
-  { key: "מחכה לטיפול", label: "ממתין", dot: "bg-dot-waiting" },
-  { key: "נכנס לעבודה", label: "נכנס", dot: "bg-dot-incoming" },
-  { key: "בעבודה", label: "בעבודה", dot: "bg-dot-working" },
-  { key: "אישור לקוח", label: "אישור", dot: "bg-dot-approval" },
-  { key: "בוצע", label: "בוצע", dot: "bg-dot-done" },
+  { key: "__all__", label: "הכל", color: "" },
+  { key: "מחכה לטיפול", label: "ממתין", color: "#FDAB3D" },
+  { key: "נכנס לעבודה", label: "נכנס", color: "#0073EA" },
+  { key: "בעבודה", label: "בעבודה", color: "#A25DDC" },
+  { key: "אישור לקוח", label: "אישור", color: "#FFCB00" },
+  { key: "בוצע", label: "בוצע", color: "#00C875" },
 ] as const;
 const VIEW_KEY = "brightcrm:tasks-view";
 
 function fmtDate(iso: string | null): string {
   if (!iso) return "ללא";
   return new Date(iso).toLocaleDateString("he-IL");
-}
-
-function sourceLabel(source: string): { label: string; Icon: React.ComponentType<{ className?: string }> } {
-  if (source === "telegram") return { label: "טלגרם", Icon: Send };
-  if (source === "web") return { label: "ממשק", Icon: Globe };
-  return { label: "ייבוא", Icon: Download };
 }
 
 export function TasksClient({
@@ -136,48 +130,50 @@ export function TasksClient({
   }
 
   return (
-    <div className="flex flex-col gap-5">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-baseline gap-3">
-          <h1 className="text-2xl font-bold text-ink">משימות</h1>
-          {activeFilterCount > 0 && (
-            <button type="button" onClick={clearFilters}
-              className="rounded-full bg-primary px-3 py-1 text-[11px] font-medium text-white transition-colors hover:bg-primary-pressed">
-              {activeFilterCount} פילטרים · נקה
-            </button>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="inline-flex rounded-lg bg-surface p-1">
-            <button type="button" onClick={() => changeView("table")}
-              className={cn("flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-caption transition-all duration-200",
-                view === "table" ? "bg-white font-medium text-ink shadow-subtle" : "text-slate")}>
-              <Rows3 className="h-4 w-4" /><span className="hidden sm:inline">טבלה</span>
-            </button>
-            <button type="button" onClick={() => changeView("kanban")}
-              className={cn("flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-caption transition-all duration-200",
-                view === "kanban" ? "bg-white font-medium text-ink shadow-subtle" : "text-slate")}>
-              <LayoutGrid className="h-4 w-4" /><span className="hidden sm:inline">קנבן</span>
-            </button>
+    <div className="flex flex-col gap-4">
+      {/* Board header — white bar */}
+      <div className="rounded-lg border border-border bg-white p-4 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-bold text-ink">משימות</h1>
+            {activeFilterCount > 0 && (
+              <button type="button" onClick={clearFilters}
+                className="rounded-full bg-primary px-3 py-1 text-[11px] font-medium text-white transition-colors hover:bg-primary-hover">
+                {activeFilterCount} פילטרים · נקה
+              </button>
+            )}
           </div>
-          <Button onClick={() => setCreateOpen(true)} className="hidden sm:inline-flex">
-            <Plus className="h-4 w-4" /> משימה חדשה
-          </Button>
+          <div className="flex items-center gap-2">
+            <div className="inline-flex rounded-md border border-border bg-surface p-0.5">
+              <button type="button" onClick={() => changeView("table")}
+                className={cn("flex items-center gap-1.5 rounded px-3 py-1.5 text-caption transition-all duration-200",
+                  view === "table" ? "bg-white font-medium text-ink shadow-sm" : "text-ink-secondary")}>
+                <Rows3 className="h-4 w-4" /><span className="hidden sm:inline">טבלה</span>
+              </button>
+              <button type="button" onClick={() => changeView("kanban")}
+                className={cn("flex items-center gap-1.5 rounded px-3 py-1.5 text-caption transition-all duration-200",
+                  view === "kanban" ? "bg-white font-medium text-ink shadow-sm" : "text-ink-secondary")}>
+                <LayoutGrid className="h-4 w-4" /><span className="hidden sm:inline">קנבן</span>
+              </button>
+            </div>
+            <Button onClick={() => setCreateOpen(true)} className="hidden sm:inline-flex">
+              <Plus className="h-4 w-4" /> משימה חדשה
+            </Button>
+          </div>
         </div>
-      </div>
 
-      {/* Filter bar */}
-      <div className="rounded-lg border border-border bg-white p-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        {/* Filter row */}
+        <div className="mt-3 flex flex-col gap-3 border-t border-border pt-3 sm:flex-row sm:items-center">
           <div className="flex gap-1 overflow-x-auto pb-1">
             {STATUS_PILLS.map((pill) => (
               <button key={pill.key} type="button" onClick={() => updateFilter("status", pill.key)}
                 className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-caption transition-all duration-200",
                   filters.status === pill.key
-                    ? "bg-primary font-medium text-white"
-                    : "text-ink-secondary hover:bg-gray-100")}>
-                {pill.dot && <span className={`me-1.5 inline-block h-2 w-2 rounded-full ${pill.dot}`} />}
+                    ? "font-medium text-white"
+                    : "text-ink-secondary hover:bg-surface")}
+                style={filters.status === pill.key
+                  ? { backgroundColor: pill.color || "#323338" }
+                  : undefined}>
                 {pill.label}
               </button>
             ))}
@@ -185,7 +181,7 @@ export function TasksClient({
 
           <div className="flex flex-1 flex-wrap items-center gap-2">
             <div className="relative min-w-[140px] flex-1 sm:max-w-[200px]">
-              <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone" />
+              <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
               <Input value={searchText} onChange={(e) => setSearchText(e.target.value)}
                 placeholder="חיפוש..." className="h-9 pr-9" />
             </div>
@@ -207,8 +203,8 @@ export function TasksClient({
             </Select>
 
             <button type="button" onClick={() => updateFilter("overdue", !filters.overdue)}
-              className={cn("flex h-9 items-center gap-1.5 rounded-lg border px-3 text-caption transition-colors duration-200",
-                filters.overdue ? "border-red-300 bg-red-50 text-overdue" : "border-border bg-white text-ink-secondary hover:bg-gray-50")}>
+              className={cn("flex h-9 items-center gap-1.5 rounded-md border px-3 text-caption transition-colors duration-200",
+                filters.overdue ? "border-overdue bg-red-50 text-overdue" : "border-border bg-white text-ink-secondary hover:bg-surface")}>
               <AlertTriangle className="h-3.5 w-3.5" />עבר דדליין
             </button>
           </div>
@@ -243,22 +239,19 @@ export function TasksClient({
 
       {/* Task detail panel — Monday.com style */}
       <Sheet open={!!editing} onOpenChange={(open) => !open && closeSheet()}>
-        <SheetContent side="left" className="flex flex-col gap-0 p-0 sm:max-w-lg">
+        <SheetContent side="left" className="flex flex-col gap-0 p-0 sm:max-w-[450px]">
           {editing && (
             <>
               {/* Header */}
               <div className="shrink-0 border-b border-border px-5 pb-4 pt-5 md:px-6 md:pt-6">
                 <h2 className="text-lg font-semibold text-ink leading-snug">{editing.title}</h2>
-                <div className="mt-2 flex items-center gap-3">
-                  <StatusBadge status={editing.status} />
-                  <span className="text-caption text-ink-muted">
-                    {fmtDate(editing.created_at)} · {sourceLabel(editing.source).label}
-                  </span>
+                <div className="mt-3">
+                  <StatusCell status={editing.status} />
                 </div>
               </div>
 
               <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-                {/* Details section */}
+                {/* Details grid */}
                 <div className="border-b border-border px-5 py-4 md:px-6">
                   <div className="grid grid-cols-2 gap-3">
                     <DetailField icon={Briefcase} label="לקוח" value={editing.client?.name ?? "ללא"} />
@@ -271,12 +264,12 @@ export function TasksClient({
                   )}
                 </div>
 
-                {/* Comments — the center of the task */}
+                {/* Updates / Comments — center of task */}
                 <div className="flex-1 px-5 py-4 md:px-6">
                   <TaskComments taskId={editing.id} team={team} />
                 </div>
 
-                {/* Edit form (collapsed by default) */}
+                {/* Edit form */}
                 <details className="border-t border-border">
                   <summary className="cursor-pointer px-5 py-3 text-sm font-medium text-ink-secondary hover:text-ink md:px-6">
                     עריכת פרטים
@@ -286,10 +279,15 @@ export function TasksClient({
                   </div>
                 </details>
 
-                {/* Attachments */}
-                <div className="border-t border-border px-5 py-4 md:px-6">
-                  <TaskAttachments key={editing.id} taskId={editing.id} />
-                </div>
+                {/* Files */}
+                <details className="border-t border-border">
+                  <summary className="cursor-pointer px-5 py-3 text-sm font-medium text-ink-secondary hover:text-ink md:px-6">
+                    קבצים
+                  </summary>
+                  <div className="px-5 pb-4 md:px-6">
+                    <TaskAttachments key={editing.id} taskId={editing.id} />
+                  </div>
+                </details>
 
                 {/* Delete */}
                 <div className="border-t border-border px-5 py-3 md:px-6">

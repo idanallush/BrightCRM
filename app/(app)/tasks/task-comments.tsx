@@ -5,7 +5,6 @@ import { Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toaster";
 import { addComment } from "./actions";
-import { cn } from "@/lib/utils";
 import type { TeamMember } from "@/lib/data";
 import { createClient } from "@/lib/supabase/client";
 
@@ -38,7 +37,6 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
   const [memberId, setMemberId] = React.useState<string | null>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
-  // Fetch current user member ID
   React.useEffect(() => {
     async function fetchMember() {
       const sb = createClient();
@@ -50,7 +48,6 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
     fetchMember();
   }, []);
 
-  // Fetch comments
   React.useEffect(() => {
     async function fetchComments() {
       const sb = createClient();
@@ -77,19 +74,15 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
   async function handleSend() {
     if (!text.trim() || !memberId) return;
     setSending(true);
-    // Extract mentions: find @Name patterns and match to team
     const mentionIds: string[] = [];
     for (const m of team) {
-      if (text.includes(`@${m.full_name}`)) {
-        mentionIds.push(m.id);
-      }
+      if (text.includes(`@${m.full_name}`)) mentionIds.push(m.id);
     }
 
     const res = await addComment(taskId, memberId, text.trim(), mentionIds);
     if ("error" in res) {
       toast.error("שליחת התגובה נכשלה");
     } else {
-      // Add optimistically
       setComments((prev) => [
         ...prev,
         {
@@ -107,7 +100,6 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
 
   function insertMention(member: TeamMember) {
     const mention = `@${member.full_name} `;
-    // Replace the @ trigger with the full mention
     const val = text.replace(/@\S*$/, mention);
     setText(val);
     setShowMentions(false);
@@ -116,14 +108,10 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
 
   function handleTextChange(val: string) {
     setText(val);
-    // Show mention dropdown when user types @
     const lastAt = val.lastIndexOf("@");
     if (lastAt >= 0 && (lastAt === 0 || val[lastAt - 1] === " ")) {
       const query = val.slice(lastAt + 1);
-      if (!query.includes(" ")) {
-        setShowMentions(true);
-        return;
-      }
+      if (!query.includes(" ")) { setShowMentions(true); return; }
     }
     setShowMentions(false);
   }
@@ -135,21 +123,21 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
 
   return (
     <div className="flex flex-col gap-3">
-      <h4 className="text-sm font-semibold text-ink">תגובות ({comments.length})</h4>
+      <h4 className="text-sm font-semibold text-ink">עדכונים ({comments.length})</h4>
 
       {comments.length > 0 && (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {comments.map((c) => (
             <div key={c.id} className="flex gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gray-100 text-[11px] font-semibold text-ink">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#CCEAFF] text-[11px] font-semibold text-primary">
                 {c.author_name ? getInitials(c.author_name) : "?"}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className="text-caption font-medium text-ink">{c.author_name ?? "לא ידוע"}</span>
-                  <span className="text-[11px] text-stone">{timeAgo(c.created_at)}</span>
+                  <span className="text-sm font-semibold text-ink">{c.author_name ?? "לא ידוע"}</span>
+                  <span className="text-[11px] text-ink-muted">{timeAgo(c.created_at)}</span>
                 </div>
-                <p className="mt-0.5 text-sm text-slate whitespace-pre-wrap">{c.content}</p>
+                <p className="mt-1 text-sm text-ink-secondary whitespace-pre-wrap leading-relaxed">{c.content}</p>
               </div>
             </div>
           ))}
@@ -165,31 +153,29 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
           }}
-          placeholder="כתוב תגובה... (@ לאזכור)"
+          placeholder="כתוב עדכון... (@ לאזכור)"
           rows={2}
-          className="w-full resize-none rounded-lg border border-hairline bg-white p-3 pe-12 text-sm text-ink placeholder:text-stone transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          className="w-full resize-none rounded-md border border-border bg-white p-3 pe-12 text-sm text-ink placeholder:text-ink-muted transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
         />
         <Button
           size="icon"
-          variant="ghost"
           onClick={handleSend}
           disabled={!text.trim() || sending}
-          className="absolute bottom-2 start-2 h-8 w-8 text-primary"
+          className="absolute bottom-2 start-2 h-8 w-8"
         >
           <Send className="h-4 w-4" />
         </Button>
 
-        {/* Mention dropdown */}
         {showMentions && filteredMembers.length > 0 && (
-          <div className="absolute bottom-full mb-1 start-0 w-52 rounded-lg border border-hairline bg-white p-1 shadow-overlay">
+          <div className="absolute bottom-full mb-1 start-0 w-52 rounded-md border border-border bg-white p-1 shadow-sm">
             {filteredMembers.map((m) => (
               <button
                 key={m.id}
                 type="button"
                 onClick={() => insertMention(m)}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-ink transition-colors hover:bg-surface"
+                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-ink transition-colors hover:bg-surface"
               >
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-100 text-[10px] font-semibold text-ink">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#CCEAFF] text-[10px] font-semibold text-primary">
                   {getInitials(m.full_name)}
                 </span>
                 {m.full_name}

@@ -2,10 +2,8 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ChevronDown } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
-import { Badge, statusVariant } from "@/components/ui/badge";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { StatusCell } from "@/components/ui/badge";
 
 type TaskRow = { id: string; title: string; status: string; due_date: string | null };
 
@@ -21,54 +19,58 @@ export function ClientTasksSection({ tasks, clientId }: { tasks: TaskRow[]; clie
   return (
     <section className="flex flex-col gap-2">
       <div className="flex items-baseline justify-between">
-        <h3 className="text-sm font-semibold text-ink">משימות ({activeTasks.length} פעילות)</h3>
-        <Link href={`/tasks?client=${clientId}`} className="text-xs font-medium text-slate transition-colors hover:text-ink">לכל המשימות</Link>
+        <h3 className="text-sm font-bold text-ink">משימות ({activeTasks.length} פעילות)</h3>
+        <Link href={`/tasks?client=${clientId}`} className="text-xs font-medium text-primary hover:underline">לכל המשימות</Link>
       </div>
       {activeTasks.length === 0 && completedTasks.length === 0 ? (
-        <div className="rounded-lg bg-surface-soft p-6 text-center text-sm text-slate">אין משימות ללקוח.</div>
+        <div className="rounded-lg border border-border bg-white p-6 text-center text-sm text-ink-muted">אין משימות ללקוח.</div>
       ) : (
         <>
           {activeTasks.length > 0 && (
-            <Card className="overflow-hidden">
-              <CardContent className="p-0">
-                <Table>
-                  <THead><TR className="hover:bg-transparent"><TH>כותרת</TH><TH>סטטוס</TH><TH className="hidden sm:table-cell">תאריך יעד</TH></TR></THead>
-                  <TBody>
-                    {activeTasks.map((t) => (
-                      <TR key={t.id} className="cursor-pointer">
-                        <TD className="font-medium"><Link href={`/tasks?task=${t.id}`} className="block transition-colors hover:text-primary">{t.title}</Link></TD>
-                        <TD><Badge variant={statusVariant(t.status)}>{t.status}</Badge></TD>
-                        <TD className="hidden text-slate sm:table-cell">{fmtDate(t.due_date)}</TD>
-                      </TR>
-                    ))}
-                  </TBody>
-                </Table>
-              </CardContent>
-            </Card>
+            <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+              <table className="w-full text-right text-body-sm">
+                <thead>
+                  <tr className="bg-surface text-caption text-ink-secondary">
+                    <th className="px-4 py-2.5 text-right font-medium">כותרת</th>
+                    <th className="px-4 py-2.5 text-right font-medium">סטטוס</th>
+                    <th className="hidden px-4 py-2.5 text-right font-medium sm:table-cell">תאריך יעד</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activeTasks.map((t) => (
+                    <tr key={t.id} className="border-b border-border cursor-pointer transition-colors hover:bg-[#F5F6F8]">
+                      <td className="px-4 py-2.5 font-medium"><Link href={`/tasks?task=${t.id}`} className="block transition-colors hover:text-primary">{t.title}</Link></td>
+                      <td className="px-4 py-2.5"><StatusCell status={t.status} /></td>
+                      <td className="hidden px-4 py-2.5 text-ink-secondary sm:table-cell">{fmtDate(t.due_date)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
 
           {completedTasks.length > 0 && (
-            <div className="overflow-hidden rounded-lg border border-border bg-white">
+            <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
               <button
                 type="button"
                 onClick={() => setShowCompleted((v) => !v)}
-                className="flex w-full items-center gap-2 px-4 py-2.5 text-right text-sm text-ink-secondary hover:bg-gray-50 transition-colors"
+                className="flex w-full items-center gap-2 px-4 py-2.5 text-right text-sm text-ink-secondary transition-colors hover:bg-surface"
               >
-                <ChevronDown className={`h-4 w-4 transition-transform ${showCompleted ? "rotate-180" : ""}`} />
+                {showCompleted ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 הצג הושלמו ({completedTasks.length})
               </button>
               {showCompleted && (
-                <Table>
-                  <TBody>
+                <table className="w-full text-right text-body-sm">
+                  <tbody>
                     {completedTasks.map((t) => (
-                      <TR key={t.id} className="cursor-pointer">
-                        <TD className="font-medium text-ink-muted"><Link href={`/tasks?task=${t.id}`} className="block transition-colors hover:text-primary">{t.title}</Link></TD>
-                        <TD><Badge variant={statusVariant(t.status)}>{t.status}</Badge></TD>
-                        <TD className="hidden text-slate sm:table-cell">{fmtDate(t.due_date)}</TD>
-                      </TR>
+                      <tr key={t.id} className="border-b border-border cursor-pointer transition-colors hover:bg-[#F5F6F8]">
+                        <td className="px-4 py-2.5 font-medium text-ink-muted"><Link href={`/tasks?task=${t.id}`} className="block transition-colors hover:text-primary">{t.title}</Link></td>
+                        <td className="px-4 py-2.5"><StatusCell status={t.status} /></td>
+                        <td className="hidden px-4 py-2.5 text-ink-secondary sm:table-cell">{fmtDate(t.due_date)}</td>
+                      </tr>
                     ))}
-                  </TBody>
-                </Table>
+                  </tbody>
+                </table>
               )}
             </div>
           )}

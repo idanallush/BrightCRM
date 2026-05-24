@@ -9,7 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Heebo", "system-ui", "-apple-system", "Segoe UI", "Arial", "sans-serif"],
+        sans: ["Figtree", "Heebo", "system-ui", "-apple-system", "Segoe UI", "Arial", "sans-serif"],
       },
       fontSize: {
         "body-md": ["15px", { lineHeight: "1.55" }],
@@ -18,38 +18,36 @@ const config: Config = {
         "button": ["14px", { lineHeight: "1.30", fontWeight: "500" }],
       },
       colors: {
-        // Primary: near-black
-        primary: { DEFAULT: "#1A1A1A", hover: "#333333" },
-        // Accent: Bright yellow
+        // Monday.com blue
+        primary: { DEFAULT: "#0073EA", hover: "#0060C2", pressed: "#004DA6" },
+        // Accent: Bright yellow (logo only)
         accent: { DEFAULT: "#FFDF4F", hover: "#f5d43a" },
-        // Links
-        link: "#0077D4",
-        // Text
-        ink: { DEFAULT: "#1A1A1A", secondary: "#6B7280", muted: "#9CA3AF" },
-        // Surface — flat, clean
+        // Text — Monday.com ink
+        ink: { DEFAULT: "#323338", secondary: "#676879", muted: "#C5C7D0" },
+        // Surface
         canvas: "#FFFFFF",
-        surface: { DEFAULT: "#F9FAFB", soft: "#F3F4F6" },
-        // Borders — 1px only
-        border: "#E5E7EB",
-        // Status dot colors (dark, saturated — for dots only)
-        dot: {
-          waiting: "#D29B00",
-          incoming: "#2E7CF6",
-          working: "#6B3FC5",
-          approval: "#D55B00",
-          manager: "#C84B8B",
-          done: "#0F9549",
-          cancelled: "#8C8C8C",
-          overdue: "#DC2626",
+        surface: { DEFAULT: "#F6F7FB", soft: "#F0F1F5" },
+        // Borders
+        border: "#E6E9EF",
+        // Status colors — Monday.com full-cell backgrounds
+        st: {
+          waiting: "#FDAB3D",
+          incoming: "#0073EA",
+          working: "#A25DDC",
+          approval: "#FFCB00",
+          manager: "#FF642E",
+          done: "#00C875",
+          cancelled: "#C4C4C4",
         },
         // Health
-        health: { good: "#0F9549", strategy: "#D29B00", critical: "#DC2626" },
+        health: { good: "#00C875", strategy: "#FDAB3D", critical: "#E2445C" },
         // Semantic
-        overdue: "#DC2626",
+        overdue: "#E2445C",
+        success: "#00C875",
+        warning: "#FDAB3D",
       },
       boxShadow: {
-        // Minimal shadows — Monday.com flat style
-        sm: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+        sm: "0 1px 4px 0 rgb(0 0 0 / 0.06)",
       },
       keyframes: {
         shimmer: { "0%": { backgroundPosition: "-200% 0" }, "100%": { backgroundPosition: "200% 0" } },

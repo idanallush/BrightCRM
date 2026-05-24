@@ -2,12 +2,12 @@
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Plus, Search, Globe, FolderOpen, BarChart3, ExternalLink } from "lucide-react";
+import { Plus, Search, Globe, FolderOpen, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { HealthBadge } from "@/components/ui/badge";
+import { HealthCell } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { cn } from "@/lib/utils";
 import { ClientForm } from "./client-form";
@@ -16,10 +16,10 @@ import type { Client, TeamMember } from "@/lib/data";
 const ALL = "__all__";
 
 const HEALTH_PILLS = [
-  { key: ALL, label: "הכל" },
-  { key: "בריא", label: "בריא", dot: "bg-health-good" },
-  { key: "אסטרטגיה צריכה", label: "אסטרטגיה", dot: "bg-health-strategy" },
-  { key: "קריטי", label: "קריטי", dot: "bg-health-critical" },
+  { key: ALL, label: "הכל", color: "" },
+  { key: "בריא", label: "בריא", color: "#00C875" },
+  { key: "אסטרטגיה צריכה", label: "אסטרטגיה", color: "#FDAB3D" },
+  { key: "קריטי", label: "קריטי", color: "#E2445C" },
 ];
 
 export function ClientsClient({
@@ -66,26 +66,27 @@ export function ClientsClient({
   function renderRow(c: (typeof clients)[0]) {
     const openCount = openTaskCounts[c.id] ?? 0;
     const links = [
-      c.website_url && { url: c.website_url, icon: <Globe className="h-3.5 w-3.5" /> },
-      c.drive_url && { url: c.drive_url, icon: <FolderOpen className="h-3.5 w-3.5" /> },
-      c.facebook_ads_url && { url: c.facebook_ads_url, icon: <BarChart3 className="h-3.5 w-3.5" /> },
-    ].filter(Boolean) as { url: string; icon: React.ReactNode }[];
+      c.website_url && { url: c.website_url, icon: <Globe className="h-3.5 w-3.5" />, label: "אתר" },
+      c.drive_url && { url: c.drive_url, icon: <FolderOpen className="h-3.5 w-3.5" />, label: "Drive" },
+      c.facebook_ads_url && { url: c.facebook_ads_url, icon: <BarChart3 className="h-3.5 w-3.5" />, label: "FB Ads" },
+    ].filter(Boolean) as { url: string; icon: React.ReactNode; label: string }[];
 
     return (
-      <tr key={c.id} onClick={() => router.push(`/clients/${c.id}`)} className="cursor-pointer hover:bg-gray-50 transition-colors">
+      <tr key={c.id} onClick={() => router.push(`/clients/${c.id}`)}
+        className="cursor-pointer border-b border-border transition-colors duration-150 hover:bg-[#F5F6F8]">
         <td className="px-4 py-3 font-medium text-ink">{c.name}</td>
         <td className="px-4 py-3 text-ink-secondary">{c.manager_name ?? "ללא"}</td>
         <td className="hidden px-4 py-3 sm:table-cell">
-          {c.health ? <HealthBadge health={c.health} /> : <span className="text-ink-muted">—</span>}
+          {c.health ? <HealthCell health={c.health} /> : <span className="text-ink-muted">\u2014</span>}
         </td>
         <td className="px-4 py-3">
-          <span className={openCount > 0 ? "font-medium text-ink" : "text-ink-muted"}>{openCount}</span>
+          <span className={openCount > 0 ? "font-semibold text-primary" : "text-ink-muted"}>{openCount}</span>
         </td>
         <td className="hidden px-4 py-3 md:table-cell">
-          <div className="flex gap-1">
+          <div className="flex gap-1.5">
             {links.map((l, i) => (
               <a key={i} href={l.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
-                className="rounded p-1 text-ink-muted hover:bg-gray-100 hover:text-ink">{l.icon}</a>
+                className="rounded-md p-1.5 text-ink-muted transition-colors hover:bg-surface hover:text-primary" title={l.label}>{l.icon}</a>
             ))}
           </div>
         </td>
@@ -94,47 +95,50 @@ export function ClientsClient({
   }
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-baseline gap-3">
-          <h1 className="text-xl font-semibold text-ink">לקוחות</h1>
-          <span className="text-caption text-ink-muted">{filtered.length}</span>
-          {activeFilterCount > 0 && (
-            <button type="button" onClick={clearFilters}
-              className="rounded-full bg-primary px-3 py-1 text-[11px] font-medium text-white hover:bg-primary-hover">
-              {activeFilterCount} פילטרים · נקה
-            </button>
-          )}
-        </div>
-        <Button onClick={() => setCreateOpen(true)} className="hidden sm:inline-flex">
-          <Plus className="h-4 w-4" /> לקוח חדש
-        </Button>
-      </div>
-
-      {/* Filters */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="flex gap-1 overflow-x-auto pb-1">
-          {HEALTH_PILLS.map((p) => (
-            <button key={p.key} type="button" onClick={() => setHealth(p.key)}
-              className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-caption transition-all duration-150",
-                health === p.key ? "bg-primary font-medium text-white" : "text-ink-secondary hover:bg-gray-100")}>
-              {p.dot && <span className={`me-1.5 inline-block h-2 w-2 rounded-full ${p.dot}`} />}
-              {p.label}
-            </button>
-          ))}
-        </div>
-        <div className="flex flex-1 flex-wrap items-center gap-2">
-          <div className="relative min-w-[160px] flex-1 sm:max-w-[220px]">
-            <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
-            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="חיפוש" className="h-9 pr-9" />
+    <div className="flex flex-col gap-4">
+      {/* Header bar */}
+      <div className="rounded-lg border border-border bg-white p-4 shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-bold text-ink">לקוחות</h1>
+            <span className="text-caption text-ink-muted">{filtered.length}</span>
+            {activeFilterCount > 0 && (
+              <button type="button" onClick={clearFilters}
+                className="rounded-full bg-primary px-3 py-1 text-[11px] font-medium text-white hover:bg-primary-hover">
+                {activeFilterCount} פילטרים · נקה
+              </button>
+            )}
           </div>
-          <Select value={managerId} onValueChange={setManagerId}>
-            <SelectTrigger className="h-9 w-auto min-w-[120px]"><SelectValue placeholder="מנהל" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value={ALL}>כל המנהלים</SelectItem>
-              {team.map((m) => <SelectItem key={m.id} value={m.id}>{m.full_name}</SelectItem>)}
-            </SelectContent>
-          </Select>
+          <Button onClick={() => setCreateOpen(true)} className="hidden sm:inline-flex">
+            <Plus className="h-4 w-4" /> לקוח חדש
+          </Button>
+        </div>
+
+        {/* Filters */}
+        <div className="mt-3 flex flex-col gap-3 border-t border-border pt-3 sm:flex-row sm:items-center">
+          <div className="flex gap-1 overflow-x-auto pb-1">
+            {HEALTH_PILLS.map((p) => (
+              <button key={p.key} type="button" onClick={() => setHealth(p.key)}
+                className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-caption transition-all duration-150",
+                  health === p.key ? "font-medium text-white" : "text-ink-secondary hover:bg-surface")}
+                style={health === p.key ? { backgroundColor: p.color || "#323338" } : undefined}>
+                {p.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-1 flex-wrap items-center gap-2">
+            <div className="relative min-w-[160px] flex-1 sm:max-w-[220px]">
+              <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+              <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="חיפוש" className="h-9 pr-9" />
+            </div>
+            <Select value={managerId} onValueChange={setManagerId}>
+              <SelectTrigger className="h-9 w-auto min-w-[120px]"><SelectValue placeholder="מנהל" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>כל המנהלים</SelectItem>
+                {team.map((m) => <SelectItem key={m.id} value={m.id}>{m.full_name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
@@ -148,26 +152,30 @@ export function ClientsClient({
             action={<Button onClick={() => setCreateOpen(true)}><Plus className="h-4 w-4" /> לקוח חדש</Button>} />
         )
       ) : (
-        <div className="rounded-lg border border-border bg-white">
+        <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
           <table className="w-full text-right text-body-sm">
             <thead>
-              <tr className="border-b border-border text-caption text-ink-muted">
-                <th className="px-4 py-2.5 text-right font-medium">לקוח</th>
-                <th className="px-4 py-2.5 text-right font-medium">מנהל</th>
-                <th className="hidden px-4 py-2.5 text-right font-medium sm:table-cell">בריאות</th>
-                <th className="px-4 py-2.5 text-right font-medium">משימות</th>
-                <th className="hidden px-4 py-2.5 text-right font-medium md:table-cell">קישורים</th>
+              <tr className="bg-surface text-caption text-ink-secondary">
+                <th className="px-4 py-3 text-right font-medium">לקוח</th>
+                <th className="px-4 py-3 text-right font-medium">מנהל</th>
+                <th className="hidden px-4 py-3 text-right font-medium sm:table-cell">בריאות</th>
+                <th className="px-4 py-3 text-right font-medium">משימות</th>
+                <th className="hidden px-4 py-3 text-right font-medium md:table-cell">קישורים</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody>
               {myClients.length > 0 && (
                 <>
-                  <tr><td colSpan={5} className="bg-gray-50 px-4 py-1.5 text-caption font-medium text-ink-secondary">הלקוחות שלי</td></tr>
+                  <tr>
+                    <td colSpan={5} className="bg-primary px-4 py-1.5 text-caption font-semibold text-white">הלקוחות שלי</td>
+                  </tr>
                   {myClients.map(renderRow)}
                 </>
               )}
               {myClients.length > 0 && otherClients.length > 0 && (
-                <tr><td colSpan={5} className="bg-gray-50 px-4 py-1.5 text-caption font-medium text-ink-secondary">לקוחות נוספים</td></tr>
+                <tr>
+                  <td colSpan={5} className="bg-surface px-4 py-1.5 text-caption font-medium text-ink-secondary">לקוחות נוספים</td>
+                </tr>
               )}
               {otherClients.map(renderRow)}
             </tbody>
