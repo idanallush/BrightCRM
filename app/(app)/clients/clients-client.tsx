@@ -77,7 +77,7 @@ export function ClientsClient({
         <td className="px-4 py-3 font-medium text-ink">{c.name}</td>
         <td className="px-4 py-3 text-ink-secondary">{c.manager_name ?? "ללא"}</td>
         <td className="hidden px-4 py-3 sm:table-cell">
-          {c.health ? <HealthCell health={c.health} /> : <span className="text-ink-muted">\u2014</span>}
+          {c.health ? <HealthCell health={c.health} /> : <span className="text-ink-muted">{"\u2014"}</span>}
         </td>
         <td className="px-4 py-3">
           <span className={openCount > 0 ? "font-semibold text-primary" : "text-ink-muted"}>{openCount}</span>

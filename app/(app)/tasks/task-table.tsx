@@ -1,9 +1,19 @@
 "use client";
 
 import * as React from "react";
-import { ChevronLeft, ChevronDown, ChevronUp, Send, Globe, AlertTriangle, Download, MessageCircle } from "lucide-react";
+import { ChevronLeft, ChevronDown, ChevronUp, Send, Globe, AlertTriangle, Download, MessageCircle, EyeOff, Eye } from "lucide-react";
 import { StatusCell, STATUS_COLORS } from "@/components/ui/badge";
 import type { TaskWithRelations } from "@/lib/data";
+
+const STALE_DAYS = 180;
+const STALE_CUTOFF = new Date(Date.now() - STALE_DAYS * 86400000).toISOString();
+
+function isStale(t: TaskWithRelations): boolean {
+  if (t.source !== "import") return false;
+  if (t.updated_at > STALE_CUTOFF) return false;
+  if (t.created_at > STALE_CUTOFF) return false;
+  return true;
+}
 
 function getInitials(name: string): string {
   return name.split(/\s+/).map((w) => w[0]).join("").toUpperCase().slice(0, 2);
@@ -47,9 +57,12 @@ export function TaskTable({
 }) {
   const today = new Date().toISOString().slice(0, 10);
   const [showCompleted, setShowCompleted] = React.useState(false);
+  const [hideStale, setHideStale] = React.useState(true);
   const [collapsedGroups, setCollapsedGroups] = React.useState<Set<string>>(new Set());
 
-  const activeTasks = tasks.filter((t) => !DONE_STATUSES.includes(t.status));
+  const allActive = tasks.filter((t) => !DONE_STATUSES.includes(t.status));
+  const staleTasks = allActive.filter(isStale);
+  const activeTasks = hideStale ? allActive.filter((t) => !isStale(t)) : allActive;
   const completedTasks = tasks.filter((t) => DONE_STATUSES.includes(t.status));
 
   // Group active tasks by status
@@ -187,6 +200,18 @@ export function TaskTable({
           <div className="px-4 py-8 text-center text-sm text-ink-muted">אין משימות פעילות</div>
         )}
       </div>
+
+      {/* Stale tasks toggle */}
+      {staleTasks.length > 0 && (
+        <button
+          type="button"
+          onClick={() => setHideStale((v) => !v)}
+          className="flex items-center gap-2 self-start rounded-md px-3 py-1.5 text-caption text-ink-secondary transition-colors hover:bg-white hover:text-ink"
+        >
+          {hideStale ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+          {hideStale ? `הצג ${staleTasks.length} משימות ישנות (מיובאות, 6+ חודשים)` : "הסתר משימות ישנות"}
+        </button>
+      )}
 
       {/* Completed tasks — collapsed by default */}
       {completedTasks.length > 0 && (

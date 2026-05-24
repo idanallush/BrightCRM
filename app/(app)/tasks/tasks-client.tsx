@@ -242,34 +242,31 @@ export function TasksClient({
         <SheetContent side="left" className="flex flex-col gap-0 p-0 sm:max-w-[450px]">
           {editing && (
             <>
-              {/* Header */}
-              <div className="shrink-0 border-b border-border px-5 pb-4 pt-5 md:px-6 md:pt-6">
+              {/* Header: title + status + compact details */}
+              <div className="shrink-0 border-b border-border px-5 pb-3 pt-5 md:px-6 md:pt-6">
                 <h2 className="text-lg font-semibold text-ink leading-snug">{editing.title}</h2>
-                <div className="mt-3">
+                <div className="mt-2 flex flex-wrap items-center gap-2">
                   <StatusCell status={editing.status} />
+                  <span className="text-caption text-ink-muted">{editing.client?.name ?? ""}</span>
                 </div>
+                {/* Compact details row */}
+                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-caption text-ink-secondary">
+                  <span className="inline-flex items-center gap-1"><User className="h-3 w-3" />{editing.assignees.map(a => a.full_name).join(", ") || "לא שויך"}</span>
+                  <span className="inline-flex items-center gap-1"><Calendar className="h-3 w-3" />{fmtDate(editing.due_date)}</span>
+                  <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" />{fmtDate(editing.created_at)}</span>
+                </div>
+                {editing.description && (
+                  <p className="mt-2 text-sm text-ink-secondary leading-relaxed">{editing.description}</p>
+                )}
               </div>
 
               <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-                {/* Details grid */}
-                <div className="border-b border-border px-5 py-4 md:px-6">
-                  <div className="grid grid-cols-2 gap-3">
-                    <DetailField icon={Briefcase} label="לקוח" value={editing.client?.name ?? "ללא"} />
-                    <DetailField icon={User} label="אחראי" value={editing.assignees.map(a => a.full_name).join(", ") || "לא שויך"} />
-                    <DetailField icon={Calendar} label="דדליין" value={fmtDate(editing.due_date)} />
-                    <DetailField icon={Clock} label="נוצר" value={fmtDate(editing.created_at)} />
-                  </div>
-                  {editing.description && (
-                    <p className="mt-3 text-sm text-ink-secondary leading-relaxed">{editing.description}</p>
-                  )}
-                </div>
-
-                {/* Updates / Comments — center of task */}
+                {/* Updates / Comments — THE main content */}
                 <div className="flex-1 px-5 py-4 md:px-6">
                   <TaskComments taskId={editing.id} team={team} />
                 </div>
 
-                {/* Edit form */}
+                {/* Edit form — collapsible, below comments */}
                 <details className="border-t border-border">
                   <summary className="cursor-pointer px-5 py-3 text-sm font-medium text-ink-secondary hover:text-ink md:px-6">
                     עריכת פרטים
@@ -279,7 +276,7 @@ export function TasksClient({
                   </div>
                 </details>
 
-                {/* Files */}
+                {/* Files — collapsible */}
                 <details className="border-t border-border">
                   <summary className="cursor-pointer px-5 py-3 text-sm font-medium text-ink-secondary hover:text-ink md:px-6">
                     קבצים
