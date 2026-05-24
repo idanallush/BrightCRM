@@ -314,6 +314,25 @@ export async function getDashboardCounts(dateFrom?: string): Promise<DashboardCo
   };
 }
 
+export type SourceCounts = { telegram: number; web: number; import: number; total: number };
+
+export async function getWeeklySourceCounts(): Promise<SourceCounts> {
+  const sb = createClient();
+  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+  const { data } = await sb
+    .from("tasks")
+    .select("source")
+    .gte("created_at", weekAgo);
+  const counts: SourceCounts = { telegram: 0, web: 0, import: 0, total: 0 };
+  for (const row of (data ?? []) as { source: string }[]) {
+    if (row.source === "telegram") counts.telegram++;
+    else if (row.source === "web") counts.web++;
+    else counts.import++;
+    counts.total++;
+  }
+  return counts;
+}
+
 export async function getRecentTasks(limit = 5) {
   const sb = createClient();
   const { data } = await sb

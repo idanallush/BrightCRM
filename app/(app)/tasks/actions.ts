@@ -95,6 +95,24 @@ export async function updateTaskStatus(id: string, status: string) {
   return { ok: true as const };
 }
 
+export async function quickParseTask(text: string, userEmail: string) {
+  const sb = createClient();
+  const { data: member } = await sb
+    .from("team_members")
+    .select("id,full_name")
+    .eq("email", userEmail)
+    .maybeSingle();
+  if (!member) return { error: "משתמש לא נמצא" };
+
+  try {
+    const { parseTaskFromText } = await import("@/lib/telegram/parse-task");
+    const parsed = await parseTaskFromText(text, { id: member.id, full_name: member.full_name });
+    return { ok: true as const, parsed };
+  } catch (e: any) {
+    return { error: e.message ?? "שגיאה בפענוח" };
+  }
+}
+
 export async function addComment(
   taskId: string,
   authorId: string,

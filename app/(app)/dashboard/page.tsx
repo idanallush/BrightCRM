@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { Send } from "lucide-react";
+import { Send, MessageSquare } from "lucide-react";
 import { StatusCell } from "@/components/ui/badge";
-import { getDashboardCounts, getMyTasks, getRecentTasksDetailed } from "@/lib/data";
+import { getDashboardCounts, getMyTasks, getRecentTasksDetailed, getWeeklySourceCounts } from "@/lib/data";
 import { createClient } from "@/lib/supabase/server";
 import { AiChat } from "@/components/dashboard/ai-chat";
+import { MarkDoneButton } from "@/components/dashboard/mark-done-button";
 
 export const dynamic = "force-dynamic";
 
@@ -39,11 +40,16 @@ export default async function DashboardPage() {
   const userLabel = user?.user_metadata?.full_name || user?.email || "";
   const firstName = getFirstName(userLabel);
 
-  const [counts, myTasks, recent] = await Promise.all([
+  const [counts, myTasks, recent, sourceCounts] = await Promise.all([
     getDashboardCounts(),
     getMyTasks(user?.email ?? ""),
     getRecentTasksDetailed(5),
+    getWeeklySourceCounts(),
   ]);
+
+  const telegramPct = sourceCounts.total > 0
+    ? Math.round((sourceCounts.telegram / sourceCounts.total) * 100)
+    : 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -69,6 +75,25 @@ export default async function DashboardPage() {
             </span>
           )}
         </div>
+
+        {/* Source metrics — the success measure */}
+        <div className="mt-3 flex items-center gap-3 border-t border-border pt-3">
+          <MessageSquare className="h-4 w-4 text-ink-muted" />
+          <span className="text-sm text-ink-secondary">
+            השבוע:{" "}
+            <span className="font-semibold text-primary">{sourceCounts.telegram}</span> מטלגרם,{" "}
+            <span className="font-semibold text-ink">{sourceCounts.web}</span> מהממשק
+            {sourceCounts.total > 0 && (
+              <>
+                {" "}{"\u00B7"}{" "}
+                <span className={telegramPct >= 70 ? "font-semibold text-success" : "text-ink-secondary"}>
+                  {telegramPct}% טלגרם
+                </span>
+                {telegramPct < 70 && <span className="text-ink-muted"> (יעד: 70%)</span>}
+              </>
+            )}
+          </span>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -89,6 +114,7 @@ export default async function DashboardPage() {
                     <th className="px-4 py-2.5 text-right font-medium">משימה</th>
                     <th className="hidden px-4 py-2.5 text-right font-medium sm:table-cell">לקוח</th>
                     <th className="px-4 py-2.5 text-right font-medium">דדליין</th>
+                    <th className="w-10 px-2" />
                   </tr>
                 </thead>
                 <tbody>
@@ -102,6 +128,9 @@ export default async function DashboardPage() {
                         </td>
                         <td className="hidden px-4 py-2.5 text-ink-secondary sm:table-cell">{t.client_name ?? "\u2014"}</td>
                         <td className={`px-4 py-2.5 ${overdue ? "font-medium text-overdue" : "text-ink-secondary"}`}>{dateText}</td>
+                        <td className="px-2 py-2.5 text-center">
+                          <MarkDoneButton taskId={t.id} />
+                        </td>
                       </tr>
                     );
                   })}
