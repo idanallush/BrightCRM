@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Plus, LayoutGrid, Rows3, AlertTriangle, Search } from "lucide-react";
+import { Plus, LayoutGrid, Rows3, AlertTriangle, Search, Calendar, User, Briefcase, Globe, Send, Download, Clock } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,11 +9,12 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import {
-  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
+  Sheet, SheetContent,
 } from "@/components/ui/sheet";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { StatusBadge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/empty-state";
@@ -35,12 +36,24 @@ const STATUS_PILLS = [
 ] as const;
 const VIEW_KEY = "brightcrm:tasks-view";
 
+function fmtDate(iso: string | null): string {
+  if (!iso) return "ללא";
+  return new Date(iso).toLocaleDateString("he-IL");
+}
+
+function sourceLabel(source: string): { label: string; Icon: React.ComponentType<{ className?: string }> } {
+  if (source === "telegram") return { label: "טלגרם", Icon: Send };
+  if (source === "web") return { label: "ממשק", Icon: Globe };
+  return { label: "ייבוא", Icon: Download };
+}
+
 export function TasksClient({
-  tasks, clients, team, initialFilters, initialOpenTaskId,
+  tasks, clients, team, commentCounts, initialFilters, initialOpenTaskId,
 }: {
   tasks: TaskWithRelations[];
   clients: Client[];
   team: TeamMember[];
+  commentCounts: Record<string, number>;
   initialFilters: { status: string; clientId: string; assigneeId: string; overdue: boolean };
   initialOpenTaskId: string | null;
 }) {
@@ -164,7 +177,7 @@ export function TasksClient({
                   filters.status === pill.key
                     ? "bg-primary font-medium text-white"
                     : "text-ink-secondary hover:bg-gray-100")}>
-                {pill.dot && <span className={`mr-1.5 inline-block h-2 w-2 rounded-full ${pill.dot}`} />}
+                {pill.dot && <span className={`me-1.5 inline-block h-2 w-2 rounded-full ${pill.dot}`} />}
                 {pill.label}
               </button>
             ))}
@@ -212,7 +225,7 @@ export function TasksClient({
             action={<Button onClick={() => setCreateOpen(true)}><Plus className="h-4 w-4" /> משימה חדשה</Button>} />
         )
       ) : view === "table" ? (
-        <TaskTable tasks={filteredTasks} onRowClick={setEditing} />
+        <TaskTable tasks={filteredTasks} commentCounts={commentCounts} onRowClick={setEditing} />
       ) : (
         <TaskKanban tasks={filteredTasks} onCardClick={setEditing} />
       )}
@@ -228,28 +241,60 @@ export function TasksClient({
         </DialogContent>
       </Dialog>
 
-      {/* Edit sheet */}
+      {/* Task detail panel — Monday.com style */}
       <Sheet open={!!editing} onOpenChange={(open) => !open && closeSheet()}>
-        <SheetContent side="left" className="flex flex-col gap-0 p-0">
+        <SheetContent side="left" className="flex flex-col gap-0 p-0 sm:max-w-lg">
           {editing && (
             <>
-              <SheetHeader className="px-5 pb-3 pt-5 md:px-6 md:pt-6">
-                <SheetTitle>עריכת משימה</SheetTitle>
-                <SheetDescription>
-                  נוצר ב-{new Date(editing.created_at).toLocaleDateString("he-IL")} · מקור: {editing.source === "telegram" ? "טלגרם" : editing.source === "web" ? "ממשק" : "ייבוא"}
-                </SheetDescription>
-              </SheetHeader>
-              <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-5 pb-6 md:px-6">
-                <TaskForm key={editing.id} task={editing} clients={clients} team={team} onDone={closeSheet} compact />
-                <div className="border-t border-hairline pt-4">
+              {/* Header */}
+              <div className="shrink-0 border-b border-border px-5 pb-4 pt-5 md:px-6 md:pt-6">
+                <h2 className="text-lg font-semibold text-ink leading-snug">{editing.title}</h2>
+                <div className="mt-2 flex items-center gap-3">
+                  <StatusBadge status={editing.status} />
+                  <span className="text-caption text-ink-muted">
+                    {fmtDate(editing.created_at)} · {sourceLabel(editing.source).label}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+                {/* Details section */}
+                <div className="border-b border-border px-5 py-4 md:px-6">
+                  <div className="grid grid-cols-2 gap-3">
+                    <DetailField icon={Briefcase} label="לקוח" value={editing.client?.name ?? "ללא"} />
+                    <DetailField icon={User} label="אחראי" value={editing.assignees.map(a => a.full_name).join(", ") || "לא שויך"} />
+                    <DetailField icon={Calendar} label="דדליין" value={fmtDate(editing.due_date)} />
+                    <DetailField icon={Clock} label="נוצר" value={fmtDate(editing.created_at)} />
+                  </div>
+                  {editing.description && (
+                    <p className="mt-3 text-sm text-ink-secondary leading-relaxed">{editing.description}</p>
+                  )}
+                </div>
+
+                {/* Comments — the center of the task */}
+                <div className="flex-1 px-5 py-4 md:px-6">
                   <TaskComments taskId={editing.id} team={team} />
                 </div>
-                <div className="border-t border-hairline pt-4">
+
+                {/* Edit form (collapsed by default) */}
+                <details className="border-t border-border">
+                  <summary className="cursor-pointer px-5 py-3 text-sm font-medium text-ink-secondary hover:text-ink md:px-6">
+                    עריכת פרטים
+                  </summary>
+                  <div className="px-5 pb-4 md:px-6">
+                    <TaskForm key={editing.id} task={editing} clients={clients} team={team} onDone={closeSheet} compact />
+                  </div>
+                </details>
+
+                {/* Attachments */}
+                <div className="border-t border-border px-5 py-4 md:px-6">
                   <TaskAttachments key={editing.id} taskId={editing.id} />
                 </div>
-                <div className="border-t border-hairline pt-3">
+
+                {/* Delete */}
+                <div className="border-t border-border px-5 py-3 md:px-6">
                   {confirmingDelete ? (
-                    <div className="flex flex-col gap-2 rounded-lg bg-overdue-bg p-3 text-right">
+                    <div className="flex flex-col gap-2 rounded-lg bg-red-50 p-3 text-right">
                       <p className="text-sm text-overdue">למחוק את המשימה לצמיתות?</p>
                       <div className="flex flex-row-reverse gap-2">
                         <Button variant="danger" size="sm" onClick={onDelete}>מחק</Button>
@@ -265,6 +310,22 @@ export function TasksClient({
           )}
         </SheetContent>
       </Sheet>
+    </div>
+  );
+}
+
+function DetailField({ icon: Icon, label, value }: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <Icon className="h-4 w-4 shrink-0 text-ink-muted" />
+      <div className="min-w-0">
+        <div className="text-[11px] text-ink-muted">{label}</div>
+        <div className="truncate text-sm text-ink">{value}</div>
+      </div>
     </div>
   );
 }

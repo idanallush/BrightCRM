@@ -272,29 +272,43 @@ export type DashboardCounts = {
 export async function getDashboardCounts(dateFrom?: string): Promise<DashboardCounts> {
   const sb = createClient();
   const today = new Date().toISOString().slice(0, 10);
+  // Default: only count tasks relevant in the last 90 days
+  const cutoff90 = new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
+  const cutoff30 = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+  const effectiveFrom = dateFrom ?? cutoff90;
 
-  let incomingQ = sb.from("tasks").select("*", { count: "exact", head: true }).eq("status", "נכנס לעבודה");
-  let workingQ = sb.from("tasks").select("*", { count: "exact", head: true }).eq("status", "בעבודה");
-  let approvalQ = sb.from("tasks").select("*", { count: "exact", head: true }).in("status", ["אישור לקוח", "אישור מנהל"]);
+  const incomingQ = sb.from("tasks").select("*", { count: "exact", head: true })
+    .eq("status", "נכנס לעבודה").gte("created_at", effectiveFrom);
 
-  if (dateFrom) {
-    incomingQ = incomingQ.gte("created_at", dateFrom);
-    workingQ = workingQ.gte("created_at", dateFrom);
-    approvalQ = approvalQ.gte("created_at", dateFrom);
-  }
+  // "באוויר" — only tasks with recent due_date or recently created (not old imports)
+  // Fetch working tasks then filter: due_date >= cutoff30 OR (due_date is null AND created_at >= cutoff90)
+  const workingAllQ = sb.from("tasks")
+    .select("id,due_date,created_at")
+    .eq("status", "בעבודה");
 
-  // Overdue always shows current state (not filtered by date)
+  const approvalQ = sb.from("tasks").select("*", { count: "exact", head: true })
+    .in("status", ["אישור לקוח", "אישור מנהל"]).gte("created_at", effectiveFrom);
+
+  // Overdue: active tasks with past due_date AND recent enough to matter
   const overdueQ = sb.from("tasks").select("*", { count: "exact", head: true })
     .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה"])
-    .lt("due_date", today);
+    .lt("due_date", today)
+    .gte("due_date", cutoff90);
 
-  const [incoming, working, approval, overdue] = await Promise.all([
-    incomingQ, workingQ, approvalQ, overdueQ,
+  const [incoming, workingAll, approval, overdue] = await Promise.all([
+    incomingQ, workingAllQ, approvalQ, overdueQ,
   ]);
+
+  // Filter working tasks: only count if due_date in last 30 days/future OR no due_date but created recently
+  const workingRows = (workingAll.data ?? []) as { id: string; due_date: string | null; created_at: string }[];
+  const workingCount = workingRows.filter((t) => {
+    if (t.due_date) return t.due_date >= cutoff30;
+    return t.created_at >= cutoff90;
+  }).length;
 
   return {
     incoming: incoming.count ?? 0,
-    working: working.count ?? 0,
+    working: workingCount,
     awaitingApproval: approval.count ?? 0,
     overdueTasks: overdue.count ?? 0,
   };
@@ -387,6 +401,18 @@ export async function getTaskComments(taskId: string) {
     author_id: (c.author?.id as string | undefined) ?? null,
     author_name: (c.author?.full_name as string | undefined) ?? null,
   }));
+}
+
+export async function getCommentCountsByTask(): Promise<Record<string, number>> {
+  const sb = createClient();
+  const { data } = await sb
+    .from("task_comments")
+    .select("task_id");
+  const map: Record<string, number> = {};
+  for (const row of (data ?? []) as { task_id: string }[]) {
+    map[row.task_id] = (map[row.task_id] ?? 0) + 1;
+  }
+  return map;
 }
 
 export async function getCriticalClients() {

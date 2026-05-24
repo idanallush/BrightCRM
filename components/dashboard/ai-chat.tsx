@@ -163,7 +163,7 @@ export function AiChat({ userEmail }: { userEmail: string }) {
                           {t.title}
                         </span>
                         {t.client_name && (
-                          <span className="mr-2 text-caption text-stone">
+                          <span className="me-2 text-caption text-stone">
                             {t.client_name}
                           </span>
                         )}

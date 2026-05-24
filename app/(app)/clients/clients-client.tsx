@@ -118,7 +118,7 @@ export function ClientsClient({
             <button key={p.key} type="button" onClick={() => setHealth(p.key)}
               className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-caption transition-all duration-150",
                 health === p.key ? "bg-primary font-medium text-white" : "text-ink-secondary hover:bg-gray-100")}>
-              {p.dot && <span className={`mr-1.5 inline-block h-2 w-2 rounded-full ${p.dot}`} />}
+              {p.dot && <span className={`me-1.5 inline-block h-2 w-2 rounded-full ${p.dot}`} />}
               {p.label}
             </button>
           ))}
