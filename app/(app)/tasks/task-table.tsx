@@ -6,12 +6,15 @@ import { StatusCell, STATUS_COLORS } from "@/components/ui/badge";
 import type { TaskWithRelations } from "@/lib/data";
 
 const STALE_DAYS = 180;
-const STALE_CUTOFF = new Date(Date.now() - STALE_DAYS * 86400000).toISOString();
 
-function isStale(t: TaskWithRelations): boolean {
+function getStaleCutoff(): string {
+  return new Date(Date.now() - STALE_DAYS * 86400000).toISOString();
+}
+
+function isStale(t: TaskWithRelations, cutoff: string): boolean {
   if (t.source !== "import") return false;
-  if (t.updated_at > STALE_CUTOFF) return false;
-  if (t.created_at > STALE_CUTOFF) return false;
+  if (t.updated_at > cutoff) return false;
+  if (t.created_at > cutoff) return false;
   return true;
 }
 
@@ -60,9 +63,10 @@ export function TaskTable({
   const [hideStale, setHideStale] = React.useState(true);
   const [collapsedGroups, setCollapsedGroups] = React.useState<Set<string>>(new Set());
 
+  const staleCutoff = getStaleCutoff();
   const allActive = tasks.filter((t) => !DONE_STATUSES.includes(t.status));
-  const staleTasks = allActive.filter(isStale);
-  const activeTasks = hideStale ? allActive.filter((t) => !isStale(t)) : allActive;
+  const staleTasks = allActive.filter((t) => isStale(t, staleCutoff));
+  const activeTasks = hideStale ? allActive.filter((t) => !isStale(t, staleCutoff)) : allActive;
   const completedTasks = tasks.filter((t) => DONE_STATUSES.includes(t.status));
 
   // Group active tasks by status

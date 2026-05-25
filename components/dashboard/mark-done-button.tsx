@@ -30,7 +30,7 @@ export function MarkDoneButton({ taskId }: { taskId: string }) {
       onClick={handleClick}
       disabled={pending}
       title="סמן כבוצע"
-      className="rounded-md p-1 text-ink-muted transition-colors hover:bg-success/10 hover:text-success disabled:opacity-50"
+      className="rounded-md p-1 text-ink-muted transition-colors hover:bg-[#00C875]/10 hover:text-[#00C875] disabled:opacity-50"
     >
       <Check className="h-4 w-4" />
     </button>

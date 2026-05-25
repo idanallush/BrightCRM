@@ -316,6 +316,7 @@ export async function getDashboardCounts(dateFrom?: string): Promise<DashboardCo
 
 export type SourceCounts = { telegram: number; web: number; import: number; total: number };
 
+// TODO: client-side counting — replace with per-source count queries when scale requires it
 export async function getWeeklySourceCounts(): Promise<SourceCounts> {
   const sb = createClient();
   const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
@@ -422,6 +423,7 @@ export async function getTaskComments(taskId: string) {
   }));
 }
 
+// TODO: pulls all rows into memory — replace with Supabase RPC using GROUP BY when scale requires it
 export async function getCommentCountsByTask(): Promise<Record<string, number>> {
   const sb = createClient();
   const { data } = await sb

@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { quickParseTask, createTask } from "@/app/(app)/tasks/actions";
 import { toast } from "@/components/ui/toaster";
-import { createClient } from "@/lib/supabase/client";
 import type { ParsedTask } from "@/lib/telegram/parse-task";
 
 export function QuickAdd() {
@@ -35,9 +34,7 @@ export function QuickAdd() {
   async function handleParse() {
     if (!text.trim()) return;
     setParsing(true);
-    const sb = createClient();
-    const { data: { user } } = await sb.auth.getUser();
-    const res = await quickParseTask(text.trim(), user?.email ?? "");
+    const res = await quickParseTask(text.trim());
     setParsing(false);
     if ("error" in res) {
       toast.error(res.error);
