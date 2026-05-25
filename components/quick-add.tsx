@@ -51,7 +51,7 @@ export function QuickAdd() {
       title: parsed.title,
       client_id: parsed.client_id,
       description: parsed.description || null,
-      status: "נכנס לעבודה",
+      status: "מחכה לטיפול",
       due_date: parsed.due_date,
       assignee_ids: parsed.assignee_id ? [parsed.assignee_id] : [],
     });
