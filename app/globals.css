@@ -12,6 +12,7 @@
   }
   body { background: #F6F7FB; color: #323338; line-height: 1.55; }
   h1, h2, h3 { font-weight: 600; color: #323338; }
+  :focus-visible { outline: 2px solid #0073EA; outline-offset: 2px; }
 }
 
 @layer utilities {
