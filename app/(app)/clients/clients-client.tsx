@@ -105,7 +105,7 @@ export function ClientsClient({
             {activeFilterCount > 0 && (
               <button type="button" onClick={clearFilters}
                 className="rounded-full bg-primary px-3 py-1 text-[11px] font-medium text-white hover:bg-primary-hover">
-                {activeFilterCount} פילטרים · נקה
+                {activeFilterCount === 1 ? "פילטר 1" : `${activeFilterCount} פילטרים`} · נקה
               </button>
             )}
           </div>
