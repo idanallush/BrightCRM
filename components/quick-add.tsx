@@ -98,7 +98,7 @@ export function QuickAdd() {
         {/* Text input mode */}
         {mode === "text" && (
           <motion.div initial={{ opacity: 0, scale: 0.95, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 8 }} transition={{ duration: 0.12 }}
-            className="w-72 rounded-lg border border-border bg-white p-3 shadow-sm sm:w-80">
+            className="w-96 max-w-[calc(100vw-2.5rem)] rounded-lg border border-border bg-white p-3 shadow-sm sm:w-[28rem]">
             <p className="mb-2 text-caption text-ink-secondary">כתוב מה צריך לעשות, כמו בטלגרם:</p>
             <input
               ref={inputRef}
@@ -122,7 +122,7 @@ export function QuickAdd() {
         {/* Confirm parsed result */}
         {mode === "confirm" && parsed && (
           <motion.div initial={{ opacity: 0, scale: 0.95, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 8 }} transition={{ duration: 0.12 }}
-            className="w-72 rounded-lg border border-border bg-white p-3 shadow-sm sm:w-80">
+            className="w-96 max-w-[calc(100vw-2.5rem)] rounded-lg border border-border bg-white p-3 shadow-sm sm:w-[28rem]">
             <p className="mb-2 text-caption font-medium text-ink">זה מה שהבנתי:</p>
             <div className="flex flex-col gap-1.5 text-sm">
               <Row label="משימה" value={parsed.title} />
