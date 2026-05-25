@@ -131,28 +131,28 @@ export function TasksClient({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Board header — white bar */}
-      <div className="rounded-lg border border-border bg-white p-4 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      {/* Board header */}
+      <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-primary px-4 py-3">
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-bold text-ink">משימות</h1>
+            <h1 className="text-base font-bold text-white">משימות</h1>
             {activeFilterCount > 0 && (
               <button type="button" onClick={clearFilters}
-                className="rounded-full bg-primary px-3 py-1 text-[11px] font-medium text-white transition-colors hover:bg-primary-hover">
+                className="rounded-full bg-white/20 px-3 py-1 text-[11px] font-medium text-white transition-colors hover:bg-white/30">
                 {activeFilterCount === 1 ? "פילטר 1" : `${activeFilterCount} פילטרים`} · נקה
               </button>
             )}
           </div>
           <div className="flex items-center gap-2">
-            <div className="inline-flex rounded-md border border-border bg-surface p-0.5">
+            <div className="inline-flex rounded-md border border-white/20 bg-white/10 p-0.5">
               <button type="button" onClick={() => changeView("table")}
                 className={cn("flex items-center gap-1.5 rounded px-3 py-1.5 text-caption transition-colors duration-200",
-                  view === "table" ? "bg-white font-medium text-ink shadow-sm" : "text-ink-secondary")}>
+                  view === "table" ? "bg-white font-medium text-ink shadow-sm" : "text-white/70 hover:text-white")}>
                 <Rows3 className="h-4 w-4" /><span className="hidden sm:inline">טבלה</span>
               </button>
               <button type="button" onClick={() => changeView("kanban")}
                 className={cn("flex items-center gap-1.5 rounded px-3 py-1.5 text-caption transition-colors duration-200",
-                  view === "kanban" ? "bg-white font-medium text-ink shadow-sm" : "text-ink-secondary")}>
+                  view === "kanban" ? "bg-white font-medium text-ink shadow-sm" : "text-white/70 hover:text-white")}>
                 <LayoutGrid className="h-4 w-4" /><span className="hidden sm:inline">קנבן</span>
               </button>
             </div>
@@ -163,7 +163,7 @@ export function TasksClient({
         </div>
 
         {/* Filter row */}
-        <div className="mt-3 flex flex-col gap-3 border-t border-border pt-3 sm:flex-row sm:items-center">
+        <div className="flex flex-col gap-3 border-t border-primary-hover px-4 py-3 sm:flex-row sm:items-center">
           <div className="flex gap-1 overflow-x-auto pb-1">
             {STATUS_PILLS.map((pill) => (
               <button key={pill.key} type="button" onClick={() => updateFilter("status", pill.key)}

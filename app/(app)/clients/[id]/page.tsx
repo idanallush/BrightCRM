@@ -43,18 +43,20 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <Link href="/clients" className="inline-flex items-center gap-1.5 text-sm text-ink-secondary transition-colors hover:text-ink">
-            <ArrowRight className="h-4 w-4" /> חזרה
-          </Link>
-          <h1 className="text-xl font-semibold text-ink md:text-2xl">{client.name}</h1>
-          {healthV && client.health && <Badge variant={healthV}>{client.health}</Badge>}
-          {manager && <span className="text-sm text-ink-secondary">{manager.full_name}</span>}
-        </div>
-        <div className="flex items-center gap-2">
-          <DeleteClientButton client={client} />
-          <EditClientButton client={client} team={team} />
+      <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-primary px-4 py-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <Link href="/clients" className="inline-flex items-center gap-1.5 text-caption text-white/70 transition-colors hover:text-white">
+              <ArrowRight className="h-4 w-4" /> חזרה
+            </Link>
+            <h1 className="text-base font-bold text-white">{client.name}</h1>
+            {healthV && client.health && <Badge variant={healthV}>{client.health}</Badge>}
+            {manager && <span className="text-caption text-white/70">{manager.full_name}</span>}
+          </div>
+          <div className="flex items-center gap-2">
+            <DeleteClientButton client={client} />
+            <EditClientButton client={client} team={team} />
+          </div>
         </div>
       </div>
 
@@ -103,7 +105,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
       {/* Links */}
       {externalLinks.length > 0 && (
         <section className="flex flex-col gap-2">
-          <h3 className="text-sm font-semibold text-ink">קישורים</h3>
+          <h3 className="text-body-sm font-semibold text-ink">קישורים</h3>
           <div className="flex flex-wrap gap-2">
             {externalLinks.map((l) => (
               <Button key={l.label} variant="secondary" size="sm" asChild>
@@ -121,7 +123,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
 
       {/* Files */}
       <section className="flex flex-col gap-2">
-        <h3 className="text-sm font-semibold text-ink">קבצים ({attachments.length})</h3>
+        <h3 className="text-body-sm font-semibold text-ink">קבצים ({attachments.length})</h3>
         <FileUpload clientId={client.id} />
         <FileList attachments={attachments} thumbUrls={thumbs} />
       </section>
@@ -130,6 +132,6 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
 }
 
 function EmptyBox({ text }: { text: string }) {
-  return <div className="rounded-lg bg-surface-soft p-6 text-center text-sm text-slate">{text}</div>;
+  return <div className="rounded-lg bg-surface p-6 text-center text-sm text-ink-secondary">{text}</div>;
 }
 

@@ -27,6 +27,8 @@ const config: Config = {
         // Surface
         canvas: "#FFFFFF",
         surface: { DEFAULT: "#F6F7FB", soft: "#F0F1F5" },
+        // Sidebar — dark navy
+        sidebar: { DEFAULT: "#292F4C", hover: "#323860", active: "#1E2340", border: "#3D4463" },
         // Borders
         border: "#E6E9EF",
         // Status colors — Monday.com full-cell backgrounds

@@ -67,12 +67,13 @@ export function AiChat({ userEmail }: { userEmail: string }) {
   }
 
   return (
-    <div className="rounded-lg border border-border bg-white p-4 shadow-sm">
-      <div className="mb-3 flex items-center gap-2">
-        <Bot className="h-4 w-4 text-primary" />
-        <h2 className="text-base font-bold text-ink">עוזר</h2>
+    <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+      <div className="flex items-center gap-2 bg-primary px-4 py-3">
+        <Bot className="h-4 w-4 text-white/80" />
+        <h2 className="text-base font-bold text-white">עוזר AI</h2>
       </div>
 
+      <div className="p-4">
       <div className="-mx-1 mb-3 flex gap-1.5 overflow-x-auto px-1 pb-1">
         {QUICK_ACTIONS.map((qa) => (
           <button
@@ -80,7 +81,7 @@ export function AiChat({ userEmail }: { userEmail: string }) {
             type="button"
             onClick={() => ask({ action: qa.action })}
             disabled={loading}
-            className="whitespace-nowrap rounded-full bg-surface px-3.5 py-2 text-caption text-ink-secondary transition-colors hover:bg-surface-soft hover:text-ink disabled:opacity-50"
+            className="whitespace-nowrap rounded-full border border-primary/20 bg-primary/5 px-3.5 py-2 text-caption text-primary transition-colors hover:bg-primary/10 disabled:opacity-50"
           >
             {qa.label}
           </button>
@@ -189,6 +190,7 @@ export function AiChat({ userEmail }: { userEmail: string }) {
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
     </div>
   );
 }

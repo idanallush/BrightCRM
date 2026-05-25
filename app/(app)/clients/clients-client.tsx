@@ -97,14 +97,14 @@ export function ClientsClient({
   return (
     <div className="flex flex-col gap-4">
       {/* Header bar */}
-      <div className="rounded-lg border border-border bg-white p-4 shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-primary px-4 py-3">
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-bold text-ink">לקוחות</h1>
-            <span className="text-caption text-ink-muted">{filtered.length}</span>
+            <h1 className="text-base font-bold text-white">לקוחות</h1>
+            <span className="rounded-full bg-white/20 px-2 py-0.5 text-caption text-white">{filtered.length}</span>
             {activeFilterCount > 0 && (
               <button type="button" onClick={clearFilters}
-                className="rounded-full bg-primary px-3 py-1 text-[11px] font-medium text-white hover:bg-primary-hover">
+                className="rounded-full bg-white/20 px-3 py-1 text-[11px] font-medium text-white hover:bg-white/30">
                 {activeFilterCount === 1 ? "פילטר 1" : `${activeFilterCount} פילטרים`} · נקה
               </button>
             )}
@@ -115,7 +115,7 @@ export function ClientsClient({
         </div>
 
         {/* Filters */}
-        <div className="mt-3 flex flex-col gap-3 border-t border-border pt-3 sm:flex-row sm:items-center">
+        <div className="flex flex-col gap-3 border-t border-primary-hover px-4 py-3 sm:flex-row sm:items-center">
           <div className="flex gap-1 overflow-x-auto pb-1">
             {HEALTH_PILLS.map((p) => (
               <button key={p.key} type="button" onClick={() => setHealth(p.key)}
@@ -156,11 +156,11 @@ export function ClientsClient({
           <table className="w-full text-right text-body-sm">
             <thead>
               <tr className="bg-surface text-caption text-ink-secondary">
-                <th className="px-4 py-3 text-right font-medium">לקוח</th>
-                <th className="px-4 py-3 text-right font-medium">מנהל</th>
-                <th className="hidden px-4 py-3 text-right font-medium sm:table-cell">בריאות</th>
-                <th className="px-4 py-3 text-right font-medium">משימות</th>
-                <th className="hidden px-4 py-3 text-right font-medium md:table-cell">קישורים</th>
+                <th className="px-4 py-2.5 text-right font-medium">לקוח</th>
+                <th className="px-4 py-2.5 text-right font-medium">מנהל</th>
+                <th className="hidden px-4 py-2.5 text-right font-medium sm:table-cell">בריאות</th>
+                <th className="px-4 py-2.5 text-right font-medium">משימות</th>
+                <th className="hidden px-4 py-2.5 text-right font-medium md:table-cell">קישורים</th>
               </tr>
             </thead>
             <tbody>

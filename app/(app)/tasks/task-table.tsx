@@ -160,12 +160,12 @@ export function TaskTable({
         <table className="w-full text-right text-body-sm">
           <thead>
             <tr className="bg-surface text-caption text-ink-secondary">
-              <th className="px-4 py-3 text-right font-medium">סטטוס</th>
-              <th className="px-4 py-3 text-right font-medium">משימה</th>
-              <th className="hidden px-4 py-3 text-right font-medium md:table-cell">לקוח</th>
-              <th className="hidden px-4 py-3 text-right font-medium lg:table-cell">אחראי</th>
-              <th className="px-4 py-3 text-right font-medium">דדליין</th>
-              <th className="hidden px-4 py-3 text-right font-medium sm:table-cell">מקור</th>
+              <th className="px-4 py-2.5 text-right font-medium">סטטוס</th>
+              <th className="px-4 py-2.5 text-right font-medium">משימה</th>
+              <th className="hidden px-4 py-2.5 text-right font-medium md:table-cell">לקוח</th>
+              <th className="hidden px-4 py-2.5 text-right font-medium lg:table-cell">אחראי</th>
+              <th className="px-4 py-2.5 text-right font-medium">דדליין</th>
+              <th className="hidden px-4 py-2.5 text-right font-medium sm:table-cell">מקור</th>
               <th className="w-8 px-2" />
             </tr>
           </thead>

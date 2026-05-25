@@ -19,7 +19,7 @@ const TYPE_ICON: Record<string, React.ReactNode> = {
   comment: <MessageSquare className="h-3.5 w-3.5" />, assignment: <CheckCheck className="h-3.5 w-3.5" />,
 };
 
-export function NotificationBell() {
+export function NotificationBell({ dark = false }: { dark?: boolean }) {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [notifications, setNotifications] = React.useState<Notification[]>([]);
@@ -48,7 +48,7 @@ export function NotificationBell() {
   return (
     <div ref={wrapRef} className="relative">
       <button type="button" onClick={() => { setOpen((v) => !v); if (!open) fetchNotifications(); }}
-        className="relative flex h-8 w-8 items-center justify-center rounded text-ink-muted transition-colors hover:bg-gray-100 hover:text-ink">
+        className={cn("relative flex h-8 w-8 items-center justify-center rounded transition-colors", dark ? "text-white/40 hover:bg-white/5 hover:text-white/80" : "text-ink-muted hover:bg-gray-100 hover:text-ink")}>
         <Bell className="h-4 w-4" />
         {unreadCount > 0 && <span className="absolute -top-0.5 -start-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-ink">{unreadCount}</span>}
       </button>
