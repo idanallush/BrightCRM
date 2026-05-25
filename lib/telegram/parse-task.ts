@@ -54,7 +54,13 @@ export async function parseTaskFromText(
     .map((m) => `- ${m.full_name} (ID: ${m.id})`)
     .join("\n");
 
+  const today = new Date().toISOString().slice(0, 10);
+  const dayNames = ["ראשון", "שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת"];
+  const todayDayName = dayNames[new Date().getDay()];
+
   const systemPrompt = `אתה מפענח הודעות טקסט בעברית למשימות מובנות עבור סוכנות שיווק דיגיטלי (Bright).
+
+התאריך היום: ${today} (יום ${todayDayName})
 
 רשימת לקוחות:
 ${clientList}
@@ -67,7 +73,14 @@ ${memberList}
 כללים:
 - client_name ו-client_id חייבים להתאים ללקוח מהרשימה. אם השם לא מדויק, בחר את ההתאמה הקרובה ביותר.
 - assignee ברירת מחדל = השולח, אלא אם ההודעה מציינת מישהו אחר.
-- due_date בפורמט YYYY-MM-DD אם צוין, null אם לא.
+- due_date בפורמט YYYY-MM-DD. תמיד תרגם תאריכים יחסיים לתאריך מלא:
+  "מחר" / "מחרתיים" = יום אחד/יומיים מ-${today}
+  "יום ראשון" / "יום א׳" = יום ראשון הקרוב (אם היום כבר יום ראשון, הכוונה ליום ראשון הבא)
+  "יום שני" / "יום ב׳" = יום שני הקרוב (אותו כלל)
+  "עוד שבוע" = ${today} + 7 ימים
+  "סוף השבוע" = יום שישי הקרוב
+  "עוד יומיים" / "עוד 3 ימים" = ${today} + N ימים
+  אם לא צוין תאריך כלל, החזר null.
 - priority: "normal" או "urgent" לפי הטון.
 - confidence: 0-1, כמה אתה בטוח בפענוח.
 - title: כותרת קצרה וברורה למשימה בעברית.
