@@ -101,7 +101,7 @@ export default async function DashboardPage() {
         <div className="lg:col-span-2">
           <div className="rounded-lg border border-border bg-white shadow-sm">
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
-              <h2 className="text-sm font-bold text-ink">המשימות שלי</h2>
+              <h2 className="text-base font-bold text-ink">המשימות שלי</h2>
               <Link href="/tasks" className="text-caption text-primary hover:underline">לכל המשימות</Link>
             </div>
             {myTasks.length === 0 ? (
@@ -146,7 +146,7 @@ export default async function DashboardPage() {
 
           <div className="rounded-lg border border-border bg-white shadow-sm">
             <div className="border-b border-border px-4 py-3">
-              <h2 className="text-sm font-bold text-ink">פעילות אחרונה</h2>
+              <h2 className="text-base font-bold text-ink">פעילות אחרונה</h2>
             </div>
             {recent.length === 0 ? (
               <div className="px-4 py-6 text-center text-body-sm text-ink-muted">אין פעילות</div>

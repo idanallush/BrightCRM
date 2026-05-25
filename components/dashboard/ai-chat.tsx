@@ -70,7 +70,7 @@ export function AiChat({ userEmail }: { userEmail: string }) {
     <div className="rounded-lg border border-border bg-white p-4 shadow-sm">
       <div className="mb-3 flex items-center gap-2">
         <Bot className="h-4 w-4 text-primary" />
-        <h2 className="text-body-sm font-bold text-ink">עוזר</h2>
+        <h2 className="text-base font-bold text-ink">עוזר</h2>
       </div>
 
       <div className="-mx-1 mb-3 flex gap-1.5 overflow-x-auto px-1 pb-1">
