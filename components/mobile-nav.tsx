@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, CheckSquare, Users, Settings } from "lucide-react";
+import { LayoutDashboard, CheckSquare, Users, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
+  { href: "/briefing", label: "סקירה", Icon: BarChart3 },
   { href: "/dashboard", label: "דשבורד", Icon: LayoutDashboard },
   { href: "/tasks", label: "משימות", Icon: CheckSquare },
   { href: "/clients", label: "לקוחות", Icon: Users },
-  { href: "/settings", label: "הגדרות", Icon: Settings },
 ];
 
 export function MobileNav() {
