@@ -168,7 +168,7 @@ export async function confirmTask(pendingTaskId: string) {
       client_id: parsed.client_id,
       description: parsed.description,
       due_date: parsed.due_date,
-      status: "נכנס לעבודה",
+      status: "מחכה לטיפול",
       source: "telegram",
     })
     .select("id")
