@@ -10,7 +10,6 @@ const COLUMNS = [
   { key: "נכנס לעבודה", label: "נכנס לעבודה" },
   { key: "בעבודה", label: "בעבודה" },
   { key: "אישור לקוח", label: "אישור לקוח" },
-  { key: "אישור מנהל", label: "אישור מנהל" },
 ];
 
 function relativeDate(iso: string | null): { text: string; overdue: boolean } {

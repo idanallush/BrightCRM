@@ -7,7 +7,7 @@ import { StatusCell } from "@/components/ui/badge";
 
 type TaskRow = { id: string; title: string; status: string; due_date: string | null };
 
-const DONE_STATUSES = ["בוצע", "בוטל", "סגור"];
+const DONE_STATUSES = ["בוצע"];
 const fmtDate = (iso: string | null) => iso ? new Date(iso).toLocaleDateString("he-IL") : "\u2014";
 
 export function ClientTasksSection({ tasks, clientId }: { tasks: TaskRow[]; clientId: string }) {

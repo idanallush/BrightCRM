@@ -7,10 +7,7 @@ const STATUS_CELL: Record<string, { bg: string; text: string }> = {
   "נכנס לעבודה": { bg: "bg-st-incoming", text: "text-white" },
   "בעבודה": { bg: "bg-st-working", text: "text-white" },
   "אישור לקוח": { bg: "bg-st-approval", text: "text-[#323338]" },
-  "אישור מנהל": { bg: "bg-st-manager", text: "text-white" },
   "בוצע": { bg: "bg-st-done", text: "text-white" },
-  "בוטל": { bg: "bg-st-cancelled", text: "text-white" },
-  "סגור": { bg: "bg-st-cancelled", text: "text-white" },
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -18,10 +15,7 @@ const STATUS_LABELS: Record<string, string> = {
   "נכנס לעבודה": "נכנס לעבודה",
   "בעבודה": "בעבודה",
   "אישור לקוח": "אישור לקוח",
-  "אישור מנהל": "אישור מנהל",
   "בוצע": "בוצע",
-  "בוטל": "בוטל",
-  "סגור": "סגור",
 };
 
 const HEALTH_CELL: Record<string, { bg: string; text: string }> = {
@@ -95,9 +89,7 @@ export function statusVariant(status: string): Variant {
   if (status === "נכנס לעבודה") return "incoming";
   if (status === "בעבודה") return "working";
   if (status === "אישור לקוח") return "approval";
-  if (status === "אישור מנהל") return "manager";
   if (status === "בוצע") return "done";
-  if (status === "בוטל" || status === "סגור") return "cancelled";
   return "neutral";
 }
 
@@ -115,8 +107,5 @@ export const STATUS_COLORS: Record<string, string> = {
   "נכנס לעבודה": "#0073EA",
   "בעבודה": "#A25DDC",
   "אישור לקוח": "#FFCB00",
-  "אישור מנהל": "#FF642E",
   "בוצע": "#00C875",
-  "בוטל": "#C4C4C4",
-  "סגור": "#C4C4C4",
 };

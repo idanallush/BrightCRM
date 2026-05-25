@@ -18,9 +18,7 @@ const STATUS_OPTIONS: { value: TaskInput["status"]; label: string; color: string
   { value: "נכנס לעבודה", label: "נכנס לעבודה", color: "#0073EA", textColor: "#fff" },
   { value: "בעבודה", label: "בעבודה", color: "#A25DDC", textColor: "#fff" },
   { value: "אישור לקוח", label: "אישור לקוח", color: "#FFCB00", textColor: "#323338" },
-  { value: "אישור מנהל", label: "אישור מנהל", color: "#FF642E", textColor: "#fff" },
   { value: "בוצע", label: "בוצע", color: "#00C875", textColor: "#fff" },
-  { value: "בוטל", label: "בוטל", color: "#C4C4C4", textColor: "#fff" },
 ];
 
 function getInitials(name: string): string {
@@ -43,7 +41,7 @@ export function TaskForm({
   const [clientId, setClientId] = React.useState(task?.client_id ?? clients[0]?.id ?? "");
   const [description, setDescription] = React.useState(task?.description ?? "");
   const [status, setStatus] = React.useState<TaskInput["status"]>(
-    (task?.status as TaskInput["status"]) ?? "נכנס לעבודה",
+    (task?.status as TaskInput["status"]) ?? "מחכה לטיפול",
   );
   const [dueDate, setDueDate] = React.useState(task?.due_date ?? "");
   const [assigneeIds, setAssigneeIds] = React.useState<string[]>(

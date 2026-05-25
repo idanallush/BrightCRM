@@ -31,14 +31,13 @@ function relativeDate(iso: string | null): { text: string; class: string } {
   return { text: `עוד ${diffDays} ימים`, class: "text-ink-secondary" };
 }
 
-const DONE_STATUSES = ["בוצע", "בוטל", "סגור"];
+const DONE_STATUSES = ["בוצע"];
 
 const STATUS_ORDER = [
   "מחכה לטיפול",
   "נכנס לעבודה",
   "בעבודה",
   "אישור לקוח",
-  "אישור מנהל",
 ];
 
 const STATUS_GROUP_LABELS: Record<string, string> = {
@@ -46,7 +45,6 @@ const STATUS_GROUP_LABELS: Record<string, string> = {
   "נכנס לעבודה": "נכנס לעבודה",
   "בעבודה": "בעבודה",
   "אישור לקוח": "אישור לקוח",
-  "אישור מנהל": "אישור מנהל",
 };
 
 export function TaskTable({

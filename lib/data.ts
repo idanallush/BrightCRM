@@ -5,7 +5,7 @@ export type Task = {
   title: string;
   client_id: string;
   description: string | null;
-  status: "מחכה לטיפול" | "נכנס לעבודה" | "בעבודה" | "אישור לקוח" | "אישור מנהל" | "בוצע" | "בוטל";
+  status: "מחכה לטיפול" | "נכנס לעבודה" | "בעבודה" | "אישור לקוח" | "בוצע";
   start_date: string;
   due_date: string | null;
   created_by_id: string | null;
@@ -181,7 +181,7 @@ export async function getOpenTaskCountsByClient(): Promise<Record<string, number
   const { data } = await sb
     .from("tasks")
     .select("client_id")
-    .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח", "אישור מנהל"]);
+    .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח"]);
   const map: Record<string, number> = {};
   for (const row of (data ?? []) as { client_id: string }[]) {
     map[row.client_id] = (map[row.client_id] ?? 0) + 1;
@@ -287,7 +287,7 @@ export async function getDashboardCounts(dateFrom?: string): Promise<DashboardCo
     .eq("status", "בעבודה");
 
   const approvalQ = sb.from("tasks").select("*", { count: "exact", head: true })
-    .in("status", ["אישור לקוח", "אישור מנהל"]).gte("created_at", effectiveFrom);
+    .in("status", ["אישור לקוח"]).gte("created_at", effectiveFrom);
 
   // Overdue: active tasks with past due_date AND recent enough to matter
   const overdueQ = sb.from("tasks").select("*", { count: "exact", head: true })
@@ -389,7 +389,7 @@ export async function getMyTasks(userEmail: string) {
     .select(
       "id,title,status,due_date,client:clients(name),assignees:task_assignees(member:team_members(id))",
     )
-    .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח", "אישור מנהל"])
+    .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח"])
     .order("due_date", { ascending: true, nullsFirst: false });
 
   // Filter to only tasks assigned to this member

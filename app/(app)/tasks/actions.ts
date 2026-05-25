@@ -8,9 +8,7 @@ export type TaskStatus =
   | "נכנס לעבודה"
   | "בעבודה"
   | "אישור לקוח"
-  | "אישור מנהל"
-  | "בוצע"
-  | "בוטל";
+  | "בוצע";
 
 export type TaskInput = {
   title: string;
