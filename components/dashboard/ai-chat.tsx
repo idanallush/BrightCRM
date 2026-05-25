@@ -80,7 +80,7 @@ export function AiChat({ userEmail }: { userEmail: string }) {
             type="button"
             onClick={() => ask({ action: qa.action })}
             disabled={loading}
-            className="whitespace-nowrap rounded-full bg-surface px-3 py-1.5 text-caption text-ink-secondary transition-colors hover:bg-surface-soft hover:text-ink disabled:opacity-50"
+            className="whitespace-nowrap rounded-full bg-surface px-3.5 py-2 text-caption text-ink-secondary transition-colors hover:bg-surface-soft hover:text-ink disabled:opacity-50"
           >
             {qa.label}
           </button>
