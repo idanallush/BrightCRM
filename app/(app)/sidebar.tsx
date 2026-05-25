@@ -82,7 +82,7 @@ export function Sidebar({ userLabel }: { userLabel: string }) {
 
   return (
     <>
-      <aside className={cn("fixed inset-y-0 right-0 z-30 hidden flex-col border-l border-border bg-white transition-all duration-300 md:flex", collapsed ? "w-16" : "w-60")}>{content(false)}</aside>
+      <aside className={cn("fixed inset-y-0 right-0 z-30 hidden flex-col border-l border-border bg-white transition-[width] duration-300 md:flex", collapsed ? "w-16" : "w-60")}>{content(false)}</aside>
       <AnimatePresence>{mobileOpen && <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
         className="fixed inset-0 z-40 bg-black/30 md:hidden" onClick={() => setMobileOpen(false)} />}</AnimatePresence>
       <aside className={cn("fixed inset-y-0 right-0 z-50 w-72 transform bg-white shadow-lg transition-transform duration-300 md:hidden", mobileOpen ? "translate-x-0" : "translate-x-full")}>{content(true)}</aside>
