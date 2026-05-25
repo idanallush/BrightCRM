@@ -61,8 +61,11 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
       </div>
 
       {/* Contact info */}
-      <div className="rounded-lg border border-border bg-white p-5">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+        <div className="bg-surface px-4 py-2.5">
+          <span className="text-caption font-medium text-ink-secondary">פרטי קשר</span>
+        </div>
+        <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
           {client.contact_name && (
             <div className="flex items-center gap-2">
               <Contact className="h-4 w-4 shrink-0 text-ink-muted" />
@@ -104,9 +107,11 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
 
       {/* Links */}
       {externalLinks.length > 0 && (
-        <section className="flex flex-col gap-2">
-          <h3 className="text-body-sm font-semibold text-ink">קישורים</h3>
-          <div className="flex flex-wrap gap-2">
+        <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+          <div className="bg-surface px-4 py-2.5">
+            <span className="text-caption font-medium text-ink-secondary">קישורים</span>
+          </div>
+          <div className="flex flex-wrap gap-2 p-4">
             {externalLinks.map((l) => (
               <Button key={l.label} variant="secondary" size="sm" asChild>
                 <a href={l.url} target="_blank" rel="noopener noreferrer" className="gap-2">
@@ -115,18 +120,22 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
               </Button>
             ))}
           </div>
-        </section>
+        </div>
       )}
 
       {/* Tasks */}
       <ClientTasksSection tasks={tasks} clientId={client.id} />
 
       {/* Files */}
-      <section className="flex flex-col gap-2">
-        <h3 className="text-body-sm font-semibold text-ink">קבצים ({attachments.length})</h3>
-        <FileUpload clientId={client.id} />
-        <FileList attachments={attachments} thumbUrls={thumbs} />
-      </section>
+      <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+        <div className="bg-surface px-4 py-2.5">
+          <span className="text-caption font-medium text-ink-secondary">קבצים ({attachments.length})</span>
+        </div>
+        <div className="p-4">
+          <FileUpload clientId={client.id} />
+          <FileList attachments={attachments} thumbUrls={thumbs} />
+        </div>
+      </div>
     </div>
   );
 }
