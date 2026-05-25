@@ -129,7 +129,7 @@ export function ClientsClient({
           <div className="flex flex-1 flex-wrap items-center gap-2">
             <div className="relative min-w-[160px] flex-1 sm:max-w-[220px]">
               <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
-              <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="חיפוש" className="h-9 pr-9" />
+              <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="חיפוש" aria-label="חיפוש לקוחות" className="h-9 pr-9" />
             </div>
             <Select value={managerId} onValueChange={setManagerId}>
               <SelectTrigger className="h-9 w-auto min-w-[120px]"><SelectValue placeholder="מנהל" /></SelectTrigger>

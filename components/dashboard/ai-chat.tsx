@@ -98,6 +98,7 @@ export function AiChat({ userEmail }: { userEmail: string }) {
             }
           }}
           placeholder="שאל שאלה..."
+          aria-label="שאל שאלה"
           disabled={loading}
           className="h-10 w-full rounded-md border border-border bg-surface pe-12 ps-4 text-sm text-ink placeholder:text-ink-muted transition-colors focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
         />

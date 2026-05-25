@@ -183,7 +183,7 @@ export function TasksClient({
             <div className="relative min-w-[140px] flex-1 sm:max-w-[200px]">
               <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
               <Input value={searchText} onChange={(e) => setSearchText(e.target.value)}
-                placeholder="חיפוש..." className="h-9 pr-9" />
+                placeholder="חיפוש..." aria-label="חיפוש משימות" className="h-9 pr-9" />
             </div>
 
             <Select value={filters.clientId} onValueChange={(v) => updateFilter("clientId", v)}>
