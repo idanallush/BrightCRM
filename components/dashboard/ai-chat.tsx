@@ -146,7 +146,7 @@ export function AiChat({ userEmail }: { userEmail: string }) {
                     <Link
                       key={t.id}
                       href={`/tasks?task=${t.id}`}
-                      className="flex items-center gap-3 rounded-md border border-border bg-white p-3 transition-all duration-150 hover:bg-[#F5F6F8]"
+                      className="flex items-center gap-3 rounded-md border border-border bg-white p-3 transition-colors duration-150 hover:bg-[#F5F6F8]"
                     >
                       <StatusCell status={t.status} className="shrink-0" />
                       <div className="min-w-0 flex-1">
@@ -170,7 +170,7 @@ export function AiChat({ userEmail }: { userEmail: string }) {
                   <Link
                     key={c.id}
                     href={`/clients/${c.id}`}
-                    className="inline-flex items-center gap-1.5 rounded-md border border-border bg-white px-3 py-1.5 text-sm transition-all duration-150 hover:bg-[#F5F6F8]"
+                    className="inline-flex items-center gap-1.5 rounded-md border border-border bg-white px-3 py-1.5 text-sm transition-colors duration-150 hover:bg-[#F5F6F8]"
                   >
                     <span
                       className={`h-2 w-2 rounded-full ${

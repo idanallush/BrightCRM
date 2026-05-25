@@ -70,7 +70,7 @@ function KanbanCard({ task, color, onClick }: {
 
   return (
     <button type="button" onClick={onClick}
-      className="w-full rounded-md border border-border bg-white p-3 text-right transition-all duration-150 hover:shadow-sm"
+      className="w-full rounded-md border border-border bg-white p-3 text-right transition-shadow duration-150 hover:shadow-sm"
       style={{ borderRightWidth: 3, borderRightColor: color }}>
       <div className="text-body-sm font-medium text-ink">{task.title}</div>
       <div className="mt-1 text-body-sm text-ink-secondary">{task.client?.name ?? "\u2014"}</div>

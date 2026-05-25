@@ -99,7 +99,7 @@ export function TaskForm({
             {STATUS_OPTIONS.map((opt) => (
               <button key={opt.value} type="button" onClick={() => setStatus(opt.value)}
                 className={cn(
-                  "rounded-md px-3 py-1.5 text-caption font-medium transition-all duration-200",
+                  "rounded-md px-3 py-1.5 text-caption font-medium transition-[color,background-color,opacity,box-shadow] duration-200",
                   status === opt.value ? "shadow-sm ring-2 ring-offset-1" : "opacity-60 hover:opacity-100",
                 )}
                 style={{
@@ -126,7 +126,7 @@ export function TaskForm({
               return (
                 <button key={m.id} type="button" onClick={() => toggleAssignee(m.id)}
                   className={cn(
-                    "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-caption transition-all duration-200",
+                    "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-caption transition-[color,background-color,opacity,box-shadow] duration-200",
                     active ? "bg-primary text-white" : "border border-border bg-white text-ink hover:bg-surface",
                   )}>
                   <span className={cn(

@@ -119,7 +119,7 @@ export function ClientsClient({
           <div className="flex gap-1 overflow-x-auto pb-1">
             {HEALTH_PILLS.map((p) => (
               <button key={p.key} type="button" onClick={() => setHealth(p.key)}
-                className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-caption transition-all duration-150",
+                className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-caption transition-colors duration-150",
                   health === p.key ? "font-medium text-white" : "text-ink-secondary hover:bg-surface")}
                 style={health === p.key ? { backgroundColor: p.color || "#323338" } : undefined}>
                 {p.label}

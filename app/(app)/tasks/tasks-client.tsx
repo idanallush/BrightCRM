@@ -146,12 +146,12 @@ export function TasksClient({
           <div className="flex items-center gap-2">
             <div className="inline-flex rounded-md border border-border bg-surface p-0.5">
               <button type="button" onClick={() => changeView("table")}
-                className={cn("flex items-center gap-1.5 rounded px-3 py-1.5 text-caption transition-all duration-200",
+                className={cn("flex items-center gap-1.5 rounded px-3 py-1.5 text-caption transition-colors duration-200",
                   view === "table" ? "bg-white font-medium text-ink shadow-sm" : "text-ink-secondary")}>
                 <Rows3 className="h-4 w-4" /><span className="hidden sm:inline">טבלה</span>
               </button>
               <button type="button" onClick={() => changeView("kanban")}
-                className={cn("flex items-center gap-1.5 rounded px-3 py-1.5 text-caption transition-all duration-200",
+                className={cn("flex items-center gap-1.5 rounded px-3 py-1.5 text-caption transition-colors duration-200",
                   view === "kanban" ? "bg-white font-medium text-ink shadow-sm" : "text-ink-secondary")}>
                 <LayoutGrid className="h-4 w-4" /><span className="hidden sm:inline">קנבן</span>
               </button>
@@ -167,7 +167,7 @@ export function TasksClient({
           <div className="flex gap-1 overflow-x-auto pb-1">
             {STATUS_PILLS.map((pill) => (
               <button key={pill.key} type="button" onClick={() => updateFilter("status", pill.key)}
-                className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-caption transition-all duration-200",
+                className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-caption transition-colors duration-200",
                   filters.status === pill.key
                     ? "font-medium text-white"
                     : "text-ink-secondary hover:bg-surface")}
