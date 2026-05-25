@@ -314,6 +314,40 @@ export async function getDashboardCounts(dateFrom?: string): Promise<DashboardCo
   };
 }
 
+export type StatTrend = { delta: number; period: "day" | "week" };
+
+export async function getDashboardTrends(): Promise<{
+  waiting: StatTrend;
+  working: StatTrend;
+  approval: StatTrend;
+  overdue: StatTrend;
+}> {
+  const sb = createClient();
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+  const startOfYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1).toISOString();
+  const dayOfWeek = now.getDay();
+  const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dayOfWeek).toISOString();
+
+  const [waitNew, waitOld, workNew, workOld, apprNew, apprOld, overdueNew, overdueOld] = await Promise.all([
+    sb.from("tasks").select("*", { count: "exact", head: true }).eq("status", "מחכה לטיפול"),
+    sb.from("tasks").select("*", { count: "exact", head: true }).eq("status", "מחכה לטיפול").lt("created_at", startOfToday),
+    sb.from("tasks").select("*", { count: "exact", head: true }).eq("status", "בעבודה"),
+    sb.from("tasks").select("*", { count: "exact", head: true }).eq("status", "בעבודה").lt("updated_at", startOfWeek),
+    sb.from("tasks").select("*", { count: "exact", head: true }).in("status", ["אישור לקוח"]),
+    sb.from("tasks").select("*", { count: "exact", head: true }).in("status", ["אישור לקוח"]).lt("updated_at", startOfToday),
+    sb.from("tasks").select("*", { count: "exact", head: true }).in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה"]).lt("due_date", now.toISOString().slice(0, 10)),
+    sb.from("tasks").select("*", { count: "exact", head: true }).in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה"]).lt("due_date", now.toISOString().slice(0, 10)).lt("updated_at", startOfWeek),
+  ]);
+
+  return {
+    waiting: { delta: (waitNew.count ?? 0) - (waitOld.count ?? 0), period: "day" },
+    working: { delta: (workNew.count ?? 0) - (workOld.count ?? 0), period: "week" },
+    approval: { delta: (apprNew.count ?? 0) - (apprOld.count ?? 0), period: "day" },
+    overdue: { delta: (overdueNew.count ?? 0) - (overdueOld.count ?? 0), period: "week" },
+  };
+}
+
 export type SourceCounts = { telegram: number; web: number; import: number; total: number };
 
 // TODO: client-side counting — replace with per-source count queries when scale requires it

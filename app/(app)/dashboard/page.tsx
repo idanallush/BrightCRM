@@ -1,12 +1,24 @@
 import Link from "next/link";
-import { Send, MessageSquare, TrendingUp, Clock, AlertTriangle, CheckCircle2, ArrowLeft } from "lucide-react";
+import { Send, Plus, Search, TrendingUp, TrendingDown, Clock, AlertTriangle, CheckCircle2, ArrowLeft } from "lucide-react";
 import { StatusCell } from "@/components/ui/badge";
-import { getDashboardCounts, getMyTasks, getRecentTasksDetailed, getWeeklySourceCounts } from "@/lib/data";
+import { Button } from "@/components/ui/button";
+import { getDashboardCounts, getDashboardTrends, getMyTasks, getRecentTasksDetailed } from "@/lib/data";
 import { createClient } from "@/lib/supabase/server";
 import { AiChat } from "@/components/dashboard/ai-chat";
 import { MarkDoneButton } from "@/components/dashboard/mark-done-button";
+import { NotificationBell } from "@/components/notification-bell";
+import { DashboardSearch } from "@/components/dashboard/dashboard-search";
 
 export const dynamic = "force-dynamic";
+
+const HEBREW_DAYS = ["יום ראשון", "יום שני", "יום שלישי", "יום רביעי", "יום חמישי", "יום שישי", "שבת"];
+
+function formatHebrewDate(): string {
+  const now = new Date();
+  const day = HEBREW_DAYS[now.getDay()];
+  const date = now.toLocaleDateString("he-IL", { day: "numeric", month: "long", year: "numeric" });
+  return `${day}, ${date}`;
+}
 
 function relativeDate(iso: string | null): { text: string; overdue: boolean } {
   if (!iso) return { text: "ללא", overdue: false };
@@ -26,6 +38,11 @@ function timeAgo(iso: string): string {
   return `לפני ${Math.floor(h / 24)} ימים`;
 }
 
+function fmtDate(iso: string | null): string {
+  if (!iso) return "ללא";
+  return new Date(iso).toLocaleDateString("he-IL", { day: "numeric", month: "long" });
+}
+
 function getFirstName(label: string): string {
   return label.split(/\s+/)[0] || label;
 }
@@ -35,10 +52,10 @@ function getInitials(name: string): string {
 }
 
 const STAT_CARDS = [
-  { key: "waiting", label: "ממתין", color: "#FDAB3D", Icon: Clock },
-  { key: "working", label: "בעבודה", color: "#A25DDC", Icon: TrendingUp },
-  { key: "approval", label: "באישור", color: "#FFCB00", Icon: CheckCircle2 },
-  { key: "overdue", label: "באיחור", color: "#E2445C", Icon: AlertTriangle },
+  { key: "waiting", trendKey: "waiting" as const, label: "ממתין", color: "#FDAB3D", Icon: Clock },
+  { key: "working", trendKey: "working" as const, label: "בעבודה", color: "#A25DDC", Icon: TrendingUp },
+  { key: "approval", trendKey: "approval" as const, label: "באישור", color: "#FFCB00", Icon: CheckCircle2 },
+  { key: "overdue", trendKey: "overdue" as const, label: "באיחור", color: "#E2445C", Icon: AlertTriangle },
 ] as const;
 
 export default async function DashboardPage() {
@@ -47,16 +64,12 @@ export default async function DashboardPage() {
   const userLabel = user?.user_metadata?.full_name || user?.email || "";
   const firstName = getFirstName(userLabel);
 
-  const [counts, myTasks, recent, sourceCounts] = await Promise.all([
+  const [counts, trends, myTasks, recent] = await Promise.all([
     getDashboardCounts(),
+    getDashboardTrends(),
     getMyTasks(user?.email ?? ""),
     getRecentTasksDetailed(5),
-    getWeeklySourceCounts(),
   ]);
-
-  const telegramPct = sourceCounts.total > 0
-    ? Math.round((sourceCounts.telegram / sourceCounts.total) * 100)
-    : 0;
 
   const statValues: Record<string, number> = {
     waiting: counts.incoming,
@@ -67,18 +80,34 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      {/* Greeting */}
-      <div>
-        <h1 className="text-2xl font-bold text-ink">שלום, {firstName}</h1>
-        <p className="mt-0.5 text-sm text-ink-secondary">
-          יש לך {myTasks.length} משימות פתוחות
-        </p>
+      {/* Top bar: Greeting + Actions */}
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-ink">שלום, {firstName} 👋</h1>
+          <p className="mt-0.5 text-sm text-ink-secondary">
+            {formatHebrewDate()} | יש לך {myTasks.length} משימות פתוחות
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button asChild>
+            <Link href="/tasks?new=true">
+              <Plus className="h-4 w-4" /> משימה חדשה
+            </Link>
+          </Button>
+          <NotificationBell />
+          <DashboardSearch />
+        </div>
       </div>
 
       {/* Stat cards row */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {STAT_CARDS.map((card) => {
           const value = statValues[card.key] ?? 0;
+          const trend = trends[card.trendKey];
+          const isNegativeMeaning = card.key === "overdue";
+          const trendIsGood = isNegativeMeaning ? trend.delta <= 0 : trend.delta >= 0;
+          const trendColor = trend.delta === 0 ? "text-ink-muted" : trendIsGood ? "text-success" : "text-overdue";
+          const periodLabel = trend.period === "day" ? "מאתמול" : "השבוע";
           return (
             <div key={card.key} className="relative overflow-hidden rounded-lg border border-border bg-white p-4 shadow-sm"
               style={{ borderRightWidth: 4, borderRightColor: card.color }}>
@@ -87,28 +116,15 @@ export default async function DashboardPage() {
                 <card.Icon className="h-4 w-4" style={{ color: card.color }} />
               </div>
               <div className="mt-1 text-3xl font-bold text-ink">{value}</div>
+              {trend.delta !== 0 && (
+                <div className={`mt-1 flex items-center gap-1 text-caption ${trendColor}`}>
+                  {trend.delta > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                  <span>{trend.delta > 0 ? "▲" : "▼"} {Math.abs(trend.delta)} {periodLabel}</span>
+                </div>
+              )}
             </div>
           );
         })}
-      </div>
-
-      {/* Source metrics bar */}
-      <div className="flex items-center gap-3 rounded-lg border border-border bg-white px-4 py-3 shadow-sm">
-        <MessageSquare className="h-4 w-4 text-ink-muted" />
-        <span className="text-sm text-ink-secondary">
-          השבוע:{" "}
-          <span className="font-semibold text-primary">{sourceCounts.telegram}</span> מטלגרם,{" "}
-          <span className="font-semibold text-ink">{sourceCounts.web}</span> מהממשק
-          {sourceCounts.total > 0 && (
-            <>
-              {" "}{"·"}{" "}
-              <span className={telegramPct >= 70 ? "font-semibold text-success" : "text-ink-secondary"}>
-                {telegramPct}% טלגרם
-              </span>
-              {telegramPct < 70 && <span className="text-ink-muted"> (יעד: 70%)</span>}
-            </>
-          )}
-        </span>
       </div>
 
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
@@ -118,7 +134,7 @@ export default async function DashboardPage() {
             <div className="flex items-center justify-between bg-primary px-4 py-3">
               <h2 className="text-base font-bold text-white">המשימות שלי</h2>
               <Link href="/tasks" className="flex items-center gap-1 text-caption text-white/80 transition-colors hover:text-white">
-                לכל המשימות <ArrowLeft className="h-3 w-3" />
+                הצג הכל <ArrowLeft className="h-3 w-3" />
               </Link>
             </div>
             {myTasks.length === 0 ? (
@@ -130,7 +146,7 @@ export default async function DashboardPage() {
                     <th className="px-4 py-2.5 text-right font-medium">משימה</th>
                     <th className="hidden px-4 py-2.5 text-right font-medium sm:table-cell">לקוח</th>
                     <th className="px-4 py-2.5 text-center font-medium">סטטוס</th>
-                    <th className="px-4 py-2.5 text-right font-medium">דדליין</th>
+                    <th className="px-4 py-2.5 text-right font-medium">תאריך יעד</th>
                     <th className="w-10 px-2" />
                   </tr>
                 </thead>
@@ -144,7 +160,7 @@ export default async function DashboardPage() {
                         </td>
                         <td className="hidden px-4 py-3 text-ink-secondary sm:table-cell">{t.client_name ?? "—"}</td>
                         <td className="px-4 py-3 text-center"><StatusCell status={t.status} /></td>
-                        <td className={`px-4 py-3 ${overdue ? "font-medium text-overdue" : "text-ink-secondary"}`}>{dateText}</td>
+                        <td className={`px-4 py-3 ${overdue ? "font-medium text-overdue" : "text-ink-secondary"}`}>{fmtDate(t.due_date)}</td>
                         <td className="px-2 py-3 text-center">
                           <MarkDoneButton taskId={t.id} />
                         </td>
@@ -162,8 +178,11 @@ export default async function DashboardPage() {
           <AiChat userEmail={user?.email ?? ""} />
 
           <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
-            <div className="bg-sidebar px-4 py-3">
+            <div className="flex items-center justify-between bg-sidebar px-4 py-3">
               <h2 className="text-base font-bold text-white">פעילות אחרונה</h2>
+              <Link href="/tasks" className="flex items-center gap-1 text-caption text-white/60 transition-colors hover:text-white">
+                הכל <ArrowLeft className="h-3 w-3" />
+              </Link>
             </div>
             {recent.length === 0 ? (
               <div className="px-4 py-6 text-center text-body-sm text-ink-muted">אין פעילות</div>
