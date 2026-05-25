@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { Send, Plus, Search, TrendingUp, TrendingDown, Clock, AlertTriangle, CheckCircle2, ArrowLeft } from "lucide-react";
+import { Send, Plus, Search, TrendingUp, TrendingDown, Clock, AlertTriangle, CheckCircle2, ArrowLeft, Users } from "lucide-react";
 import { StatusCell } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getDashboardCounts, getDashboardTrends, getMyTasks, getRecentTasksDetailed } from "@/lib/data";
+import { getDashboardCounts, getDashboardTrends, getMyTasks, getRecentTasksDetailed, getClientsWithOpenTaskCounts } from "@/lib/data";
 import { createClient } from "@/lib/supabase/server";
 import { AiChat } from "@/components/dashboard/ai-chat";
 import { MarkDoneButton } from "@/components/dashboard/mark-done-button";
@@ -64,11 +64,12 @@ export default async function DashboardPage() {
   const userLabel = user?.user_metadata?.full_name || user?.email || "";
   const firstName = getFirstName(userLabel);
 
-  const [counts, trends, myTasks, recent] = await Promise.all([
+  const [counts, trends, myTasks, recent, clientsOpen] = await Promise.all([
     getDashboardCounts(),
     getDashboardTrends(),
     getMyTasks(user?.email ?? ""),
     getRecentTasksDetailed(5),
+    getClientsWithOpenTaskCounts(),
   ]);
 
   const statValues: Record<string, number> = {
@@ -216,6 +217,44 @@ export default async function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Clients with open tasks */}
+      {clientsOpen.length > 0 && (
+        <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+          <div className="flex items-center justify-between bg-sidebar px-4 py-3">
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-white/60" />
+              <h2 className="text-base font-bold text-white">לקוחות עם משימות פתוחות</h2>
+            </div>
+            <Link href="/clients" className="flex items-center gap-1 text-caption text-white/60 transition-colors hover:text-white">
+              כל הלקוחות <ArrowLeft className="h-3 w-3" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 gap-px bg-border sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+            {clientsOpen.map((c) => {
+              const HEALTH_COLORS: Record<string, string> = {
+                "בריא": "#00C875",
+                "אסטרטגיה צריכה": "#FDAB3D",
+                "קריטי": "#E2445C",
+              };
+              const healthColor = c.health ? HEALTH_COLORS[c.health] : undefined;
+              return (
+                <Link key={c.id} href={`/clients/${c.id}`}
+                  className="flex flex-col items-center gap-1.5 bg-white px-3 py-4 transition-colors hover:bg-surface">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+                    {getInitials(c.name)}
+                  </span>
+                  <span className="max-w-full truncate text-center text-sm font-medium text-ink">{c.name}</span>
+                  <span className="rounded-full px-2.5 py-0.5 text-caption font-semibold text-white"
+                    style={{ backgroundColor: healthColor ?? "#0073EA" }}>
+                    {c.open_count} משימות
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

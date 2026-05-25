@@ -470,6 +470,31 @@ export async function getCommentCountsByTask(): Promise<Record<string, number>> 
   return map;
 }
 
+export async function getClientsWithOpenTaskCounts(): Promise<
+  { id: string; name: string; health: string | null; open_count: number }[]
+> {
+  const sb = createClient();
+  const [clientsRes, tasksRes] = await Promise.all([
+    sb.from("clients").select("id,name,health").order("name"),
+    sb.from("tasks").select("client_id").in("status", [
+      "מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח",
+    ]),
+  ]);
+  const counts: Record<string, number> = {};
+  for (const row of (tasksRes.data ?? []) as { client_id: string }[]) {
+    counts[row.client_id] = (counts[row.client_id] ?? 0) + 1;
+  }
+  return ((clientsRes.data ?? []) as any[])
+    .map((c) => ({
+      id: c.id as string,
+      name: c.name as string,
+      health: (c.health as string | null) ?? null,
+      open_count: counts[c.id] ?? 0,
+    }))
+    .filter((c) => c.open_count > 0)
+    .sort((a, b) => b.open_count - a.open_count);
+}
+
 export async function getCriticalClients() {
   const sb = createClient();
   const { data } = await sb
