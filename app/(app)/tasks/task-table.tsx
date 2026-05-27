@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ChevronLeft, ChevronDown, ChevronUp, Send, Globe, AlertTriangle, Download, MessageCircle, EyeOff, Eye } from "lucide-react";
+import { ChevronLeft, ChevronDown, ChevronUp, AlertTriangle, MessageCircle, EyeOff, Eye } from "lucide-react";
 import { STATUS_COLORS } from "@/components/ui/badge";
 import { updateTaskStatus } from "./actions";
 import { toast } from "@/components/ui/toaster";
@@ -67,18 +67,18 @@ function StatusDropdown({ taskId, status, onUpdated }: { taskId: string; status:
       <button
         type="button"
         onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
-        className={`inline-flex min-w-[90px] items-center justify-center rounded-md px-3 py-1.5 text-center text-sm font-medium transition-opacity ${bg} ${text} ${loading ? "opacity-60" : "hover:opacity-90"}`}
+        className={`inline-flex min-w-[90px] items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-center text-sm font-medium transition-opacity ${bg} ${text} ${loading ? "opacity-60" : "hover:opacity-90"}`}
       >
         {label}
+        <ChevronDown className="h-3.5 w-3.5 opacity-70" />
       </button>
       {open && (
         <div
-          className="absolute right-0 top-full z-50 mt-1 min-w-[140px] overflow-hidden rounded-lg border border-border bg-white shadow-lg"
+          className="absolute left-0 top-full z-50 mt-1 min-w-[150px] overflow-hidden rounded-lg border border-border bg-white shadow-lg"
           onClick={(e) => e.stopPropagation()}
         >
           {ALL_STATUSES.map((s) => {
             const sBg = STATUS_BG[s] ?? "bg-gray-400";
-            const sText = STATUS_TEXT[s] ?? "text-white";
             const sLabel = STATUS_LABELS[s] ?? s;
             return (
               <button
@@ -161,7 +161,6 @@ export function TaskTable({
   const activeTasks = hideStale ? allActive.filter((t) => !isStale(t, staleCutoff)) : allActive;
   const completedTasks = tasks.filter((t) => DONE_STATUSES.includes(t.status));
 
-  // Group active tasks by status
   const groups = STATUS_ORDER.map((status) => ({
     status,
     label: STATUS_GROUP_LABELS[status],
@@ -194,15 +193,13 @@ export function TaskTable({
         onClick={() => onRowClick(t)}
         className="group cursor-pointer border-b border-border transition-colors duration-150 hover:bg-[#F5F6F8]"
       >
-        <td className="px-4 py-2.5 align-middle">
-          <StatusDropdown taskId={t.id} status={t.status} onUpdated={() => router.refresh()} />
-        </td>
+        {/* Task title + comment badge */}
         <td className="max-w-xs px-4 py-2.5 align-middle">
           <div className="flex items-center gap-2">
             <span className="font-medium text-ink">{t.title}</span>
             {cc > 0 && (
-              <span className="inline-flex items-center gap-1 text-caption text-ink-muted">
-                <MessageCircle className="h-3.5 w-3.5" />{cc}
+              <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                <MessageCircle className="h-3 w-3" />{cc}
               </span>
             )}
           </div>
@@ -211,12 +208,14 @@ export function TaskTable({
           )}
           <div className="mt-0.5 text-sm text-ink-muted md:hidden">{t.client?.name ?? ""}</div>
         </td>
+        {/* Client */}
         <td className="hidden px-4 py-2.5 align-middle text-ink-secondary md:table-cell">
-          {t.client?.name ?? "\u2014"}
+          {t.client?.name ?? "—"}
         </td>
+        {/* Assignee */}
         <td className="hidden px-4 py-2.5 align-middle lg:table-cell">
           {t.assignees.length === 0 ? (
-            <span className="text-ink-muted">{"\u2014"}</span>
+            <span className="text-ink-muted">{"—"}</span>
           ) : (
             <div className="flex items-center gap-2">
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#CCEAFF] text-[10px] font-semibold text-primary">
@@ -226,21 +225,18 @@ export function TaskTable({
             </div>
           )}
         </td>
+        {/* Deadline */}
         <td className="px-4 py-2.5 align-middle">
           <span className={`inline-flex items-center gap-1 text-body-sm ${dateClass}`}>
             {overdue && <AlertTriangle className="h-3.5 w-3.5" />}
             {dateText}
           </span>
         </td>
-        <td className="hidden px-4 py-2.5 align-middle sm:table-cell">
-          {t.source === "telegram" ? (
-            <Send className="h-3.5 w-3.5 text-ink-muted" />
-          ) : t.source === "web" ? (
-            <Globe className="h-3.5 w-3.5 text-ink-muted" />
-          ) : (
-            <Download className="h-3.5 w-3.5 text-ink-muted" />
-          )}
+        {/* Status dropdown */}
+        <td className="px-4 py-2.5 align-middle">
+          <StatusDropdown taskId={t.id} status={t.status} onUpdated={() => router.refresh()} />
         </td>
+        {/* Row arrow */}
         <td className="w-8 px-2 text-end text-ink-muted opacity-0 transition-opacity group-hover:opacity-100">
           <ChevronLeft className="ms-auto h-4 w-4" />
         </td>
@@ -248,18 +244,19 @@ export function TaskTable({
     );
   }
 
+  const COL_COUNT = 6;
+
   return (
     <div className="flex flex-col gap-4">
       <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
         <table className="w-full text-right text-body-sm">
           <thead>
             <tr className="bg-surface text-caption text-ink-secondary">
-              <th className="px-4 py-2.5 text-right font-medium">סטטוס</th>
               <th className="px-4 py-2.5 text-right font-medium">משימה</th>
               <th className="hidden px-4 py-2.5 text-right font-medium md:table-cell">לקוח</th>
               <th className="hidden px-4 py-2.5 text-right font-medium lg:table-cell">אחראי</th>
               <th className="px-4 py-2.5 text-right font-medium">דדליין</th>
-              <th className="hidden px-4 py-2.5 text-right font-medium sm:table-cell">מקור</th>
+              <th className="px-4 py-2.5 text-right font-medium">סטטוס</th>
               <th className="w-8 px-2" />
             </tr>
           </thead>
@@ -268,9 +265,8 @@ export function TaskTable({
               const isCollapsed = collapsedGroups.has(group.status);
               return (
                 <React.Fragment key={group.status}>
-                  {/* Group header — colored bar */}
                   <tr>
-                    <td colSpan={7}>
+                    <td colSpan={COL_COUNT}>
                       <button
                         type="button"
                         onClick={() => toggleGroup(group.status)}
@@ -297,7 +293,6 @@ export function TaskTable({
         )}
       </div>
 
-      {/* Stale tasks toggle */}
       {staleTasks.length > 0 && (
         <button
           type="button"
@@ -309,7 +304,6 @@ export function TaskTable({
         </button>
       )}
 
-      {/* Completed tasks — collapsed by default */}
       {completedTasks.length > 0 && (
         <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
           <button
@@ -324,6 +318,16 @@ export function TaskTable({
           </button>
           {showCompleted && (
             <table className="w-full text-right text-body-sm">
+              <thead>
+                <tr className="bg-surface text-caption text-ink-secondary">
+                  <th className="px-4 py-2.5 text-right font-medium">משימה</th>
+                  <th className="hidden px-4 py-2.5 text-right font-medium md:table-cell">לקוח</th>
+                  <th className="hidden px-4 py-2.5 text-right font-medium lg:table-cell">אחראי</th>
+                  <th className="px-4 py-2.5 text-right font-medium">דדליין</th>
+                  <th className="px-4 py-2.5 text-right font-medium">סטטוס</th>
+                  <th className="w-8 px-2" />
+                </tr>
+              </thead>
               <tbody>
                 {completedTasks.map(renderRow)}
               </tbody>

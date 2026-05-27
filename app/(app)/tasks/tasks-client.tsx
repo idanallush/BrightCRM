@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Plus, LayoutGrid, Rows3, AlertTriangle, Search, Calendar, User, Briefcase, Globe, Send, Download, Clock } from "lucide-react";
+import { Plus, LayoutGrid, Rows3, CalendarDays, AlertTriangle, Search, Calendar, User, Clock } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,12 +14,13 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { StatusCell, STATUS_COLORS } from "@/components/ui/badge";
+import { StatusCell } from "@/components/ui/badge";
 import { toast } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/empty-state";
 import { TaskTable } from "./task-table";
 import { TaskKanban } from "./task-kanban";
+import { TaskCalendar } from "./task-calendar";
 import { TaskForm } from "./task-form";
 import { TaskAttachments } from "./task-attachments";
 import { TaskComments } from "./task-comments";
@@ -53,7 +54,7 @@ export function TasksClient({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [view, setView] = React.useState<"table" | "kanban">("table");
+  const [view, setView] = React.useState<"table" | "kanban" | "calendar">("table");
   const [createOpen, setCreateOpen] = React.useState(false);
   const [editing, setEditing] = React.useState<TaskWithRelations | null>(null);
   const [confirmingDelete, setConfirmingDelete] = React.useState(false);
@@ -62,7 +63,7 @@ export function TasksClient({
 
   React.useEffect(() => {
     const saved = localStorage.getItem(VIEW_KEY);
-    if (saved === "table" || saved === "kanban") setView(saved);
+    if (saved === "table" || saved === "kanban" || saved === "calendar") setView(saved);
   }, []);
 
   React.useEffect(() => {
@@ -99,7 +100,7 @@ export function TasksClient({
     router.push("/tasks");
   }
 
-  function changeView(next: "table" | "kanban") { setView(next); localStorage.setItem(VIEW_KEY, next); }
+  function changeView(next: "table" | "kanban" | "calendar") { setView(next); localStorage.setItem(VIEW_KEY, next); }
 
   function updateFilter(key: keyof typeof filters, value: string | boolean) {
     const next = { ...filters, [key]: value as never };
@@ -154,6 +155,11 @@ export function TasksClient({
                 className={cn("flex items-center gap-1.5 rounded px-3 py-1.5 text-caption transition-colors duration-200",
                   view === "kanban" ? "bg-white font-medium text-ink shadow-sm" : "text-white/70 hover:text-white")}>
                 <LayoutGrid className="h-4 w-4" /><span className="hidden sm:inline">קנבן</span>
+              </button>
+              <button type="button" onClick={() => changeView("calendar")}
+                className={cn("flex items-center gap-1.5 rounded px-3 py-1.5 text-caption transition-colors duration-200",
+                  view === "calendar" ? "bg-white font-medium text-ink shadow-sm" : "text-white/70 hover:text-white")}>
+                <CalendarDays className="h-4 w-4" /><span className="hidden sm:inline">לוח שנה</span>
               </button>
             </div>
             <Button onClick={() => setCreateOpen(true)} className="hidden sm:inline-flex">
@@ -222,8 +228,10 @@ export function TasksClient({
         )
       ) : view === "table" ? (
         <TaskTable tasks={filteredTasks} commentCounts={commentCounts} onRowClick={setEditing} />
-      ) : (
+      ) : view === "kanban" ? (
         <TaskKanban tasks={filteredTasks} onCardClick={setEditing} />
+      ) : (
+        <TaskCalendar tasks={filteredTasks} commentCounts={commentCounts} onTaskClick={setEditing} />
       )}
 
       {/* Create */}
@@ -237,19 +245,17 @@ export function TasksClient({
         </DialogContent>
       </Dialog>
 
-      {/* Task detail panel — Monday.com style */}
+      {/* Task detail panel */}
       <Sheet open={!!editing} onOpenChange={(open) => !open && closeSheet()}>
         <SheetContent side="left" className="flex flex-col gap-0 p-0 sm:max-w-[450px]">
           {editing && (
             <>
-              {/* Header: title + status + compact details */}
               <div className="shrink-0 border-b border-border px-5 pb-3 pt-5 md:px-6 md:pt-6">
                 <h2 className="text-lg font-semibold text-ink leading-snug">{editing.title}</h2>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <StatusCell status={editing.status} />
                   <span className="text-caption text-ink-muted">{editing.client?.name ?? ""}</span>
                 </div>
-                {/* Compact details row */}
                 <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-caption text-ink-secondary">
                   <span className="inline-flex items-center gap-1"><User className="h-3 w-3" />{editing.assignees.map(a => a.full_name).join(", ") || "לא שויך"}</span>
                   <span className="inline-flex items-center gap-1"><Calendar className="h-3 w-3" />{fmtDate(editing.due_date)}</span>
@@ -261,12 +267,10 @@ export function TasksClient({
               </div>
 
               <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-                {/* Updates / Comments — THE main content */}
                 <div className="flex-1 px-5 py-4 md:px-6">
                   <TaskComments taskId={editing.id} team={team} />
                 </div>
 
-                {/* Edit form — collapsible, below comments */}
                 <details className="border-t border-border">
                   <summary className="cursor-pointer px-5 py-3 text-sm font-medium text-ink-secondary hover:text-ink md:px-6">
                     עריכת פרטים
@@ -276,7 +280,6 @@ export function TasksClient({
                   </div>
                 </details>
 
-                {/* Files — collapsible */}
                 <details className="border-t border-border">
                   <summary className="cursor-pointer px-5 py-3 text-sm font-medium text-ink-secondary hover:text-ink md:px-6">
                     קבצים
@@ -286,7 +289,6 @@ export function TasksClient({
                   </div>
                 </details>
 
-                {/* Delete */}
                 <div className="border-t border-border px-5 py-3 md:px-6">
                   {confirmingDelete ? (
                     <div className="flex flex-col gap-2 rounded-lg bg-red-50 p-3 text-right">
@@ -305,22 +307,6 @@ export function TasksClient({
           )}
         </SheetContent>
       </Sheet>
-    </div>
-  );
-}
-
-function DetailField({ icon: Icon, label, value }: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-center gap-2">
-      <Icon className="h-4 w-4 shrink-0 text-ink-muted" />
-      <div className="min-w-0">
-        <div className="text-[11px] text-ink-muted">{label}</div>
-        <div className="truncate text-sm text-ink">{value}</div>
-      </div>
     </div>
   );
 }
