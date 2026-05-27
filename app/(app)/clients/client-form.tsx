@@ -62,6 +62,8 @@ export function ClientForm({
     google_ads_url: client?.google_ads_url ?? "",
     cms_url: client?.cms_url ?? "",
     analytics_url: client?.analytics_url ?? "",
+    logo_url: client?.logo_url ?? "",
+    brief: client?.brief ?? "",
   });
 
   function set<K extends keyof ClientInput>(k: K, v: ClientInput[K]) {
@@ -178,6 +180,13 @@ export function ClientForm({
             placeholder="20,000 ₪ / 30k-50k $ / טקסט חופשי"
           />
         </Field>
+        <Field label="לוגו (URL)">
+          <Input
+            value={form.logo_url ?? ""}
+            onChange={(e) => set("logo_url", e.target.value)}
+            placeholder="https://example.com/logo.png"
+          />
+        </Field>
       </Section>
 
       <Section title="קישורים">
@@ -209,6 +218,18 @@ export function ClientForm({
           <Input
             value={form.analytics_url ?? ""}
             onChange={(e) => set("analytics_url", e.target.value)}
+          />
+        </Field>
+      </Section>
+
+      <Section title="בריף לקוח">
+        <Field label="בריף">
+          <textarea
+            value={form.brief ?? ""}
+            onChange={(e) => set("brief", e.target.value)}
+            placeholder="מידע כללי על הלקוח, מטרות, קהלים, מסרים מרכזיים..."
+            rows={5}
+            className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </Field>
       </Section>

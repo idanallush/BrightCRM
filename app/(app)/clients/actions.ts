@@ -17,6 +17,8 @@ export type ClientInput = {
   google_ads_url: string | null;
   cms_url: string | null;
   analytics_url: string | null;
+  logo_url: string | null;
+  brief: string | null;
 };
 
 function clean(input: ClientInput): ClientInput {
@@ -33,6 +35,8 @@ function clean(input: ClientInput): ClientInput {
     google_ads_url: input.google_ads_url?.trim() || null,
     cms_url: input.cms_url?.trim() || null,
     analytics_url: input.analytics_url?.trim() || null,
+    logo_url: input.logo_url?.trim() || null,
+    brief: input.brief?.trim() || null,
   };
 }
 

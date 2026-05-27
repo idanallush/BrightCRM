@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Plus, Search, Globe, FolderOpen, BarChart3 } from "lucide-react";
+import { Plus, Search, Globe, FileText } from "lucide-react";
+import { MetaAdsIcon, GoogleDriveIcon } from "@/components/brand-icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -67,23 +68,40 @@ export function ClientsClient({
     const openCount = openTaskCounts[c.id] ?? 0;
     const links = [
       c.website_url && { url: c.website_url, icon: <Globe className="h-3.5 w-3.5" />, label: "אתר" },
-      c.drive_url && { url: c.drive_url, icon: <FolderOpen className="h-3.5 w-3.5" />, label: "Drive" },
-      c.facebook_ads_url && { url: c.facebook_ads_url, icon: <BarChart3 className="h-3.5 w-3.5" />, label: "FB Ads" },
+      c.drive_url && { url: c.drive_url, icon: <GoogleDriveIcon className="h-3.5 w-3.5" />, label: "Drive" },
+      c.facebook_ads_url && { url: c.facebook_ads_url, icon: <MetaAdsIcon className="h-3.5 w-3.5" />, label: "Meta Ads" },
     ].filter(Boolean) as { url: string; icon: React.ReactNode; label: string }[];
 
     return (
       <tr key={c.id} onClick={() => router.push(`/clients/${c.id}`)}
         className="cursor-pointer border-b border-border transition-colors duration-150 hover:bg-[#F5F6F8]">
-        <td className="px-4 py-3 font-medium text-ink">{c.name}</td>
+        <td className="px-4 py-3 font-medium text-ink">
+          <div className="flex items-center gap-2.5">
+            {c.logo_url ? (
+              <img src={c.logo_url} alt={c.name} className="h-7 w-7 shrink-0 rounded-full object-cover bg-surface" />
+            ) : (
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                {c.name.charAt(0)}
+              </span>
+            )}
+            {c.name}
+          </div>
+        </td>
         <td className="px-4 py-3 text-ink-secondary">{c.manager_name ?? "ללא"}</td>
         <td className="hidden px-4 py-3 sm:table-cell">
-          {c.health ? <HealthCell health={c.health} /> : <span className="text-ink-muted">{"\u2014"}</span>}
+          {c.health ? <HealthCell health={c.health} /> : <span className="text-ink-muted">{"—"}</span>}
         </td>
         <td className="px-4 py-3">
           <span className={openCount > 0 ? "font-semibold text-primary" : "text-ink-muted"}>{openCount}</span>
         </td>
         <td className="hidden px-4 py-3 md:table-cell">
           <div className="flex gap-1.5">
+            {c.brief && (
+              <span onClick={(e) => { e.stopPropagation(); router.push(`/clients/${c.id}#brief`); }}
+                className="rounded-md p-1.5 text-ink-muted transition-colors hover:bg-surface hover:text-primary cursor-pointer" title="בריף לקוח">
+                <FileText className="h-3.5 w-3.5" />
+              </span>
+            )}
             {links.map((l, i) => (
               <a key={i} href={l.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
                 className="rounded-md p-1.5 text-ink-muted transition-colors hover:bg-surface hover:text-primary" title={l.label}>{l.icon}</a>

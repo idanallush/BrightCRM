@@ -29,6 +29,8 @@ export type Client = {
   cms_url: string | null;
   analytics_url: string | null;
   health: "בריא" | "אסטרטגיה צריכה" | "קריטי" | null;
+  logo_url: string | null;
+  brief: string | null;
 };
 
 export type Campaign = {
@@ -95,7 +97,7 @@ export async function getTasks(filters?: {
 }
 
 const CLIENT_COLS =
-  "id,name,contact_name,account_manager_id,phone,email,website_url,budget_note,drive_url,facebook_ads_url,google_ads_url,cms_url,analytics_url,health";
+  "id,name,contact_name,account_manager_id,phone,email,website_url,budget_note,drive_url,facebook_ads_url,google_ads_url,cms_url,analytics_url,health,logo_url,brief";
 
 export async function getClients(): Promise<Client[]> {
   const sb = createClient();
