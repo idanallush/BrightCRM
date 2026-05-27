@@ -27,5 +27,5 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login?error=domain`);
   }
 
-  return NextResponse.redirect(`${origin}/briefing`);
+  return NextResponse.redirect(`${origin}/dashboard`);
 }

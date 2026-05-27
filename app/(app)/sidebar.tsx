@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, CheckSquare, Users, Settings, Info, ChevronsLeft, ChevronsRight, X, LogOut, BarChart3 } from "lucide-react";
+import { LayoutDashboard, CheckSquare, Users, Settings, Info, ChevronsLeft, ChevronsRight, X, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMobileMenu, useSidebarCollapsed } from "./shell-context";
 import { NotificationBell } from "@/components/notification-bell";
@@ -12,7 +12,6 @@ import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const NAV_MAIN = [
-  { href: "/briefing", label: "סקירת בוקר", Icon: BarChart3 },
   { href: "/dashboard", label: "דשבורד", Icon: LayoutDashboard },
   { href: "/tasks", label: "משימות", Icon: CheckSquare },
   { href: "/clients", label: "לקוחות", Icon: Users },
