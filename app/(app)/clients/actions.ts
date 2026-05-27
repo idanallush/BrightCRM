@@ -61,9 +61,19 @@ export async function updateClientRow(id: string, input: ClientInput) {
 
 export async function deleteClientRow(id: string) {
   const sb = createClient();
+
+  // Delete dependent records that don't have ON DELETE CASCADE on client_id.
+  // Order matters: task_assignees/comments/notifications cascade from tasks,
+  // so deleting tasks handles those. attachments.client_id already cascades.
+  for (const table of ["tasks", "campaigns", "meetings", "client_strategies"]) {
+    const { error } = await sb.from(table).delete().eq("client_id", id);
+    if (error) return { error: error.message };
+  }
+
   const { error } = await sb.from("clients").delete().eq("id", id);
   if (error) return { error: error.message };
   revalidatePath("/clients");
+  revalidatePath("/tasks");
   revalidatePath("/dashboard");
   return { ok: true as const };
 }
