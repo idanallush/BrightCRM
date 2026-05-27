@@ -10,7 +10,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "rounded-full bg-ink text-white text-button hover:bg-ink-hover shadow-elevation-1",
+        primary: "rounded-full bg-accent text-ink text-button hover:bg-accent/85 shadow-elevation-1",
         secondary: "rounded-full border-2 border-border bg-white text-ink text-button hover:bg-surface hover:border-ink-muted",
         ghost: "rounded-xl text-ink text-button hover:bg-surface",
         danger: "rounded-full bg-overdue text-white text-button hover:opacity-90 shadow-elevation-1",

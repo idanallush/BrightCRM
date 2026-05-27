@@ -143,7 +143,7 @@ export function QuickAdd() {
       </AnimatePresence>
 
       <motion.button type="button" onClick={() => setMode((m) => m === "closed" ? "menu" : "closed")} title="יצירה מהירה" aria-label="יצירה מהירה" whileTap={{ scale: 0.93 }}
-        className="flex h-12 w-12 items-center justify-center rounded-full bg-ink text-white shadow-elevation-2 transition-colors hover:bg-ink-hover">
+        className="flex h-12 w-12 items-center justify-center rounded-full bg-accent text-ink shadow-elevation-2 transition-colors hover:bg-accent/85">
         <Plus className={cn("h-5 w-5 transition-transform duration-150", mode !== "closed" && "rotate-45")} strokeWidth={2.5} />
       </motion.button>
     </div>
