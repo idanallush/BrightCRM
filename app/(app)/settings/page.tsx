@@ -10,6 +10,7 @@ import {
   Users,
   Settings,
 } from "lucide-react";
+import { StaggerContainer, StaggerItem } from "@/components/motion";
 
 export const dynamic = "force-dynamic";
 
@@ -36,13 +37,16 @@ export default async function SettingsPage() {
   const telegramConnected = !!member?.telegram_user_id;
 
   return (
-    <div className="flex flex-col gap-5">
+    <StaggerContainer className="flex flex-col gap-5" stagger={0.07}>
+      <StaggerItem>
       <div className="flex items-center gap-2">
         <Settings className="h-5 w-5 text-ink-muted" />
         <h1 className="text-2xl font-bold text-ink">הגדרות</h1>
       </div>
+      </StaggerItem>
 
       {/* Account */}
+      <StaggerItem>
       <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
         <div className="bg-sidebar px-4 py-3">
           <h2 className="text-base font-bold text-white">חשבון</h2>
@@ -72,8 +76,10 @@ export default async function SettingsPage() {
           </div>
         </div>
       </div>
+      </StaggerItem>
 
       {/* Telegram Guide */}
+      <StaggerItem>
       <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
         <div className="bg-sidebar px-4 py-3">
           <h2 className="text-base font-bold text-white">מדריך חיבור טלגרם</h2>
@@ -113,8 +119,10 @@ export default async function SettingsPage() {
           </div>
         </div>
       </div>
+      </StaggerItem>
 
       {/* Team */}
+      <StaggerItem>
       <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
         <div className="flex items-center gap-2 bg-sidebar px-4 py-3">
           <Users className="h-4 w-4 text-white/60" />
@@ -144,7 +152,8 @@ export default async function SettingsPage() {
           ))}
         </div>
       </div>
-    </div>
+      </StaggerItem>
+    </StaggerContainer>
   );
 }
 

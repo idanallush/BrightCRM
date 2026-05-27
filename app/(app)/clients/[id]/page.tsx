@@ -15,6 +15,7 @@ import { FileList } from "@/components/file-list";
 import { FileUpload } from "@/components/file-upload";
 import { EditClientButton, DeleteClientButton } from "./edit-button";
 import { ClientTasksSection } from "./client-tasks-section";
+import { StaggerContainer, StaggerItem } from "@/components/motion";
 
 export const dynamic = "force-dynamic";
 
@@ -45,8 +46,9 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
   if (client.website_url) externalLinks.push({ label: "אתר", url: client.website_url, icon: <WebsiteIcon className="h-5 w-5" /> });
 
   return (
-    <div className="flex flex-col gap-6">
+    <StaggerContainer className="flex flex-col gap-6" stagger={0.07}>
       {/* Header */}
+      <StaggerItem>
       <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
         <div className="flex flex-wrap items-center justify-between gap-3 bg-sidebar px-4 py-3">
           <div className="flex flex-wrap items-center gap-3">
@@ -70,8 +72,10 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
           </div>
         </div>
       </div>
+      </StaggerItem>
 
       {/* Contact info */}
+      <StaggerItem>
       <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
         <div className="bg-surface px-4 py-2.5">
           <span className="text-caption font-medium text-ink-secondary">פרטי קשר</span>
@@ -134,9 +138,11 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
           )}
         </div>
       </div>
+      </StaggerItem>
 
       {/* External links with brand logos */}
       {externalLinks.length > 0 && (
+        <StaggerItem>
         <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
           <div className="bg-surface px-4 py-2.5">
             <span className="text-caption font-medium text-ink-secondary">קישורים חיצוניים</span>
@@ -156,9 +162,11 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
             ))}
           </div>
         </div>
+        </StaggerItem>
       )}
 
       {/* Client Brief */}
+      <StaggerItem>
       <div id="brief" className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
         <div className="flex items-center gap-2 bg-surface px-4 py-2.5">
           <FileText className="h-4 w-4 text-ink-secondary" />
@@ -174,11 +182,15 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
           )}
         </div>
       </div>
+      </StaggerItem>
 
       {/* Tasks */}
-      <ClientTasksSection tasks={tasks} clientId={client.id} />
+      <StaggerItem>
+        <ClientTasksSection tasks={tasks} clientId={client.id} />
+      </StaggerItem>
 
       {/* Files */}
+      <StaggerItem>
       <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
         <div className="flex items-center gap-2 bg-surface px-4 py-2.5">
           <ImageIcon className="h-4 w-4 text-ink-secondary" />
@@ -189,6 +201,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
           <FileList attachments={attachments} thumbUrls={thumbs} />
         </div>
       </div>
-    </div>
+      </StaggerItem>
+    </StaggerContainer>
   );
 }

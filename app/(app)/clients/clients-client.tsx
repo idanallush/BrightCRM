@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Plus, Search, Globe, FileText } from "lucide-react";
 import { MetaAdsIcon, GoogleDriveIcon } from "@/components/brand-icons";
@@ -113,7 +114,12 @@ export function ClientsClient({
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: "easeOut" }}
+      className="flex flex-col gap-4"
+    >
       {/* Header bar */}
       <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
         <div className="flex flex-wrap items-center justify-between gap-3 bg-sidebar px-5 py-3.5">
@@ -210,6 +216,6 @@ export function ClientsClient({
           <ClientForm team={team} onDone={() => setCreateOpen(false)} />
         </DialogContent>
       </Dialog>
-    </div>
+    </motion.div>
   );
 }

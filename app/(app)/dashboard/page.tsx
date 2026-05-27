@@ -13,6 +13,9 @@ import { createClient } from "@/lib/supabase/server";
 import { AiChat } from "@/components/dashboard/ai-chat";
 import { MarkDoneButton } from "@/components/dashboard/mark-done-button";
 import { DashboardSearch } from "@/components/dashboard/dashboard-search";
+import {
+  AnimatedDashboard, AnimatedSection, AnimatedStatCard, AnimatedNumber,
+} from "@/components/dashboard/animated-layout";
 
 export const dynamic = "force-dynamic";
 
@@ -96,8 +99,9 @@ export default async function DashboardPage() {
   const totalActive = counts.incoming + counts.working + counts.awaitingApproval;
 
   return (
-    <div className="flex flex-col gap-5">
+    <AnimatedDashboard>
       {/* Welcome header */}
+      <AnimatedSection>
       <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
         <div className="flex flex-wrap items-center justify-between gap-4 bg-sidebar px-5 py-5">
           <div>
@@ -128,8 +132,10 @@ export default async function DashboardPage() {
           </span>
         </div>
       </div>
+      </AnimatedSection>
 
       {/* Stat cards — Miro pastel style */}
+      <AnimatedSection>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {STAT_CARDS.map((card) => {
           const value = statValues[card.key] ?? 0;
@@ -139,14 +145,15 @@ export default async function DashboardPage() {
           const trendColor = trend.delta === 0 ? "text-ink-muted" : trendIsGood ? "text-success" : "text-overdue";
           const periodLabel = trend.period === "day" ? "מאתמול" : "השבוע";
           return (
-            <div key={card.key} className={`overflow-hidden rounded-2xl ${card.pastel} p-5 shadow-elevation-1 transition-shadow hover:shadow-elevation-2`}>
+            <AnimatedStatCard key={card.key}>
+            <div className={`overflow-hidden rounded-2xl ${card.pastel} p-5 shadow-elevation-1 transition-shadow hover:shadow-elevation-2`}>
               <div className="flex items-center justify-between">
                 <span className="text-caption font-medium text-ink/70">{card.label}</span>
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/60">
                   <card.Icon className="h-4.5 w-4.5" style={{ color: card.color }} />
                 </div>
               </div>
-              <div className="mt-3 text-3xl font-bold text-ink">{value}</div>
+              <div className="mt-3 text-3xl font-bold text-ink"><AnimatedNumber value={value} /></div>
               {trend.delta !== 0 && (
                 <div className={`mt-1 flex items-center gap-1 text-caption ${trendColor}`}>
                   {trend.delta > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
@@ -157,11 +164,14 @@ export default async function DashboardPage() {
                 <div className="mt-1 text-caption text-ink/40">ללא שינוי</div>
               )}
             </div>
+            </AnimatedStatCard>
           );
         })}
       </div>
+      </AnimatedSection>
 
       {/* Main content: Tasks + Sidebar */}
+      <AnimatedSection>
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
         {/* My Tasks */}
         <div className="lg:col-span-2">
@@ -291,9 +301,11 @@ export default async function DashboardPage() {
           <AiChat userEmail={user?.email ?? ""} />
         </div>
       </div>
+      </AnimatedSection>
 
       {/* Clients with open tasks */}
       {clientsOpen.length > 0 && (
+        <AnimatedSection>
         <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
           <div className="flex items-center justify-between bg-sidebar px-5 py-3.5">
             <div className="flex items-center gap-2">
@@ -323,7 +335,8 @@ export default async function DashboardPage() {
             })}
           </div>
         </div>
+        </AnimatedSection>
       )}
-    </div>
+    </AnimatedDashboard>
   );
 }

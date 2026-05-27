@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Plus, LayoutGrid, Rows3, CalendarDays, AlertTriangle, Search } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -196,7 +197,12 @@ export function TasksClient({
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: "easeOut" }}
+      className="flex flex-col gap-4"
+    >
       {/* Board header */}
       <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
         <div className="flex flex-wrap items-center justify-between gap-3 bg-sidebar px-5 py-3.5">
@@ -283,21 +289,31 @@ export function TasksClient({
       </div>
 
       {/* Content */}
+      <AnimatePresence mode="wait">
       {filteredTasks.length === 0 ? (
-        activeFilterCount > 0 || searchText ? (
+        <motion.div key="empty" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.2 }}>
+        {activeFilterCount > 0 || searchText ? (
           <EmptyState title="לא נמצאו משימות תואמות" description="נסה לשנות את הפילטרים."
             action={<Button variant="secondary" size="sm" onClick={clearFilters}>נקה פילטרים</Button>} />
         ) : (
           <EmptyState title="אין משימות עדיין" description="פתח משימה ראשונה דרך הכפתור או דרך בוט הטלגרם."
             action={<Button onClick={() => setCreateOpen(true)}><Plus className="h-4 w-4" /> משימה חדשה</Button>} />
-        )
+        )}
+        </motion.div>
       ) : view === "table" ? (
-        <TaskTable tasks={filteredTasks} commentCounts={commentCounts} onRowClick={setEditing} />
+        <motion.div key="table" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+          <TaskTable tasks={filteredTasks} commentCounts={commentCounts} onRowClick={setEditing} />
+        </motion.div>
       ) : view === "kanban" ? (
-        <TaskKanban tasks={filteredTasks} onCardClick={setEditing} />
+        <motion.div key="kanban" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+          <TaskKanban tasks={filteredTasks} onCardClick={setEditing} />
+        </motion.div>
       ) : (
-        <TaskCalendar tasks={filteredTasks} commentCounts={commentCounts} onTaskClick={setEditing} />
+        <motion.div key="calendar" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+          <TaskCalendar tasks={filteredTasks} commentCounts={commentCounts} onTaskClick={setEditing} />
+        </motion.div>
       )}
+      </AnimatePresence>
 
       {/* Create */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
@@ -316,6 +332,6 @@ export function TasksClient({
           {editing && <TaskDetailPanel key={editing.id} task={editing} clients={clients} team={team} onClose={closeSheet} onDelete={onDelete} confirmingDelete={confirmingDelete} setConfirmingDelete={setConfirmingDelete} />}
         </SheetContent>
       </Sheet>
-    </div>
+    </motion.div>
   );
 }
