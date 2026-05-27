@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Plus, LayoutGrid, Rows3, CalendarDays, AlertTriangle, Search, Calendar, User, Clock } from "lucide-react";
+import { Plus, LayoutGrid, Rows3, CalendarDays, AlertTriangle, Search } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,6 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { StatusCell } from "@/components/ui/badge";
 import { toast } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/empty-state";
@@ -37,9 +36,75 @@ const STATUS_PILLS = [
 ] as const;
 const VIEW_KEY = "brightcrm:tasks-view";
 
-function fmtDate(iso: string | null): string {
-  if (!iso) return "ללא";
-  return new Date(iso).toLocaleDateString("he-IL");
+
+function TaskDetailPanel({
+  task, clients, team, onClose, onDelete, confirmingDelete, setConfirmingDelete,
+}: {
+  task: TaskWithRelations;
+  clients: Client[];
+  team: TeamMember[];
+  onClose: () => void;
+  onDelete: () => void;
+  confirmingDelete: boolean;
+  setConfirmingDelete: (v: boolean) => void;
+}) {
+  const [fileCount, setFileCount] = React.useState<number | null>(null);
+  const filesOpen = fileCount !== null && fileCount > 0;
+
+  return (
+    <>
+      <div className="shrink-0 border-b border-border px-5 pb-3 pt-5 md:px-6 md:pt-6">
+        <h2 className="text-lg font-semibold text-ink leading-snug">{task.title}</h2>
+      </div>
+
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+        {/* 1. פרטי משימה — open by default */}
+        <details open className="border-b border-border">
+          <summary className="cursor-pointer px-5 py-3 text-sm font-semibold text-ink hover:bg-surface md:px-6">
+            פרטי משימה
+          </summary>
+          <div className="px-5 pb-4 md:px-6">
+            <TaskForm key={task.id} task={task} clients={clients} team={team} onDone={onClose} compact />
+          </div>
+        </details>
+
+        {/* 2. עדכונים */}
+        <details open className="border-b border-border">
+          <summary className="cursor-pointer px-5 py-3 text-sm font-semibold text-ink hover:bg-surface md:px-6">
+            עדכונים
+          </summary>
+          <div className="px-5 pb-4 md:px-6">
+            <TaskComments taskId={task.id} team={team} />
+          </div>
+        </details>
+
+        {/* 3. קבצים — open only if files exist */}
+        <details open={filesOpen} className="border-b border-border">
+          <summary className="cursor-pointer px-5 py-3 text-sm font-semibold text-ink hover:bg-surface md:px-6">
+            קבצים{fileCount !== null ? ` (${fileCount})` : ""}
+          </summary>
+          <div className="px-5 pb-4 md:px-6">
+            <TaskAttachments taskId={task.id} onCountChange={setFileCount} />
+          </div>
+        </details>
+
+        {/* מחיקה */}
+        <div className="px-5 py-3 md:px-6">
+          {confirmingDelete ? (
+            <div className="flex flex-col gap-2 rounded-lg bg-red-50 p-3 text-right">
+              <p className="text-sm text-overdue">למחוק את המשימה לצמיתות?</p>
+              <div className="flex flex-row-reverse gap-2">
+                <Button variant="danger" size="sm" onClick={onDelete}>מחק</Button>
+                <Button variant="ghost" size="sm" onClick={() => setConfirmingDelete(false)}>ביטול</Button>
+              </div>
+            </div>
+          ) : (
+            <Button variant="ghost" size="sm" onClick={() => setConfirmingDelete(true)} className="text-overdue">מחיקה</Button>
+          )}
+        </div>
+      </div>
+    </>
+  );
 }
 
 export function TasksClient({
@@ -248,63 +313,7 @@ export function TasksClient({
       {/* Task detail panel */}
       <Sheet open={!!editing} onOpenChange={(open) => !open && closeSheet()}>
         <SheetContent side="left" className="flex flex-col gap-0 p-0 sm:max-w-[450px]">
-          {editing && (
-            <>
-              <div className="shrink-0 border-b border-border px-5 pb-3 pt-5 md:px-6 md:pt-6">
-                <h2 className="text-lg font-semibold text-ink leading-snug">{editing.title}</h2>
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <StatusCell status={editing.status} />
-                  <span className="text-caption text-ink-muted">{editing.client?.name ?? ""}</span>
-                </div>
-                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-caption text-ink-secondary">
-                  <span className="inline-flex items-center gap-1"><User className="h-3 w-3" />{editing.assignees.map(a => a.full_name).join(", ") || "לא שויך"}</span>
-                  <span className="inline-flex items-center gap-1"><Calendar className="h-3 w-3" />{fmtDate(editing.due_date)}</span>
-                  <span className="inline-flex items-center gap-1"><Clock className="h-3 w-3" />{fmtDate(editing.created_at)}</span>
-                </div>
-                {editing.description && (
-                  <p className="mt-2 text-sm text-ink-secondary leading-relaxed">{editing.description}</p>
-                )}
-              </div>
-
-              <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-                <div className="flex-1 px-5 py-4 md:px-6">
-                  <TaskComments taskId={editing.id} team={team} />
-                </div>
-
-                <details className="border-t border-border">
-                  <summary className="cursor-pointer px-5 py-3 text-sm font-medium text-ink-secondary hover:text-ink md:px-6">
-                    עריכת פרטים
-                  </summary>
-                  <div className="px-5 pb-4 md:px-6">
-                    <TaskForm key={editing.id} task={editing} clients={clients} team={team} onDone={closeSheet} compact />
-                  </div>
-                </details>
-
-                <details className="border-t border-border">
-                  <summary className="cursor-pointer px-5 py-3 text-sm font-medium text-ink-secondary hover:text-ink md:px-6">
-                    קבצים
-                  </summary>
-                  <div className="px-5 pb-4 md:px-6">
-                    <TaskAttachments key={editing.id} taskId={editing.id} />
-                  </div>
-                </details>
-
-                <div className="border-t border-border px-5 py-3 md:px-6">
-                  {confirmingDelete ? (
-                    <div className="flex flex-col gap-2 rounded-lg bg-red-50 p-3 text-right">
-                      <p className="text-sm text-overdue">למחוק את המשימה לצמיתות?</p>
-                      <div className="flex flex-row-reverse gap-2">
-                        <Button variant="danger" size="sm" onClick={onDelete}>מחק</Button>
-                        <Button variant="ghost" size="sm" onClick={() => setConfirmingDelete(false)}>ביטול</Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <Button variant="ghost" size="sm" onClick={() => setConfirmingDelete(true)} className="text-overdue">מחיקה</Button>
-                  )}
-                </div>
-              </div>
-            </>
-          )}
+          {editing && <TaskDetailPanel key={editing.id} task={editing} clients={clients} team={team} onClose={closeSheet} onDelete={onDelete} confirmingDelete={confirmingDelete} setConfirmingDelete={setConfirmingDelete} />}
         </SheetContent>
       </Sheet>
     </div>

@@ -5,7 +5,13 @@ import { FileList } from "@/components/file-list";
 import { FileUpload } from "@/components/file-upload";
 import { listForTask, type Attachment } from "@/app/actions/attachments";
 
-export function TaskAttachments({ taskId }: { taskId: string }) {
+export function TaskAttachments({
+  taskId,
+  onCountChange,
+}: {
+  taskId: string;
+  onCountChange?: (count: number) => void;
+}) {
   const [attachments, setAttachments] = React.useState<Attachment[]>([]);
   const [thumbs, setThumbs] = React.useState<Record<string, string | null>>({});
   const [loading, setLoading] = React.useState(true);
@@ -20,6 +26,7 @@ export function TaskAttachments({ taskId }: { taskId: string }) {
       setAttachments(a);
       setThumbs(t);
       setLoading(false);
+      onCountChange?.(a.length);
     })();
     return () => {
       cancelled = true;

@@ -161,7 +161,7 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
           size="icon"
           onClick={handleSend}
           disabled={!text.trim() || sending}
-          className="absolute bottom-2 start-2 h-8 w-8"
+          className="absolute bottom-2 end-2 h-8 w-8"
         >
           <Send className="h-4 w-4" />
         </Button>
