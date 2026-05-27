@@ -2,8 +2,101 @@
 
 import * as React from "react";
 import { ChevronLeft, ChevronDown, ChevronUp, Send, Globe, AlertTriangle, Download, MessageCircle, EyeOff, Eye } from "lucide-react";
-import { StatusCell, STATUS_COLORS } from "@/components/ui/badge";
+import { STATUS_COLORS } from "@/components/ui/badge";
+import { updateTaskStatus } from "./actions";
+import { toast } from "@/components/ui/toaster";
+import { useRouter } from "next/navigation";
 import type { TaskWithRelations } from "@/lib/data";
+
+const ALL_STATUSES = ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח", "בוצע"] as const;
+
+const STATUS_LABELS: Record<string, string> = {
+  "מחכה לטיפול": "ממתין",
+  "נכנס לעבודה": "נכנס לעבודה",
+  "בעבודה": "בעבודה",
+  "אישור לקוח": "אישור לקוח",
+  "בוצע": "בוצע",
+};
+
+const STATUS_BG: Record<string, string> = {
+  "מחכה לטיפול": "bg-st-waiting",
+  "נכנס לעבודה": "bg-st-incoming",
+  "בעבודה": "bg-st-working",
+  "אישור לקוח": "bg-st-approval",
+  "בוצע": "bg-st-done",
+};
+
+const STATUS_TEXT: Record<string, string> = {
+  "אישור לקוח": "text-[#323338]",
+};
+
+function StatusDropdown({ taskId, status, onUpdated }: { taskId: string; status: string; onUpdated: () => void }) {
+  const [open, setOpen] = React.useState(false);
+  const [current, setCurrent] = React.useState(status);
+  const [loading, setLoading] = React.useState(false);
+  const ref = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => { setCurrent(status); }, [status]);
+
+  React.useEffect(() => {
+    if (!open) return;
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
+  async function pick(next: string) {
+    if (next === current) { setOpen(false); return; }
+    setCurrent(next);
+    setOpen(false);
+    setLoading(true);
+    const res = await updateTaskStatus(taskId, next);
+    setLoading(false);
+    if ("error" in res) { toast.error(res.error); setCurrent(status); return; }
+    onUpdated();
+  }
+
+  const bg = STATUS_BG[current] ?? "bg-gray-400";
+  const text = STATUS_TEXT[current] ?? "text-white";
+  const label = STATUS_LABELS[current] ?? current;
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
+        className={`inline-flex min-w-[90px] items-center justify-center rounded-md px-3 py-1.5 text-center text-sm font-medium transition-opacity ${bg} ${text} ${loading ? "opacity-60" : "hover:opacity-90"}`}
+      >
+        {label}
+      </button>
+      {open && (
+        <div
+          className="absolute right-0 top-full z-50 mt-1 min-w-[140px] overflow-hidden rounded-lg border border-border bg-white shadow-lg"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {ALL_STATUSES.map((s) => {
+            const sBg = STATUS_BG[s] ?? "bg-gray-400";
+            const sText = STATUS_TEXT[s] ?? "text-white";
+            const sLabel = STATUS_LABELS[s] ?? s;
+            return (
+              <button
+                key={s}
+                type="button"
+                onClick={() => pick(s)}
+                className={`flex w-full items-center gap-2 px-3 py-2 text-right text-sm transition-colors hover:bg-surface ${s === current ? "font-semibold" : ""}`}
+              >
+                <span className={`inline-block h-3 w-3 rounded-full ${sBg}`} />
+                <span className="text-ink">{sLabel}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const STALE_DAYS = 180;
 
@@ -56,6 +149,7 @@ export function TaskTable({
   commentCounts: Record<string, number>;
   onRowClick: (t: TaskWithRelations) => void;
 }) {
+  const router = useRouter();
   const today = new Date().toISOString().slice(0, 10);
   const [showCompleted, setShowCompleted] = React.useState(false);
   const [hideStale, setHideStale] = React.useState(true);
@@ -101,7 +195,7 @@ export function TaskTable({
         className="group cursor-pointer border-b border-border transition-colors duration-150 hover:bg-[#F5F6F8]"
       >
         <td className="px-4 py-2.5 align-middle">
-          <StatusCell status={t.status} />
+          <StatusDropdown taskId={t.id} status={t.status} onUpdated={() => router.refresh()} />
         </td>
         <td className="max-w-xs px-4 py-2.5 align-middle">
           <div className="flex items-center gap-2">
