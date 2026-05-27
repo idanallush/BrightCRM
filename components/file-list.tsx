@@ -113,7 +113,7 @@ function ImageLightbox({
         src={img.url}
         alt={img.name}
         onClick={(e) => e.stopPropagation()}
-        className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
+        className="max-h-[85vh] max-w-[90vw] rounded-2xl object-contain shadow-elevation-5"
       />
 
       {/* Filename */}
@@ -185,7 +185,7 @@ export function FileList({
 
   return (
     <>
-      <ul className="flex flex-col divide-y divide-border rounded-lg border border-border bg-white">
+      <ul className="flex flex-col divide-y divide-border rounded-xl border border-border bg-white">
         {attachments.map((a) => {
           const Icon = iconFor(a.content_type);
           const thumb =

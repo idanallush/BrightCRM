@@ -229,7 +229,7 @@ export function ClientForm({
             onChange={(e) => set("brief", e.target.value)}
             placeholder="מידע כללי על הלקוח, מטרות, קהלים, מסרים מרכזיים..."
             rows={5}
-            className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
         </Field>
       </Section>

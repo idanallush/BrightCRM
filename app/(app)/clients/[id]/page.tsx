@@ -47,8 +47,8 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
-      <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-3 bg-primary px-4 py-3">
+      <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-sidebar px-4 py-3">
           <div className="flex flex-wrap items-center gap-3">
             <Link href="/clients" className="inline-flex items-center gap-1.5 text-caption text-white/70 transition-colors hover:text-white">
               <ArrowRight className="h-4 w-4" /> חזרה
@@ -72,14 +72,14 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
       </div>
 
       {/* Contact info */}
-      <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
         <div className="bg-surface px-4 py-2.5">
           <span className="text-caption font-medium text-ink-secondary">פרטי קשר</span>
         </div>
         <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
           {client.contact_name && (
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-pastel-blue">
                 <Contact className="h-4 w-4 text-primary" />
               </div>
               <div>
@@ -90,7 +90,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
           )}
           {manager && (
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-purple-50">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-pastel-purple">
                 <User className="h-4 w-4 text-purple-600" />
               </div>
               <div>
@@ -101,7 +101,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
           )}
           {client.phone && (
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-50">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-pastel-teal">
                 <Phone className="h-4 w-4 text-green-600" />
               </div>
               <div>
@@ -112,7 +112,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
           )}
           {client.email && (
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-orange-50">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-pastel-coral">
                 <Mail className="h-4 w-4 text-orange-600" />
               </div>
               <div>
@@ -123,7 +123,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
           )}
           {client.budget_note && (
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-yellow-50">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-pastel-yellow">
                 <CreditCard className="h-4 w-4 text-yellow-600" />
               </div>
               <div>
@@ -137,7 +137,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
 
       {/* External links with brand logos */}
       {externalLinks.length > 0 && (
-        <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+        <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
           <div className="bg-surface px-4 py-2.5">
             <span className="text-caption font-medium text-ink-secondary">קישורים חיצוניים</span>
           </div>
@@ -148,7 +148,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
                 href={l.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-surface hover:shadow-sm"
+                className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-surface hover:shadow-elevation-1"
               >
                 {l.icon}
                 {l.label}
@@ -159,7 +159,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
       )}
 
       {/* Client Brief */}
-      <div id="brief" className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+      <div id="brief" className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
         <div className="flex items-center gap-2 bg-surface px-4 py-2.5">
           <FileText className="h-4 w-4 text-ink-secondary" />
           <span className="text-caption font-medium text-ink-secondary">בריף לקוח</span>
@@ -168,7 +168,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
           {client.brief ? (
             <div className="whitespace-pre-wrap text-sm leading-relaxed text-ink">{client.brief}</div>
           ) : (
-            <div className="rounded-lg bg-surface p-6 text-center text-sm text-ink-muted">
+            <div className="rounded-xl bg-surface p-6 text-center text-sm text-ink-muted">
               אין בריף עדיין. ערוך את הלקוח כדי להוסיף בריף.
             </div>
           )}
@@ -179,7 +179,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
       <ClientTasksSection tasks={tasks} clientId={client.id} />
 
       {/* Files */}
-      <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
         <div className="flex items-center gap-2 bg-surface px-4 py-2.5">
           <ImageIcon className="h-4 w-4 text-ink-secondary" />
           <span className="text-caption font-medium text-ink-secondary">קבצים ({attachments.length})</span>

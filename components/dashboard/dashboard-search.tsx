@@ -24,7 +24,7 @@ export function DashboardSearch() {
         onChange={(e) => setQuery(e.target.value)}
         placeholder="חיפוש..."
         aria-label="חיפוש משימות ולקוחות"
-        className="h-9 w-44 rounded-md border border-border bg-surface pe-3 ps-9 text-sm text-ink placeholder:text-ink-muted transition-colors focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20"
+        className="h-9 w-44 rounded-xl border border-border bg-surface pe-3 ps-9 text-sm text-ink placeholder:text-ink-muted transition-colors focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20"
       />
     </form>
   );

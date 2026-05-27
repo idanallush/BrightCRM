@@ -23,11 +23,11 @@ export function ClientTasksSection({ tasks, clientId }: { tasks: TaskRow[]; clie
         <Link href={`/tasks?client=${clientId}`} className="text-xs font-medium text-primary hover:underline">לכל המשימות</Link>
       </div>
       {activeTasks.length === 0 && completedTasks.length === 0 ? (
-        <div className="rounded-lg border border-border bg-white p-6 text-center text-sm text-ink-muted">אין משימות ללקוח.</div>
+        <div className="rounded-xl border border-border bg-white p-6 text-center text-sm text-ink-muted">אין משימות ללקוח.</div>
       ) : (
         <>
           {activeTasks.length > 0 && (
-            <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+            <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
               <table className="w-full text-right text-body-sm">
                 <thead>
                   <tr className="bg-surface text-caption text-ink-secondary">
@@ -38,7 +38,7 @@ export function ClientTasksSection({ tasks, clientId }: { tasks: TaskRow[]; clie
                 </thead>
                 <tbody>
                   {activeTasks.map((t) => (
-                    <tr key={t.id} className="border-b border-border cursor-pointer transition-colors hover:bg-[#F5F6F8]">
+                    <tr key={t.id} className="border-b border-border cursor-pointer transition-colors hover:bg-surface">
                       <td className="px-4 py-2.5 font-medium"><Link href={`/tasks?task=${t.id}`} className="block transition-colors hover:text-primary">{t.title}</Link></td>
                       <td className="px-4 py-2.5"><StatusCell status={t.status} /></td>
                       <td className="hidden px-4 py-2.5 text-ink-secondary sm:table-cell">{fmtDate(t.due_date)}</td>
@@ -50,7 +50,7 @@ export function ClientTasksSection({ tasks, clientId }: { tasks: TaskRow[]; clie
           )}
 
           {completedTasks.length > 0 && (
-            <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+            <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
               <button
                 type="button"
                 onClick={() => setShowCompleted((v) => !v)}
@@ -63,7 +63,7 @@ export function ClientTasksSection({ tasks, clientId }: { tasks: TaskRow[]; clie
                 <table className="w-full text-right text-body-sm">
                   <tbody>
                     {completedTasks.map((t) => (
-                      <tr key={t.id} className="border-b border-border cursor-pointer transition-colors hover:bg-[#F5F6F8]">
+                      <tr key={t.id} className="border-b border-border cursor-pointer transition-colors hover:bg-surface">
                         <td className="px-4 py-2.5 font-medium text-ink-muted"><Link href={`/tasks?task=${t.id}`} className="block transition-colors hover:text-primary">{t.title}</Link></td>
                         <td className="px-4 py-2.5"><StatusCell status={t.status} /></td>
                         <td className="hidden px-4 py-2.5 text-ink-secondary sm:table-cell">{fmtDate(t.due_date)}</td>

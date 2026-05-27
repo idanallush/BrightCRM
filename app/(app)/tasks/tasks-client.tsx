@@ -29,7 +29,7 @@ import type { Client, TaskWithRelations, TeamMember } from "@/lib/data";
 const STATUS_PILLS = [
   { key: "__all__", label: "הכל", color: "" },
   { key: "מחכה לטיפול", label: "ממתין", color: "#FDAB3D" },
-  { key: "נכנס לעבודה", label: "נכנס", color: "#0073EA" },
+  { key: "נכנס לעבודה", label: "נכנס", color: "#4262FF" },
   { key: "בעבודה", label: "בעבודה", color: "#A25DDC" },
   { key: "אישור לקוח", label: "אישור", color: "#FFCB00" },
   { key: "בוצע", label: "בוצע", color: "#00C875" },
@@ -58,7 +58,7 @@ function TaskDetailPanel({
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-        {/* 1. פרטי משימה — open by default */}
+        {/* 1. Task details */}
         <details open className="border-b border-border">
           <summary className="cursor-pointer px-5 py-3 text-sm font-semibold text-ink hover:bg-surface md:px-6">
             פרטי משימה
@@ -68,7 +68,7 @@ function TaskDetailPanel({
           </div>
         </details>
 
-        {/* 2. עדכונים */}
+        {/* 2. Updates */}
         <details open className="border-b border-border">
           <summary className="cursor-pointer px-5 py-3 text-sm font-semibold text-ink hover:bg-surface md:px-6">
             עדכונים
@@ -78,7 +78,7 @@ function TaskDetailPanel({
           </div>
         </details>
 
-        {/* 3. קבצים — open only if files exist */}
+        {/* 3. Files */}
         <details open={filesOpen} className="border-b border-border">
           <summary className="cursor-pointer px-5 py-3 text-sm font-semibold text-ink hover:bg-surface md:px-6">
             קבצים{fileCount !== null ? ` (${fileCount})` : ""}
@@ -88,10 +88,10 @@ function TaskDetailPanel({
           </div>
         </details>
 
-        {/* מחיקה */}
+        {/* Delete */}
         <div className="px-5 py-3 md:px-6">
           {confirmingDelete ? (
-            <div className="flex flex-col gap-2 rounded-lg bg-red-50 p-3 text-right">
+            <div className="flex flex-col gap-2 rounded-xl bg-pastel-rose p-3 text-right">
               <p className="text-sm text-overdue">למחוק את המשימה לצמיתות?</p>
               <div className="flex flex-row-reverse gap-2">
                 <Button variant="danger" size="sm" onClick={onDelete}>מחק</Button>
@@ -198,31 +198,31 @@ export function TasksClient({
   return (
     <div className="flex flex-col gap-4">
       {/* Board header */}
-      <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-3 bg-primary px-4 py-3">
+      <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-sidebar px-5 py-3.5">
           <div className="flex items-center gap-3">
             <h1 className="text-base font-bold text-white">משימות</h1>
             {activeFilterCount > 0 && (
               <button type="button" onClick={clearFilters}
-                className="rounded-full bg-white/20 px-3 py-1 text-[11px] font-medium text-white transition-colors hover:bg-white/30">
+                className="rounded-full bg-white/15 px-3 py-1 text-[11px] font-medium text-white transition-colors hover:bg-white/25">
                 {activeFilterCount === 1 ? "פילטר 1" : `${activeFilterCount} פילטרים`} · נקה
               </button>
             )}
           </div>
           <div className="flex items-center gap-2">
-            <div className="inline-flex rounded-md border border-white/20 bg-white/10 p-0.5">
+            <div className="inline-flex rounded-full border border-white/15 bg-white/10 p-0.5">
               <button type="button" onClick={() => changeView("table")}
-                className={cn("flex items-center gap-1.5 rounded px-3 py-1.5 text-caption transition-colors duration-200",
+                className={cn("flex items-center gap-1.5 rounded-full px-3 py-1.5 text-caption transition-colors duration-200",
                   view === "table" ? "bg-white font-medium text-ink shadow-sm" : "text-white/70 hover:text-white")}>
                 <Rows3 className="h-4 w-4" /><span className="hidden sm:inline">טבלה</span>
               </button>
               <button type="button" onClick={() => changeView("kanban")}
-                className={cn("flex items-center gap-1.5 rounded px-3 py-1.5 text-caption transition-colors duration-200",
+                className={cn("flex items-center gap-1.5 rounded-full px-3 py-1.5 text-caption transition-colors duration-200",
                   view === "kanban" ? "bg-white font-medium text-ink shadow-sm" : "text-white/70 hover:text-white")}>
                 <LayoutGrid className="h-4 w-4" /><span className="hidden sm:inline">קנבן</span>
               </button>
               <button type="button" onClick={() => changeView("calendar")}
-                className={cn("flex items-center gap-1.5 rounded px-3 py-1.5 text-caption transition-colors duration-200",
+                className={cn("flex items-center gap-1.5 rounded-full px-3 py-1.5 text-caption transition-colors duration-200",
                   view === "calendar" ? "bg-white font-medium text-ink shadow-sm" : "text-white/70 hover:text-white")}>
                 <CalendarDays className="h-4 w-4" /><span className="hidden sm:inline">לוח שנה</span>
               </button>
@@ -234,7 +234,7 @@ export function TasksClient({
         </div>
 
         {/* Filter row */}
-        <div className="flex flex-col gap-3 border-t border-primary-hover px-4 py-3 sm:flex-row sm:items-center">
+        <div className="flex flex-col gap-3 border-t border-border px-4 py-3 sm:flex-row sm:items-center">
           <div className="flex gap-1 overflow-x-auto pb-1">
             {STATUS_PILLS.map((pill) => (
               <button key={pill.key} type="button" onClick={() => updateFilter("status", pill.key)}
@@ -243,7 +243,7 @@ export function TasksClient({
                     ? "font-medium text-white"
                     : "text-ink-secondary hover:bg-surface")}
                 style={filters.status === pill.key
-                  ? { backgroundColor: pill.color || "#323338" }
+                  ? { backgroundColor: pill.color || "#050038" }
                   : undefined}>
                 {pill.label}
               </button>
@@ -274,8 +274,8 @@ export function TasksClient({
             </Select>
 
             <button type="button" onClick={() => updateFilter("overdue", !filters.overdue)}
-              className={cn("flex h-9 items-center gap-1.5 rounded-md border px-3 text-caption transition-colors duration-200",
-                filters.overdue ? "border-overdue bg-red-50 text-overdue" : "border-border bg-white text-ink-secondary hover:bg-surface")}>
+              className={cn("flex h-9 items-center gap-1.5 rounded-full border px-3 text-caption transition-colors duration-200",
+                filters.overdue ? "border-overdue bg-pastel-rose text-overdue" : "border-border bg-white text-ink-secondary hover:bg-surface")}>
               <AlertTriangle className="h-3.5 w-3.5" />עבר דדליין
             </button>
           </div>

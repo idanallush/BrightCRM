@@ -6,21 +6,21 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap font-semibold transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        primary: "rounded-md bg-primary text-white text-button hover:bg-primary-hover",
-        secondary: "rounded-md border border-border bg-white text-ink text-button hover:bg-surface",
-        ghost: "rounded-md text-ink text-button hover:bg-surface",
-        danger: "rounded-md bg-overdue text-white text-button hover:opacity-90",
+        primary: "rounded-full bg-ink text-white text-button hover:bg-ink-hover shadow-elevation-1",
+        secondary: "rounded-full border-2 border-border bg-white text-ink text-button hover:bg-surface hover:border-ink-muted",
+        ghost: "rounded-xl text-ink text-button hover:bg-surface",
+        danger: "rounded-full bg-overdue text-white text-button hover:opacity-90 shadow-elevation-1",
         link: "bg-transparent text-primary p-0 text-body-sm hover:underline",
       },
       size: {
-        sm: "h-8 px-3",
-        md: "h-10 px-4",
-        lg: "h-12 px-6",
-        icon: "h-9 w-9",
+        sm: "h-8 px-4 text-[13px]",
+        md: "h-10 px-5",
+        lg: "h-12 px-7",
+        icon: "h-9 w-9 rounded-xl",
       },
     },
     defaultVariants: { variant: "primary", size: "md" },

@@ -10,10 +10,10 @@ export default function AboutPage() {
   return (
     <div className="flex flex-col gap-8">
       {/* Hero */}
-      <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
-        <div className="bg-primary px-6 py-4">
+      <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
+        <div className="bg-sidebar px-6 py-4">
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20 text-base font-bold text-white">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent text-base font-bold text-ink">
               B
             </span>
             <h1 className="text-2xl font-bold text-white">Bright<span className="text-accent">.</span>CRM</h1>
@@ -27,7 +27,7 @@ export default function AboutPage() {
       </div>
 
       {/* Story */}
-      <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
         <div className="bg-sidebar px-4 py-3">
           <h2 className="text-base font-bold text-white">הסיפור</h2>
         </div>
@@ -44,7 +44,7 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <HowStep
             icon={<MessageCircle className="h-6 w-6 text-white" />}
-            color="#0073EA"
+            color="#4262FF"
             title="שולחים הודעה"
             desc="טקסט או הקלטה קולית בטלגרם. בעברית, כמו שמדברים."
           />
@@ -68,7 +68,7 @@ export default function AboutPage() {
         <h2 className="mb-4 text-lg font-bold text-ink">טכנולוגיה</h2>
         <div className="flex flex-wrap gap-2">
           {["Next.js", "Supabase", "Claude AI", "Whisper", "Telegram Bot API", "Vercel", "Tailwind CSS", "TypeScript"].map((t) => (
-            <span key={t} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1.5 text-caption font-medium text-ink-secondary shadow-sm">
+            <span key={t} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1.5 text-caption font-medium text-ink-secondary shadow-elevation-1">
               <Zap className="h-3 w-3 text-primary" />
               {t}
             </span>
@@ -86,7 +86,7 @@ export default function AboutPage() {
 
 function HowStep({ icon, color, title, desc }: { icon: React.ReactNode; color: string; title: string; desc: string }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+    <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
       <div className="flex items-center gap-2 px-4 py-3" style={{ backgroundColor: color }}>
         {icon}
         <h3 className="text-sm font-bold text-white">{title}</h3>

@@ -79,17 +79,17 @@ export function QuickAdd() {
         {/* Menu */}
         {mode === "menu" && (
           <motion.div initial={{ opacity: 0, scale: 0.95, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 8 }} transition={{ duration: 0.12 }}
-            className="flex flex-col gap-0.5 rounded-lg border border-border bg-white p-1 shadow-sm">
+            className="flex flex-col gap-0.5 rounded-xl border border-border bg-white p-1.5 shadow-elevation-3">
             <button type="button" onClick={openTextMode}
-              className="flex items-center gap-2 rounded-md px-3 py-2 text-right text-body-sm text-ink transition-colors hover:bg-surface">
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-right text-body-sm text-ink transition-colors hover:bg-surface">
               <Plus className="h-4 w-4 text-ink-muted" />משימה מהירה
             </button>
             <button type="button" onClick={() => { setMode("closed"); router.push("/tasks?new=true"); }}
-              className="flex items-center gap-2 rounded-md px-3 py-2 text-right text-body-sm text-ink-secondary transition-colors hover:bg-surface">
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-right text-body-sm text-ink-secondary transition-colors hover:bg-surface">
               <Plus className="h-4 w-4 text-ink-muted" />טופס מלא
             </button>
             <button type="button" onClick={() => { setMode("closed"); router.push("/clients?new=true"); }}
-              className="flex items-center gap-2 rounded-md px-3 py-2 text-right text-body-sm text-ink-secondary transition-colors hover:bg-surface">
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-right text-body-sm text-ink-secondary transition-colors hover:bg-surface">
               <Users className="h-4 w-4 text-ink-muted" />לקוח חדש
             </button>
           </motion.div>
@@ -98,7 +98,7 @@ export function QuickAdd() {
         {/* Text input mode */}
         {mode === "text" && (
           <motion.div initial={{ opacity: 0, scale: 0.95, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 8 }} transition={{ duration: 0.12 }}
-            className="w-96 max-w-[calc(100vw-2.5rem)] rounded-lg border border-border bg-white p-3 shadow-sm sm:w-[28rem]">
+            className="w-96 max-w-[calc(100vw-2.5rem)] rounded-2xl border border-border bg-white p-4 shadow-elevation-3 sm:w-[28rem]">
             <p className="mb-2 text-caption text-ink-secondary">כתוב מה צריך לעשות, כמו בטלגרם:</p>
             <input
               ref={inputRef}
@@ -108,9 +108,9 @@ export function QuickAdd() {
               onKeyDown={(e) => { if (e.key === "Enter" && text.trim() && !parsing) handleParse(); }}
               placeholder={'לדוגמה: "להכין באנרים לפולר, דדליין יום ראשון"'}
               disabled={parsing}
-              className="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
+              className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 text-sm text-ink placeholder:text-ink-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
             />
-            <div className="mt-2 flex justify-between">
+            <div className="mt-3 flex justify-between">
               <Button size="sm" onClick={handleParse} disabled={!text.trim() || parsing}>
                 {parsing ? <Loader2 className="h-4 w-4 animate-spin" /> : "פענח"}
               </Button>
@@ -122,7 +122,7 @@ export function QuickAdd() {
         {/* Confirm parsed result */}
         {mode === "confirm" && parsed && (
           <motion.div initial={{ opacity: 0, scale: 0.95, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 8 }} transition={{ duration: 0.12 }}
-            className="w-96 max-w-[calc(100vw-2.5rem)] rounded-lg border border-border bg-white p-3 shadow-sm sm:w-[28rem]">
+            className="w-96 max-w-[calc(100vw-2.5rem)] rounded-2xl border border-border bg-white p-4 shadow-elevation-3 sm:w-[28rem]">
             <p className="mb-2 text-caption font-medium text-ink">זה מה שהבנתי:</p>
             <div className="flex flex-col gap-1.5 text-sm">
               <Row label="משימה" value={parsed.title} />
@@ -143,7 +143,7 @@ export function QuickAdd() {
       </AnimatePresence>
 
       <motion.button type="button" onClick={() => setMode((m) => m === "closed" ? "menu" : "closed")} title="יצירה מהירה" aria-label="יצירה מהירה" whileTap={{ scale: 0.93 }}
-        className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-white shadow-sm transition-colors hover:bg-primary-hover">
+        className="flex h-12 w-12 items-center justify-center rounded-full bg-ink text-white shadow-elevation-2 transition-colors hover:bg-ink-hover">
         <Plus className={cn("h-5 w-5 transition-transform duration-150", mode !== "closed" && "rotate-45")} strokeWidth={2.5} />
       </motion.button>
     </div>

@@ -8,10 +8,10 @@ export function THead({ className, ...props }: React.HTMLAttributes<HTMLTableSec
   return <thead className={cn("border-b border-border text-caption text-ink-muted", className)} {...props} />;
 }
 export function TBody({ className, ...props }: React.HTMLAttributes<HTMLTableSectionElement>) {
-  return <tbody className={cn("divide-y divide-gray-100", className)} {...props} />;
+  return <tbody className={cn("divide-y divide-border/60", className)} {...props} />;
 }
 export function TR({ className, ...props }: React.HTMLAttributes<HTMLTableRowElement>) {
-  return <tr className={cn("group transition-colors hover:bg-gray-50", className)} {...props} />;
+  return <tr className={cn("group transition-colors hover:bg-surface", className)} {...props} />;
 }
 export function TH({ className, ...props }: React.ThHTMLAttributes<HTMLTableCellElement>) {
   return <th className={cn("px-4 py-2.5 text-right font-medium", className)} {...props} />;

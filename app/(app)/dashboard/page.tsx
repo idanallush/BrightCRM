@@ -57,10 +57,10 @@ function getInitials(name: string): string {
 }
 
 const STAT_CARDS = [
-  { key: "waiting", trendKey: "waiting" as const, label: "ממתינות לטיפול", color: "#FDAB3D", bg: "bg-amber-50", Icon: Inbox },
-  { key: "working", trendKey: "working" as const, label: "בעבודה", color: "#A25DDC", bg: "bg-purple-50", Icon: ListChecks },
-  { key: "approval", trendKey: "approval" as const, label: "באישור לקוח", color: "#FFCB00", bg: "bg-yellow-50", Icon: CheckCircle2 },
-  { key: "overdue", trendKey: "overdue" as const, label: "באיחור", color: "#E2445C", bg: "bg-red-50", Icon: AlertTriangle },
+  { key: "waiting", trendKey: "waiting" as const, label: "ממתינות לטיפול", pastel: "bg-pastel-coral", color: "#FDAB3D", Icon: Inbox },
+  { key: "working", trendKey: "working" as const, label: "בעבודה", pastel: "bg-pastel-purple", color: "#A25DDC", Icon: ListChecks },
+  { key: "approval", trendKey: "approval" as const, label: "באישור לקוח", pastel: "bg-pastel-yellow", color: "#FFCB00", Icon: CheckCircle2 },
+  { key: "overdue", trendKey: "overdue" as const, label: "באיחור", pastel: "bg-pastel-rose", color: "#E2445C", Icon: AlertTriangle },
 ] as const;
 
 const HEALTH_COLORS: Record<string, string> = {
@@ -69,7 +69,7 @@ const HEALTH_COLORS: Record<string, string> = {
   "קריטי": "#E2445C",
 };
 
-const AVATAR_COLORS = ["#0073EA", "#A25DDC", "#00C875", "#FDAB3D", "#E2445C", "#FF642E"];
+const AVATAR_COLORS = ["#4262FF", "#A25DDC", "#00C875", "#FDAB3D", "#E2445C", "#FF642E"];
 
 export default async function DashboardPage() {
   const sb = createClient();
@@ -98,11 +98,11 @@ export default async function DashboardPage() {
   return (
     <div className="flex flex-col gap-5">
       {/* Welcome header */}
-      <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-4 bg-gradient-to-l from-primary to-primary/90 px-5 py-4">
+      <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
+        <div className="flex flex-wrap items-center justify-between gap-4 bg-sidebar px-5 py-5">
           <div>
             <h1 className="text-xl font-bold text-white">שלום, {firstName}</h1>
-            <p className="mt-0.5 text-sm text-white/70">{formatHebrewDate()}</p>
+            <p className="mt-0.5 text-sm text-white/50">{formatHebrewDate()}</p>
           </div>
           <div className="flex items-center gap-2">
             <DashboardSearch />
@@ -129,7 +129,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Stat cards */}
+      {/* Stat cards — Miro pastel style */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {STAT_CARDS.map((card) => {
           const value = statValues[card.key] ?? 0;
@@ -139,26 +139,23 @@ export default async function DashboardPage() {
           const trendColor = trend.delta === 0 ? "text-ink-muted" : trendIsGood ? "text-success" : "text-overdue";
           const periodLabel = trend.period === "day" ? "מאתמול" : "השבוע";
           return (
-            <div key={card.key} className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
-              <div className="p-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-caption text-ink-secondary">{card.label}</span>
-                  <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${card.bg}`}>
-                    <card.Icon className="h-4 w-4" style={{ color: card.color }} />
-                  </div>
+            <div key={card.key} className={`overflow-hidden rounded-2xl ${card.pastel} p-5 shadow-elevation-1 transition-shadow hover:shadow-elevation-2`}>
+              <div className="flex items-center justify-between">
+                <span className="text-caption font-medium text-ink/70">{card.label}</span>
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/60">
+                  <card.Icon className="h-4.5 w-4.5" style={{ color: card.color }} />
                 </div>
-                <div className="mt-2 text-3xl font-bold text-ink">{value}</div>
-                {trend.delta !== 0 && (
-                  <div className={`mt-1 flex items-center gap-1 text-caption ${trendColor}`}>
-                    {trend.delta > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                    <span>{trend.delta > 0 ? "+" : ""}{trend.delta} {periodLabel}</span>
-                  </div>
-                )}
-                {trend.delta === 0 && (
-                  <div className="mt-1 text-caption text-ink-muted">ללא שינוי</div>
-                )}
               </div>
-              <div className="h-1" style={{ backgroundColor: card.color }} />
+              <div className="mt-3 text-3xl font-bold text-ink">{value}</div>
+              {trend.delta !== 0 && (
+                <div className={`mt-1 flex items-center gap-1 text-caption ${trendColor}`}>
+                  {trend.delta > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                  <span>{trend.delta > 0 ? "+" : ""}{trend.delta} {periodLabel}</span>
+                </div>
+              )}
+              {trend.delta === 0 && (
+                <div className="mt-1 text-caption text-ink/40">ללא שינוי</div>
+              )}
             </div>
           );
         })}
@@ -166,18 +163,18 @@ export default async function DashboardPage() {
 
       {/* Main content: Tasks + Sidebar */}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-        {/* My Tasks — takes 2/3 */}
+        {/* My Tasks */}
         <div className="lg:col-span-2">
-          <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
-            <div className="flex items-center justify-between bg-primary px-4 py-3">
+          <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
+            <div className="flex items-center justify-between bg-sidebar px-5 py-3.5">
               <h2 className="text-base font-bold text-white">המשימות שלי</h2>
-              <Link href="/tasks" className="flex items-center gap-1 text-caption text-white/80 transition-colors hover:text-white">
+              <Link href="/tasks" className="flex items-center gap-1 text-caption text-white/60 transition-colors hover:text-white">
                 כל המשימות <ArrowLeft className="h-3 w-3" />
               </Link>
             </div>
             {myTasks.length === 0 ? (
               <div className="flex flex-col items-center gap-3 px-4 py-10 text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-50">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-pastel-teal">
                   <CheckCircle2 className="h-6 w-6 text-success" />
                 </div>
                 <div>
@@ -223,11 +220,11 @@ export default async function DashboardPage() {
         <div className="flex flex-col gap-4">
           {/* Clients needing attention */}
           {criticalClients.length > 0 && (
-            <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
-              <div className="flex items-center justify-between bg-[#E2445C] px-4 py-3">
+            <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
+              <div className="flex items-center justify-between bg-pastel-rose px-4 py-3">
                 <div className="flex items-center gap-2">
-                  <AlertTriangle className="h-4 w-4 text-white/80" />
-                  <h2 className="text-base font-bold text-white">דורשים תשומת לב</h2>
+                  <AlertTriangle className="h-4 w-4 text-overdue" />
+                  <h2 className="text-base font-bold text-ink">דורשים תשומת לב</h2>
                 </div>
               </div>
               <div className="divide-y divide-border">
@@ -235,7 +232,7 @@ export default async function DashboardPage() {
                   <Link key={c.id} href={`/clients/${c.id}`}
                     className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-surface">
                     <div className="flex items-center gap-2.5">
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-red-50 text-xs font-semibold text-[#E2445C]">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-pastel-rose text-xs font-semibold text-overdue">
                         {getInitials(c.name)}
                       </span>
                       <div>
@@ -243,7 +240,7 @@ export default async function DashboardPage() {
                         {c.manager && <span className="me-2 text-caption text-ink-muted">{c.manager.full_name}</span>}
                       </div>
                     </div>
-                    <span className="rounded-full px-2 py-0.5 text-caption font-medium text-white" style={{ backgroundColor: "#E2445C" }}>
+                    <span className="rounded-full px-2.5 py-0.5 text-caption font-medium text-white" style={{ backgroundColor: "#E2445C" }}>
                       {c.health}
                     </span>
                   </Link>
@@ -253,7 +250,7 @@ export default async function DashboardPage() {
           )}
 
           {/* Recent activity */}
-          <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+          <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
             <div className="flex items-center justify-between bg-sidebar px-4 py-3">
               <h2 className="text-base font-bold text-white">פעילות אחרונה</h2>
               <Link href="/tasks" className="flex items-center gap-1 text-caption text-white/60 transition-colors hover:text-white">
@@ -297,8 +294,8 @@ export default async function DashboardPage() {
 
       {/* Clients with open tasks */}
       {clientsOpen.length > 0 && (
-        <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
-          <div className="flex items-center justify-between bg-sidebar px-4 py-3">
+        <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
+          <div className="flex items-center justify-between bg-sidebar px-5 py-3.5">
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-white/60" />
               <h2 className="text-base font-bold text-white">לקוחות עם משימות פתוחות</h2>
@@ -313,12 +310,12 @@ export default async function DashboardPage() {
               return (
                 <Link key={c.id} href={`/clients/${c.id}`}
                   className="flex flex-col items-center gap-1.5 bg-white px-3 py-4 transition-colors hover:bg-surface">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-pastel-blue text-sm font-semibold text-primary">
                     {getInitials(c.name)}
                   </span>
                   <span className="max-w-full truncate text-center text-sm font-medium text-ink">{c.name}</span>
                   <span className="rounded-full px-2.5 py-0.5 text-caption font-semibold text-white"
-                    style={{ backgroundColor: healthColor ?? "#0073EA" }}>
+                    style={{ backgroundColor: healthColor ?? "#4262FF" }}>
                     {c.open_count} משימות
                   </span>
                 </Link>

@@ -1,12 +1,12 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-// Monday.com status cell colors — full bg with white text
+// Status cell colors — full bg with white text
 const STATUS_CELL: Record<string, { bg: string; text: string }> = {
   "מחכה לטיפול": { bg: "bg-st-waiting", text: "text-white" },
   "נכנס לעבודה": { bg: "bg-st-incoming", text: "text-white" },
   "בעבודה": { bg: "bg-st-working", text: "text-white" },
-  "אישור לקוח": { bg: "bg-st-approval", text: "text-[#323338]" },
+  "אישור לקוח": { bg: "bg-st-approval", text: "text-ink" },
   "בוצע": { bg: "bg-st-done", text: "text-white" },
 };
 
@@ -24,13 +24,13 @@ const HEALTH_CELL: Record<string, { bg: string; text: string }> = {
   "קריטי": { bg: "bg-health-critical", text: "text-white" },
 };
 
-/** Monday.com full-colored status cell */
+/** Full-colored status pill */
 export function StatusCell({ status, className }: { status: string; className?: string }) {
   const style = STATUS_CELL[status] ?? { bg: "bg-gray-400", text: "text-white" };
   const label = STATUS_LABELS[status] ?? status;
   return (
     <span className={cn(
-      "inline-block min-w-[90px] rounded-md px-3 py-1.5 text-center text-sm font-medium",
+      "inline-block min-w-[90px] rounded-full px-3 py-1.5 text-center text-sm font-medium",
       style.bg, style.text, className,
     )}>
       {label}
@@ -38,12 +38,12 @@ export function StatusCell({ status, className }: { status: string; className?: 
   );
 }
 
-/** Monday.com full-colored health cell */
+/** Full-colored health pill */
 export function HealthCell({ health, className }: { health: string; className?: string }) {
   const style = HEALTH_CELL[health] ?? { bg: "bg-gray-400", text: "text-white" };
   return (
     <span className={cn(
-      "inline-block min-w-[80px] rounded-md px-3 py-1.5 text-center text-sm font-medium",
+      "inline-block min-w-[80px] rounded-full px-3 py-1.5 text-center text-sm font-medium",
       style.bg, style.text, className,
     )}>
       {health}
@@ -61,7 +61,7 @@ const VARIANT_CELL: Record<Variant, { bg: string; text: string }> = {
   waiting: { bg: "bg-st-waiting", text: "text-white" },
   incoming: { bg: "bg-st-incoming", text: "text-white" },
   working: { bg: "bg-st-working", text: "text-white" },
-  approval: { bg: "bg-st-approval", text: "text-[#323338]" },
+  approval: { bg: "bg-st-approval", text: "text-ink" },
   manager: { bg: "bg-st-manager", text: "text-white" },
   done: { bg: "bg-st-done", text: "text-white" },
   cancelled: { bg: "bg-st-cancelled", text: "text-white" },
@@ -76,7 +76,7 @@ export function Badge({ variant = "neutral", className, ...props }: { variant?: 
   const style = VARIANT_CELL[variant];
   return (
     <span className={cn(
-      "inline-block min-w-[80px] rounded-md px-3 py-1.5 text-center text-sm font-medium",
+      "inline-block min-w-[80px] rounded-full px-3 py-1.5 text-center text-sm font-medium",
       style.bg, style.text, className,
     )} {...props}>
       {props.children}
@@ -104,7 +104,7 @@ export function healthVariant(health: string | null): Variant | null {
 /** Raw color strings for use in inline styles (kanban, group headers) */
 export const STATUS_COLORS: Record<string, string> = {
   "מחכה לטיפול": "#FDAB3D",
-  "נכנס לעבודה": "#0073EA",
+  "נכנס לעבודה": "#4262FF",
   "בעבודה": "#A25DDC",
   "אישור לקוח": "#FFCB00",
   "בוצע": "#00C875",

@@ -74,13 +74,13 @@ export function ClientsClient({
 
     return (
       <tr key={c.id} onClick={() => router.push(`/clients/${c.id}`)}
-        className="cursor-pointer border-b border-border transition-colors duration-150 hover:bg-[#F5F6F8]">
+        className="cursor-pointer border-b border-border transition-colors duration-150 hover:bg-surface">
         <td className="px-4 py-3 font-medium text-ink">
           <div className="flex items-center gap-2.5">
             {c.logo_url ? (
               <img src={c.logo_url} alt={c.name} className="h-7 w-7 shrink-0 rounded-full object-cover bg-surface" />
             ) : (
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-pastel-blue text-xs font-bold text-primary">
                 {c.name.charAt(0)}
               </span>
             )}
@@ -89,7 +89,7 @@ export function ClientsClient({
         </td>
         <td className="px-4 py-3 text-ink-secondary">{c.manager_name ?? "ללא"}</td>
         <td className="hidden px-4 py-3 sm:table-cell">
-          {c.health ? <HealthCell health={c.health} /> : <span className="text-ink-muted">{"—"}</span>}
+          {c.health ? <HealthCell health={c.health} /> : <span className="text-ink-muted">{"--"}</span>}
         </td>
         <td className="px-4 py-3">
           <span className={openCount > 0 ? "font-semibold text-primary" : "text-ink-muted"}>{openCount}</span>
@@ -98,13 +98,13 @@ export function ClientsClient({
           <div className="flex gap-1.5">
             {c.brief && (
               <span onClick={(e) => { e.stopPropagation(); router.push(`/clients/${c.id}#brief`); }}
-                className="rounded-md p-1.5 text-ink-muted transition-colors hover:bg-surface hover:text-primary cursor-pointer" title="בריף לקוח">
+                className="rounded-lg p-1.5 text-ink-muted transition-colors hover:bg-surface hover:text-primary cursor-pointer" title="בריף לקוח">
                 <FileText className="h-3.5 w-3.5" />
               </span>
             )}
             {links.map((l, i) => (
               <a key={i} href={l.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
-                className="rounded-md p-1.5 text-ink-muted transition-colors hover:bg-surface hover:text-primary" title={l.label}>{l.icon}</a>
+                className="rounded-lg p-1.5 text-ink-muted transition-colors hover:bg-surface hover:text-primary" title={l.label}>{l.icon}</a>
             ))}
           </div>
         </td>
@@ -115,14 +115,14 @@ export function ClientsClient({
   return (
     <div className="flex flex-col gap-4">
       {/* Header bar */}
-      <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-3 bg-primary px-4 py-3">
+      <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-sidebar px-5 py-3.5">
           <div className="flex items-center gap-3">
             <h1 className="text-base font-bold text-white">לקוחות</h1>
-            <span className="rounded-full bg-white/20 px-2 py-0.5 text-caption text-white">{filtered.length}</span>
+            <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-caption text-white">{filtered.length}</span>
             {activeFilterCount > 0 && (
               <button type="button" onClick={clearFilters}
-                className="rounded-full bg-white/20 px-3 py-1 text-[11px] font-medium text-white hover:bg-white/30">
+                className="rounded-full bg-white/15 px-3 py-1 text-[11px] font-medium text-white hover:bg-white/25">
                 {activeFilterCount === 1 ? "פילטר 1" : `${activeFilterCount} פילטרים`} · נקה
               </button>
             )}
@@ -133,13 +133,13 @@ export function ClientsClient({
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col gap-3 border-t border-primary-hover px-4 py-3 sm:flex-row sm:items-center">
+        <div className="flex flex-col gap-3 border-t border-border px-4 py-3 sm:flex-row sm:items-center">
           <div className="flex gap-1 overflow-x-auto pb-1">
             {HEALTH_PILLS.map((p) => (
               <button key={p.key} type="button" onClick={() => setHealth(p.key)}
                 className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-caption transition-colors duration-150",
                   health === p.key ? "font-medium text-white" : "text-ink-secondary hover:bg-surface")}
-                style={health === p.key ? { backgroundColor: p.color || "#323338" } : undefined}>
+                style={health === p.key ? { backgroundColor: p.color || "#050038" } : undefined}>
                 {p.label}
               </button>
             ))}
@@ -170,7 +170,7 @@ export function ClientsClient({
             action={<Button onClick={() => setCreateOpen(true)}><Plus className="h-4 w-4" /> לקוח חדש</Button>} />
         )
       ) : (
-        <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+        <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
           <table className="w-full text-right text-body-sm">
             <thead>
               <tr className="bg-surface text-caption text-ink-secondary">
@@ -185,7 +185,7 @@ export function ClientsClient({
               {myClients.length > 0 && (
                 <>
                   <tr>
-                    <td colSpan={5} className="bg-primary px-4 py-1.5 text-caption font-semibold text-white">הלקוחות שלי</td>
+                    <td colSpan={5} className="bg-sidebar px-4 py-1.5 text-caption font-semibold text-white">הלקוחות שלי</td>
                   </tr>
                   {myClients.map(renderRow)}
                 </>

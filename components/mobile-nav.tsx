@@ -14,7 +14,7 @@ const ITEMS = [
 export function MobileNav() {
   const pathname = usePathname();
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-white md:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-white/90 backdrop-blur-md md:hidden">
       <div className="flex h-14 items-stretch">
         {ITEMS.map(({ href, label, Icon }) => {
           const active = pathname === href || pathname.startsWith(href + "/");

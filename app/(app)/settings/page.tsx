@@ -43,13 +43,13 @@ export default async function SettingsPage() {
       </div>
 
       {/* Account */}
-      <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
-        <div className="bg-primary px-4 py-3">
+      <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
+        <div className="bg-sidebar px-4 py-3">
           <h2 className="text-base font-bold text-white">חשבון</h2>
         </div>
         <div className="p-4">
           <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-base font-semibold text-primary">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-pastel-blue text-base font-semibold text-primary">
               {fullName.split(/\s+/).map((w: string) => w[0]).join("").toUpperCase().slice(0, 2)}
             </div>
             <div className="flex flex-col gap-1">
@@ -58,7 +58,7 @@ export default async function SettingsPage() {
               {member?.role && <span className="text-caption text-ink-muted">{member.role}</span>}
             </div>
           </div>
-          <div className="mt-4 flex items-center gap-3 rounded-lg bg-surface p-3">
+          <div className="mt-4 flex items-center gap-3 rounded-xl bg-surface p-3">
             <Send className="h-5 w-5 text-primary" />
             <div className="flex-1">
               <span className="text-sm font-medium text-ink">טלגרם</span>
@@ -74,8 +74,8 @@ export default async function SettingsPage() {
       </div>
 
       {/* Telegram Guide */}
-      <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
-        <div className="bg-primary px-4 py-3">
+      <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
+        <div className="bg-sidebar px-4 py-3">
           <h2 className="text-base font-bold text-white">מדריך חיבור טלגרם</h2>
         </div>
         <div className="p-4">
@@ -94,7 +94,7 @@ export default async function SettingsPage() {
               desc="עכשיו אפשר לשלוח הודעות טקסט או קוליות כדי לפתוח משימות" />
           </div>
 
-          <div className="mt-6 rounded-lg border border-border bg-surface p-4">
+          <div className="mt-6 rounded-xl border border-border bg-surface p-4">
             <h4 className="mb-2 text-sm font-semibold text-ink">טיפים לשימוש יעיל</h4>
             <ul className="flex flex-col gap-2 text-caption text-ink-secondary">
               <li className="flex items-start gap-2">
@@ -115,7 +115,7 @@ export default async function SettingsPage() {
       </div>
 
       {/* Team */}
-      <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
         <div className="flex items-center gap-2 bg-sidebar px-4 py-3">
           <Users className="h-4 w-4 text-white/60" />
           <h2 className="text-base font-bold text-white">צוות</h2>
@@ -123,7 +123,7 @@ export default async function SettingsPage() {
         <div className="divide-y divide-border">
           {(allMembers ?? []).map((m: any) => (
             <div key={m.id} className="flex items-center gap-3 px-4 py-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-[11px] font-semibold text-primary">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-pastel-blue text-[11px] font-semibold text-primary">
                 {m.full_name.split(/\s+/).map((w: string) => w[0]).join("").toUpperCase().slice(0, 2)}
               </div>
               <div className="min-w-0 flex-1">
@@ -153,7 +153,7 @@ function Step({ num, icon, title, desc }: {
 }) {
   return (
     <div className="flex items-start gap-3">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-caption font-semibold text-primary">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-pastel-blue text-caption font-semibold text-primary">
         {num}
       </div>
       <div className="flex-1">

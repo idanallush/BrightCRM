@@ -42,10 +42,10 @@ export function TaskKanban({
         const colTasks = byStatus(col.key);
         const color = STATUS_COLORS[col.key] ?? "#C4C4C4";
         return (
-          <div key={col.key} className="min-h-[50vh] rounded-lg bg-white border border-border shadow-sm">
+          <div key={col.key} className="min-h-[50vh] rounded-2xl bg-white border border-border shadow-elevation-1">
             {/* Colored header */}
             <div
-              className="flex items-center gap-2 rounded-t-lg px-3 py-2.5"
+              className="flex items-center gap-2 rounded-t-2xl px-3 py-2.5"
               style={{ backgroundColor: color }}
             >
               <h3 className="text-sm font-semibold text-white">{col.label}</h3>
@@ -70,7 +70,7 @@ function KanbanCard({ task, color, onClick }: {
 
   return (
     <button type="button" onClick={onClick}
-      className="w-full rounded-md border border-border bg-white p-3 text-right transition-shadow duration-150 hover:shadow-sm"
+      className="w-full rounded-xl border border-border bg-white p-3 text-right transition-shadow duration-150 hover:shadow-elevation-2"
       style={{ borderRightWidth: 3, borderRightColor: color }}>
       <div className="text-body-sm font-medium text-ink">{task.title}</div>
       <div className="mt-1 text-body-sm text-ink-secondary">{task.client?.name ?? "\u2014"}</div>
@@ -81,7 +81,7 @@ function KanbanCard({ task, color, onClick }: {
         </span>
         <div className="flex items-center -space-x-1">
           {task.assignees.slice(0, 2).map((a) => (
-            <span key={a.id} className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-[#CCEAFF] text-[9px] font-medium text-primary" title={a.full_name}>
+            <span key={a.id} className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-pastel-blue text-[9px] font-medium text-primary" title={a.full_name}>
               {getInitials(a.full_name)}
             </span>
           ))}

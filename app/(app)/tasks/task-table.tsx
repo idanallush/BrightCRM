@@ -27,7 +27,7 @@ const STATUS_BG: Record<string, string> = {
 };
 
 const STATUS_TEXT: Record<string, string> = {
-  "אישור לקוח": "text-[#323338]",
+  "אישור לקוח": "text-ink",
 };
 
 function StatusDropdown({ taskId, status, onUpdated }: { taskId: string; status: string; onUpdated: () => void }) {
@@ -67,14 +67,14 @@ function StatusDropdown({ taskId, status, onUpdated }: { taskId: string; status:
       <button
         type="button"
         onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
-        className={`inline-flex min-w-[90px] items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-center text-sm font-medium transition-opacity ${bg} ${text} ${loading ? "opacity-60" : "hover:opacity-90"}`}
+        className={`inline-flex min-w-[90px] items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-center text-sm font-medium transition-opacity ${bg} ${text} ${loading ? "opacity-60" : "hover:opacity-90"}`}
       >
         {label}
         <ChevronDown className="h-3.5 w-3.5 opacity-70" />
       </button>
       {open && (
         <div
-          className="absolute left-0 top-full z-50 mt-1 min-w-[150px] overflow-hidden rounded-lg border border-border bg-white shadow-lg"
+          className="absolute left-0 top-full z-50 mt-1 min-w-[150px] overflow-hidden rounded-xl border border-border bg-white shadow-elevation-3"
           onClick={(e) => e.stopPropagation()}
         >
           {ALL_STATUSES.map((s) => {
@@ -191,14 +191,14 @@ export function TaskTable({
       <tr
         key={t.id}
         onClick={() => onRowClick(t)}
-        className="group cursor-pointer border-b border-border transition-colors duration-150 hover:bg-[#F5F6F8]"
+        className="group cursor-pointer border-b border-border transition-colors duration-150 hover:bg-surface"
       >
         {/* Task title + comment badge */}
         <td className="max-w-xs px-4 py-2.5 align-middle">
           <div className="flex items-center gap-2">
             <span className="font-medium text-ink">{t.title}</span>
             {cc > 0 && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+              <span className="inline-flex items-center gap-1 rounded-full bg-pastel-blue px-2 py-0.5 text-xs font-medium text-primary">
                 <MessageCircle className="h-3 w-3" />{cc}
               </span>
             )}
@@ -210,15 +210,15 @@ export function TaskTable({
         </td>
         {/* Client */}
         <td className="hidden px-4 py-2.5 align-middle text-ink-secondary md:table-cell">
-          {t.client?.name ?? "—"}
+          {t.client?.name ?? ""}
         </td>
         {/* Assignee */}
         <td className="hidden px-4 py-2.5 align-middle lg:table-cell">
           {t.assignees.length === 0 ? (
-            <span className="text-ink-muted">{"—"}</span>
+            <span className="text-ink-muted">{""}</span>
           ) : (
             <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#CCEAFF] text-[10px] font-semibold text-primary">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-pastel-blue text-[10px] font-semibold text-primary">
                 {getInitials(t.assignees[0].full_name)}
               </span>
               <span className="text-body-sm text-ink">{t.assignees[0].full_name}</span>
@@ -248,7 +248,7 @@ export function TaskTable({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
         <table className="w-full text-right text-body-sm">
           <thead>
             <tr className="bg-surface text-caption text-ink-secondary">
@@ -270,7 +270,7 @@ export function TaskTable({
                       <button
                         type="button"
                         onClick={() => toggleGroup(group.status)}
-                        className="flex w-full items-center gap-2 px-4 py-2 text-right transition-colors hover:opacity-90"
+                        className="flex w-full items-center gap-2 rounded-none px-4 py-2 text-right transition-colors hover:opacity-90"
                         style={{ backgroundColor: group.color }}
                       >
                         {isCollapsed
@@ -297,7 +297,7 @@ export function TaskTable({
         <button
           type="button"
           onClick={() => setHideStale((v) => !v)}
-          className="flex items-center gap-2 self-start rounded-md px-3 py-1.5 text-caption text-ink-secondary transition-colors hover:bg-white hover:text-ink"
+          className="flex items-center gap-2 self-start rounded-full px-4 py-1.5 text-caption text-ink-secondary transition-colors hover:bg-white hover:text-ink"
         >
           {hideStale ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
           {hideStale ? `הצג ${staleTasks.length} משימות ישנות (מיובאות, 6+ חודשים)` : "הסתר משימות ישנות"}
@@ -305,7 +305,7 @@ export function TaskTable({
       )}
 
       {completedTasks.length > 0 && (
-        <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+        <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
           <button
             type="button"
             onClick={() => setShowCompleted((v) => !v)}

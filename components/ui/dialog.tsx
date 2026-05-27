@@ -10,7 +10,7 @@ export const DialogTrigger = DialogPrimitive.Trigger;
 export const DialogClose = DialogPrimitive.Close;
 
 const Overlay = React.forwardRef<React.ElementRef<typeof DialogPrimitive.Overlay>, React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>>(
-  ({ className, ...props }, ref) => <DialogPrimitive.Overlay ref={ref} className={cn("fixed inset-0 z-50 bg-black/40 data-[state=open]:animate-in data-[state=open]:fade-in", className)} {...props} />,
+  ({ className, ...props }, ref) => <DialogPrimitive.Overlay ref={ref} className={cn("fixed inset-0 z-50 bg-ink/30 backdrop-blur-[2px] data-[state=open]:animate-in data-[state=open]:fade-in", className)} {...props} />,
 );
 Overlay.displayName = "DialogOverlay";
 
@@ -19,11 +19,11 @@ export const DialogContent = React.forwardRef<React.ElementRef<typeof DialogPrim
     <DialogPrimitive.Portal>
       <Overlay />
       <DialogPrimitive.Content ref={ref} dir="rtl" className={cn(
-        "fixed left-1/2 top-1/2 z-50 flex max-h-[85vh] w-full max-w-lg -translate-x-1/2 -translate-y-1/2 flex-col gap-4 overflow-hidden rounded-lg border border-border bg-white p-6 shadow-lg",
+        "fixed left-1/2 top-1/2 z-50 flex max-h-[85vh] w-full max-w-lg -translate-x-1/2 -translate-y-1/2 flex-col gap-4 overflow-hidden rounded-2xl border border-border bg-white p-6 shadow-elevation-5",
         className,
       )} {...props}>
         {children}
-        <DialogPrimitive.Close className="absolute end-4 top-4 rounded p-1.5 text-ink-muted hover:bg-gray-100 focus:outline-none"><X className="h-4 w-4" /></DialogPrimitive.Close>
+        <DialogPrimitive.Close className="absolute end-4 top-4 rounded-xl p-1.5 text-ink-muted transition-colors hover:bg-surface hover:text-ink focus:outline-none"><X className="h-4 w-4" /></DialogPrimitive.Close>
       </DialogPrimitive.Content>
     </DialogPrimitive.Portal>
   ),

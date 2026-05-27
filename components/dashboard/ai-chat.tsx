@@ -67,8 +67,8 @@ export function AiChat({ userEmail }: { userEmail: string }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
-      <div className="flex items-center gap-2 bg-primary px-4 py-3">
+    <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
+      <div className="flex items-center gap-2 bg-sidebar px-4 py-3">
         <Bot className="h-4 w-4 text-white/80" />
         <h2 className="text-base font-bold text-white">עוזר AI</h2>
       </div>
@@ -101,7 +101,7 @@ export function AiChat({ userEmail }: { userEmail: string }) {
           placeholder="שאל שאלה..."
           aria-label="שאל שאלה"
           disabled={loading}
-          className="h-10 w-full rounded-md border border-border bg-surface pe-12 ps-4 text-sm text-ink placeholder:text-ink-muted transition-colors focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
+          className="h-10 w-full rounded-xl border border-border bg-surface pe-12 ps-4 text-sm text-ink placeholder:text-ink-muted transition-colors focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50"
         />
         <Button
           size="icon"
@@ -135,7 +135,7 @@ export function AiChat({ userEmail }: { userEmail: string }) {
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
           >
-            <div className={`rounded-md p-4 text-sm leading-relaxed ${response.error ? "bg-red-50 text-overdue" : "bg-surface text-ink"}`}>
+            <div className={`rounded-xl p-4 text-sm leading-relaxed ${response.error ? "bg-red-50 text-overdue" : "bg-surface text-ink"}`}>
               <p className="whitespace-pre-wrap">{response.text}</p>
             </div>
 
@@ -148,7 +148,7 @@ export function AiChat({ userEmail }: { userEmail: string }) {
                     <Link
                       key={t.id}
                       href={`/tasks?task=${t.id}`}
-                      className="flex items-center gap-3 rounded-md border border-border bg-white p-3 transition-colors duration-150 hover:bg-[#F5F6F8]"
+                      className="flex items-center gap-3 rounded-xl border border-border bg-white p-3 transition-colors duration-150 hover:bg-surface"
                     >
                       <StatusCell status={t.status} className="shrink-0" />
                       <div className="min-w-0 flex-1">
@@ -172,7 +172,7 @@ export function AiChat({ userEmail }: { userEmail: string }) {
                   <Link
                     key={c.id}
                     href={`/clients/${c.id}`}
-                    className="inline-flex items-center gap-1.5 rounded-md border border-border bg-white px-3 py-1.5 text-sm transition-colors duration-150 hover:bg-[#F5F6F8]"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1.5 text-sm transition-colors duration-150 hover:bg-surface"
                   >
                     <span
                       className={`h-2 w-2 rounded-full ${

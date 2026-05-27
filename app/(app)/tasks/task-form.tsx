@@ -16,9 +16,9 @@ import type { Client, TaskWithRelations, TeamMember } from "@/lib/data";
 
 const STATUS_OPTIONS: { value: TaskInput["status"]; label: string; color: string; textColor: string }[] = [
   { value: "מחכה לטיפול", label: "ממתין", color: "#FDAB3D", textColor: "#fff" },
-  { value: "נכנס לעבודה", label: "נכנס לעבודה", color: "#0073EA", textColor: "#fff" },
+  { value: "נכנס לעבודה", label: "נכנס לעבודה", color: "#4262FF", textColor: "#fff" },
   { value: "בעבודה", label: "בעבודה", color: "#A25DDC", textColor: "#fff" },
-  { value: "אישור לקוח", label: "אישור לקוח", color: "#FFCB00", textColor: "#323338" },
+  { value: "אישור לקוח", label: "אישור לקוח", color: "#FFCB00", textColor: "#050038" },
   { value: "בוצע", label: "בוצע", color: "#00C875", textColor: "#fff" },
 ];
 
@@ -158,7 +158,7 @@ export function TaskForm({
                 {STATUS_OPTIONS.map((opt) => (
                   <button key={opt.value} type="button" onClick={() => setStatus(opt.value)}
                     className={cn(
-                      "rounded-md px-3 py-1.5 text-caption font-medium transition-[color,background-color,opacity,box-shadow] duration-200",
+                      "rounded-full px-3 py-1.5 text-caption font-medium transition-[color,background-color,opacity,box-shadow] duration-200",
                       status === opt.value ? "shadow-sm ring-2 ring-offset-1" : "opacity-60 hover:opacity-100",
                     )}
                     style={{
@@ -190,7 +190,7 @@ export function TaskForm({
                       )}>
                       <span className={cn(
                         "flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-semibold",
-                        active ? "bg-white/20 text-white" : "bg-[#CCEAFF] text-primary",
+                        active ? "bg-white/20 text-white" : "bg-pastel-blue text-primary",
                       )}>
                         {getInitials(m.full_name)}
                       </span>
@@ -240,7 +240,7 @@ function AssigneeDropdown({
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex h-8 w-full items-center justify-between rounded-md border border-border bg-white px-2 text-xs text-ink transition-colors hover:bg-surface"
+        className="flex h-8 w-full items-center justify-between rounded-xl border border-border bg-white px-2 text-xs text-ink transition-colors hover:bg-surface"
       >
         <span className="truncate">
           {names.length === 0 ? "בחר אחראים" : names.length === 1 ? names[0] : `${names.length} אחראים`}
@@ -248,7 +248,7 @@ function AssigneeDropdown({
         <ChevronDown className="h-3.5 w-3.5 shrink-0 text-ink-muted" />
       </button>
       {open && (
-        <div className="absolute top-full z-50 mt-1 w-full rounded-md border border-border bg-white py-1 shadow-lg">
+        <div className="absolute top-full z-50 mt-1 w-full rounded-xl border border-border bg-white py-1 shadow-elevation-3">
           {team.map((m) => {
             const active = selected.includes(m.id);
             return (

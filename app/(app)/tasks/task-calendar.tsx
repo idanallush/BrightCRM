@@ -71,26 +71,26 @@ export function TaskCalendar({
   return (
     <div className="flex flex-col gap-3">
       {/* Month nav */}
-      <div className="flex items-center justify-between rounded-lg border border-border bg-white px-4 py-3 shadow-sm">
+      <div className="flex items-center justify-between rounded-2xl border border-border bg-white px-4 py-3 shadow-elevation-1">
         <div className="flex items-center gap-3">
-          <button type="button" onClick={nextMonth} className="rounded-md p-1.5 text-ink-secondary transition-colors hover:bg-surface hover:text-ink">
+          <button type="button" onClick={nextMonth} className="rounded-xl p-1.5 text-ink-secondary transition-colors hover:bg-surface hover:text-ink">
             <ChevronRight className="h-5 w-5" />
           </button>
           <h2 className="text-base font-semibold text-ink">
             {HEB_MONTHS[month]} {year}
           </h2>
-          <button type="button" onClick={prevMonth} className="rounded-md p-1.5 text-ink-secondary transition-colors hover:bg-surface hover:text-ink">
+          <button type="button" onClick={prevMonth} className="rounded-xl p-1.5 text-ink-secondary transition-colors hover:bg-surface hover:text-ink">
             <ChevronLeft className="h-5 w-5" />
           </button>
         </div>
         <button type="button" onClick={goToday}
-          className="rounded-md border border-border px-3 py-1.5 text-sm font-medium text-ink-secondary transition-colors hover:bg-surface hover:text-ink">
+          className="rounded-full border border-border px-3 py-1.5 text-sm font-medium text-ink-secondary transition-colors hover:bg-surface hover:text-ink">
           היום
         </button>
       </div>
 
       {/* Calendar grid */}
-      <div className="overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+      <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
         {/* Day headers */}
         <div className="grid grid-cols-7 border-b border-border bg-surface">
           {HEB_DAYS.map((d) => (

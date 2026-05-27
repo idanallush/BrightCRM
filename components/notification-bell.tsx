@@ -48,14 +48,14 @@ export function NotificationBell({ dark = false }: { dark?: boolean }) {
   return (
     <div ref={wrapRef} className="relative">
       <button type="button" onClick={() => { setOpen((v) => !v); if (!open) fetchNotifications(); }}
-        className={cn("relative flex h-8 w-8 items-center justify-center rounded transition-colors", dark ? "text-white/40 hover:bg-white/5 hover:text-white/80" : "text-ink-muted hover:bg-gray-100 hover:text-ink")}>
+        className={cn("relative flex h-8 w-8 items-center justify-center rounded-xl transition-colors", dark ? "text-white/40 hover:bg-white/5 hover:text-white/80" : "text-ink-muted hover:bg-surface hover:text-ink")}>
         <Bell className="h-4 w-4" />
         {unreadCount > 0 && <span className="absolute -top-0.5 -start-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-ink">{unreadCount}</span>}
       </button>
       <AnimatePresence>
         {open && (
           <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.12 }}
-            className="absolute start-0 top-full z-50 mt-1.5 w-72 overflow-hidden rounded-lg border border-border bg-white shadow-lg">
+            className="absolute start-0 top-full z-50 mt-1.5 w-72 overflow-hidden rounded-xl border border-border bg-white shadow-elevation-3">
             <div className="flex items-center justify-between border-b border-border px-3 py-2.5">
               <span className="text-body-sm font-semibold text-ink">התראות</span>
               {unreadCount > 0 && <button type="button" onClick={markAllRead} className="text-caption text-link hover:underline">סמן כנקרא</button>}
@@ -64,7 +64,7 @@ export function NotificationBell({ dark = false }: { dark?: boolean }) {
               {notifications.length === 0 ? <div className="p-4 text-center text-caption text-ink-muted">אין התראות</div> :
                 notifications.map((n) => (
                   <button key={n.id} type="button" onClick={() => { setOpen(false); if (n.task_id) router.push(`/tasks?task=${n.task_id}`); }}
-                    className={cn("flex w-full items-start gap-2.5 px-3 py-2.5 text-right transition-colors hover:bg-gray-50", !n.read && "bg-gray-50")}>
+                    className={cn("flex w-full items-start gap-2.5 px-3 py-2.5 text-right transition-colors hover:bg-surface", !n.read && "bg-surface")}>
                     <div className="mt-0.5 shrink-0 text-ink-muted">{TYPE_ICON[n.type] ?? <Bell className="h-3.5 w-3.5" />}</div>
                     <div className="min-w-0 flex-1">
                       <p className={cn("text-caption", n.read ? "text-ink-secondary" : "font-medium text-ink")}>{n.content}</p>

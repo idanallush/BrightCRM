@@ -129,7 +129,7 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
         <div className="flex flex-col gap-4">
           {comments.map((c) => (
             <div key={c.id} className="flex gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#CCEAFF] text-[11px] font-semibold text-primary">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-pastel-blue text-[11px] font-semibold text-primary">
                 {c.author_name ? getInitials(c.author_name) : "?"}
               </div>
               <div className="min-w-0 flex-1">
@@ -155,7 +155,7 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
           }}
           placeholder="כתוב עדכון... (@ לאזכור)"
           rows={2}
-          className="w-full resize-none rounded-md border border-border bg-white p-3 pe-12 text-sm text-ink placeholder:text-ink-muted transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          className="w-full resize-none rounded-xl border border-border bg-white p-3 pe-12 text-sm text-ink placeholder:text-ink-muted transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
         />
         <Button
           size="icon"
@@ -167,15 +167,15 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
         </Button>
 
         {showMentions && filteredMembers.length > 0 && (
-          <div className="absolute bottom-full mb-1 start-0 w-52 rounded-md border border-border bg-white p-1 shadow-sm">
+          <div className="absolute bottom-full mb-1 start-0 w-52 rounded-xl border border-border bg-white p-1 shadow-elevation-3">
             {filteredMembers.map((m) => (
               <button
                 key={m.id}
                 type="button"
                 onClick={() => insertMention(m)}
-                className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-ink transition-colors hover:bg-surface"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-ink transition-colors hover:bg-surface"
               >
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#CCEAFF] text-[10px] font-semibold text-primary">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-pastel-blue text-[10px] font-semibold text-primary">
                   {getInitials(m.full_name)}
                 </span>
                 {m.full_name}

@@ -127,7 +127,7 @@ export function FileUpload({
         onDragLeave={() => setDragOver(false)}
         onDrop={onDrop}
         className={cn(
-          "flex items-center gap-2 rounded-lg border-2 border-dashed px-3 py-2 transition",
+          "flex items-center gap-2 rounded-xl border-2 border-dashed px-3 py-2 transition",
           dragOver
             ? "border-primary bg-primary/5"
             : "border-border bg-white",
