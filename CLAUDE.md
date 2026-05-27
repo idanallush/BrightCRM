@@ -34,12 +34,49 @@
 - **DB:** Supabase (Postgres). free tier מספיק בנוחות לצוות בגודל הזה
 - **Auth:** Supabase Auth עם Google provider, מוגבל לדומיין המייל של Bright
 - **UI:** Tailwind + shadcn/ui, **RTL מלא בעברית** — זו דרישה, לא תוספת
+- **פונטים:** DM Sans (primary) + Heebo (Hebrew fallback)
+- **אנימציות:** Framer Motion
 - **קלט מהיר:** בוט Telegram (לא WhatsApp בשלב זה — דורש Meta verification)
 - **תמלול:** Whisper API
 - **פענוח טקסט למשימה מובנית:** Claude API (model: claude-opus-4-7)
 - **התראות:** Vercel Cron + Resend
 - **Hosting:** Vercel
 - **אודיו:** לא נשמר. רק התמלול נכתב למשימה. אין Vercel Blob.
+
+## Design System (Miro-Inspired, מעודכן 2026-05-27)
+
+ה-UI בנוי על design system בהשראת Miro. הטוקנים מוגדרים ב-`tailwind.config.ts`.
+
+### צבעים
+- **Primary (Miro blue):** `#4262FF` — קישורים, focus rings, אלמנטים אינטראקטיביים
+- **Accent (canary yellow):** `#FFD02F` — כפתורי CTA ראשיים, לוגו, active states
+- **Ink:** `#050038` — טקסט ראשי, hover: `#1A1A4E`
+- **Surface:** `#F7F7F8` — רקע כללי
+- **Sidebar:** `#1B1B3A` — sidebar + כותרות sections
+- **Border:** `#E0E0E6`
+- **Pastel palette:** rose `#FFE4E8`, coral `#FFE0D0`, teal `#D0F0E8`,
+  yellow `#FFF4CC`, blue `#DCE4FF`, purple `#EDE0FF`
+
+### כפתורים
+- **Primary:** `rounded-full bg-accent text-ink` — pill צהוב עם טקסט שחור
+- **Secondary:** `rounded-full border-2` — pill outlined
+- **Ghost:** `rounded-xl` — שקוף עם hover
+- **Danger:** `rounded-full bg-overdue text-white`
+
+### עיגולים (border-radius)
+- כרטיסים גדולים: `rounded-2xl` (16px)
+- כרטיסים קטנים / inputs: `rounded-xl` (12px)
+- כפתורים ראשיים: `rounded-full` (pill)
+- badges: `rounded-full`
+
+### Elevation (shadows)
+5 רמות מ-`shadow-elevation-1` (שטוח) עד `shadow-elevation-5` (modal).
+
+### כללי עיצוב
+- **כותרות sections** משתמשות ב-`bg-sidebar` (כהה), לא ב-primary
+- **כרטיסי סטטיסטיקה** משתמשים ברקעי pastel (לא בר צבע תחתון)
+- **Header** עם `backdrop-blur-md` (glass effect)
+- **FAB** עגול צהוב (`bg-accent`) בפינה ימנית תחתונה
 
 ## כללי עבודה ל-Claude Code
 
@@ -129,6 +166,40 @@ Next.js. נבנית אחרונה. בלי שכבה 1 אין לה ערך.
    "מתקרב לדדליין" לא נבנה בשלב 1 — יתווסף רק אחרי שמוכח
    שהצוות מגיב להתראה הראשונה. (סטייה מ"שתיהן" — התחלה צרה
    מונעת הצפת מייל שתגרום לסינון כל ההתראות, כמו ב-Airtable.)
+
+## פיצ'רים שנבנו (מעודכן 2026-05-27)
+
+### UI כללי
+- דשבורד עם כרטיסי סטטיסטיקה, המשימות שלי, פעילות אחרונה, לקוחות קריטיים
+- AI Chat בדשבורד (חיפוש חכם עם Claude)
+- חיפוש גלובלי (`Cmd+K`) — משימות + לקוחות
+- התראות in-app (notification bell)
+- Quick-add FAB — הוספת משימה מהירה עם AI parse, או טופס מלא
+
+### משימות
+- תצוגת טבלה / קנבן / לוח שנה
+- פילטרים: סטטוס, לקוח, אחראי, עבר דדליין
+- פאנל עריכת משימה (Sheet) עם סטטוס, אחראים, תיאור, קבצים, תגובות
+- תגובות עם @mention לחברי צוות
+- Drag & Drop בקנבן
+- סימון "בוצע" מהיר
+
+### לקוחות
+- טבלת לקוחות עם בריאות, מנהל, קישורים חיצוניים
+- דף לקוח עם פרטי קשר, קישורים (Drive/Meta/Google/CMS/Analytics), בריף, משימות, קבצים
+- אייקוני brand (Google Ads, Meta, Drive, Analytics, CMS, Website)
+- לוגו לקוח (URL)
+- בריף לקוח (טקסט חופשי)
+
+### קבצים
+- העלאת קבצים (drag & drop, paste, multi-file parallel)
+- Lightbox gallery עם ניווט מקלדת
+- thumbnails לתמונות עם signed URLs
+
+### הגדרות
+- פרופיל משתמש, סטטוס חיבור טלגרם
+- מדריך חיבור טלגרם
+- רשימת צוות
 
 ## מה הכלי הזה לא
 

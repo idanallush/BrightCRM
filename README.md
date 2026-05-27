@@ -1,6 +1,18 @@
 # BrightCRM
 
-Next.js 14 + Supabase. כלי CRM פנימי לסוכנות Bright. ראה `CLAUDE.md` להחלטות, `ANALYSIS.md` לסכמת הייבוא.
+Next.js 14 + Supabase. כלי CRM וניהול משימות פנימי לסוכנות Bright.
+
+ראה `CLAUDE.md` להחלטות ארכיטקטורה, `ANALYSIS.md` לסכמת הייבוא מ-Airtable.
+
+## Stack
+
+- **Frontend:** Next.js 14 (App Router), TypeScript, Tailwind CSS, shadcn/ui
+- **DB:** Supabase (Postgres) + RLS
+- **Auth:** Supabase Auth + Google OAuth (מוגבל לדומיין b-bright.co.il)
+- **AI:** Claude API (פענוח משימות), Whisper API (תמלול הקלטות)
+- **Bot:** Telegram Bot (קלט מהיר)
+- **Hosting:** Vercel
+- **Design:** Miro-inspired design system (DM Sans, canary yellow CTAs, pastel cards)
 
 ## Setup (פעם אחת)
 
@@ -15,7 +27,7 @@ Next.js 14 + Supabase. כלי CRM פנימי לסוכנות Bright. ראה `CLAU
    - ב-Google Cloud, הוסף `Authorized redirect URI`:
      `https://YOUR-PROJECT.supabase.co/auth/v1/callback`
    - מומלץ ב-Google Workspace: הגבל את ה-OAuth Consent Screen
-     ל-Internal (b-bright.co.il only). זה shore-up נוסף ל-`hd` ב-OAuth call.
+     ל-Internal (b-bright.co.il only).
 
 3. **`.env.local`**
    ```bash
@@ -34,8 +46,7 @@ Next.js 14 + Supabase. כלי CRM פנימי לסוכנות Bright. ראה `CLAU
    - Dashboard → Storage → New bucket
    - Name: `attachments`
    - Public: **off** (אנחנו משתמשים ב-signed URLs)
-   - אחרי היצירה, המדיניות שכבר ברצה ב-migration (`20260519000001_attachments.sql`)
-     תתפוס את ה-bucket אוטומטית — אין צורך להגדיר policies נוספות בדשבורד.
+   - המדיניות שב-migration (`20260519000001_attachments.sql`) תתפוס אוטומטית.
 
 6. **ייבוא חד-פעמי מ-CSV**
    ```bash
@@ -52,17 +63,45 @@ Next.js 14 + Supabase. כלי CRM פנימי לסוכנות Bright. ראה `CLAU
 ## מבנה
 
 ```
-app/                  Next.js routes
-  login/              דף התחברות עם Google (RTL)
-  auth/callback/      OAuth callback, בודק דומיין @b-bright.co.il
-lib/supabase/         clients ל-browser / server / middleware
-supabase/migrations/  סכמה + RLS
-scripts/import-airtable.ts   הסקריפט שמייבא מה-CSV
-csv tables/           הייצוא המקורי מ-Airtable (לא נדחף ל-DB אחרי הייבוא)
-airtable/             צילומי מסך של הממשק המקורי (לתיעוד)
+app/                        Next.js routes
+  (app)/                    Layout עם sidebar, header, auth
+    dashboard/              דשבורד ראשי
+    tasks/                  ניהול משימות (טבלה/קנבן/לוח שנה)
+    clients/                ניהול לקוחות + דף לקוח
+    settings/               הגדרות + חיבור טלגרם
+    about/                  אודות
+  login/                    דף התחברות עם Google
+  auth/callback/            OAuth callback
+  api/telegram/webhook      Telegram bot webhook
+  api/chat/                 AI chat endpoint
+  api/cron/overdue          Vercel cron להתראות דדליין
+components/
+  ui/                       shadcn/ui + design system overrides
+  dashboard/                רכיבי דשבורד (AI chat, search, stats)
+  brand-icons.tsx           אייקוני Meta/Google/Drive/Analytics/CMS
+  quick-add.tsx             FAB להוספה מהירה
+  file-upload.tsx           העלאת קבצים
+  file-list.tsx             רשימת קבצים + lightbox
+  global-search.tsx         חיפוש גלובלי (Cmd+K)
+  notification-bell.tsx     התראות
+lib/
+  supabase/                 Supabase clients (browser/server/middleware)
+  data.ts                   Data access layer
+  telegram/                 Telegram bot logic + AI parsing
+supabase/migrations/        סכמה + RLS
+scripts/import-airtable.ts  ייבוא מ-Airtable CSV
+tailwind.config.ts          Design system tokens
 ```
 
-## מה לא בנוי בשלב הזה
+## פיצ'רים
 
-UI מעבר ל-login. שכבה 1 (Telegram) ושכבה 3 (UI) — שלבים נפרדים, לפי `CLAUDE.md`.
+- דשבורד עם סטטיסטיקות, משימות פתוחות, פעילות אחרונה, לקוחות קריטיים
+- ניהול משימות: טבלה / קנבן / לוח שנה, פילטרים, תגובות עם @mention
+- ניהול לקוחות: פרטי קשר, קישורים חיצוניים, בריף, קבצים
+- בוט טלגרם: טקסט או הקלטה קולית → AI parse → משימה
+- Quick-add: הוספה מהירה עם AI או טופס מלא
+- AI Chat: חיפוש חכם בדשבורד
+- העלאת קבצים: drag & drop, paste, lightbox gallery
+- התראות: דדליין שעבר (Vercel Cron + Resend)
+- חיפוש גלובלי (Cmd+K)
 
