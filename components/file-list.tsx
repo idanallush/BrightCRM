@@ -9,10 +9,10 @@ import {
   FileImage,
   File as FileIcon,
   Trash2,
+  X,
 } from "lucide-react";
 import { toast } from "@/components/ui/toaster";
 import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/empty-state";
 import {
   deleteAttachment,
   getSignedDownloadUrl,
@@ -33,18 +33,11 @@ function iconFor(t: string | null) {
 }
 
 function humanSize(bytes: number | null) {
-  if (bytes == null) return "—";
+  if (bytes == null) return "";
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
-
-const fmtDate = (iso: string) =>
-  new Date(iso).toLocaleDateString("he-IL", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  });
 
 export function FileList({
   attachments,
@@ -52,9 +45,7 @@ export function FileList({
   onChange,
 }: {
   attachments: Attachment[];
-  /** Map of storage_path → signed thumbnail URL for image attachments. */
   thumbUrls?: Record<string, string | null>;
-  /** Called after delete succeeds. Use to refetch in client contexts. */
   onChange?: () => void;
 }) {
   const router = useRouter();
@@ -66,7 +57,6 @@ export function FileList({
       toast.error(res.error);
       return;
     }
-    // Use a synthetic link click — works in both Safari and Chrome.
     const a = document.createElement("a");
     a.href = res.url;
     a.target = "_blank";
@@ -88,18 +78,10 @@ export function FileList({
     onChange?.();
   }
 
-  if (attachments.length === 0) {
-    return (
-      <EmptyState
-        icon={<span>📎</span>}
-        title="אין קבצים מצורפים"
-        description="גרור קובץ לאזור ההעלאה או לחץ 'בחר קובץ'."
-      />
-    );
-  }
+  if (attachments.length === 0) return null;
 
   return (
-    <ul className="flex flex-col divide-y divide-[color:var(--color-hairline)] rounded-[18px] border border-[color:var(--color-hairline)] bg-white">
+    <ul className="flex flex-col divide-y divide-border rounded-lg border border-border bg-white">
       {attachments.map((a) => {
         const Icon = iconFor(a.content_type);
         const thumb =
@@ -108,49 +90,50 @@ export function FileList({
             : null;
         const isConfirming = confirmingId === a.id;
         return (
-          <li key={a.id} className="flex items-center gap-3 p-3">
+          <li key={a.id} className="flex items-center gap-2 px-2.5 py-1.5">
             <div className="shrink-0">
               {thumb ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img
                   src={thumb}
                   alt=""
-                  className="h-10 w-10 rounded-md object-cover"
+                  className="h-8 w-8 rounded object-cover"
                 />
               ) : (
-                <div className="flex h-10 w-10 items-center justify-center rounded-md bg-black/5">
-                  <Icon className="h-5 w-5 text-[color:var(--color-ink-muted)]" />
+                <div className="flex h-8 w-8 items-center justify-center rounded bg-surface">
+                  <Icon className="h-4 w-4 text-ink-muted" />
                 </div>
               )}
             </div>
 
             <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-medium text-[color:var(--color-ink)]">
+              <div className="truncate text-xs font-medium text-ink">
                 {a.file_name}
               </div>
-              <div className="truncate text-xs text-[color:var(--color-ink-muted)]">
-                {humanSize(a.file_size)} · {fmtDate(a.created_at)}
+              <div className="truncate text-[11px] text-ink-muted">
+                {humanSize(a.file_size)}
                 {a.uploader_name ? ` · ${a.uploader_name}` : ""}
               </div>
             </div>
 
-            <div className="flex shrink-0 items-center gap-1">
+            <div className="flex shrink-0 items-center">
               {isConfirming ? (
                 <>
-                  <span className="text-xs text-red-700">למחוק?</span>
                   <Button
                     variant="danger"
                     size="sm"
+                    className="h-6 text-[11px]"
                     onClick={() => onDelete(a.id)}
                   >
                     מחק
                   </Button>
                   <Button
                     variant="ghost"
-                    size="sm"
+                    size="icon"
+                    className="h-6 w-6"
                     onClick={() => setConfirmingId(null)}
                   >
-                    ביטול
+                    <X className="h-3 w-3" />
                   </Button>
                 </>
               ) : (
@@ -158,19 +141,20 @@ export function FileList({
                   <Button
                     variant="ghost"
                     size="icon"
+                    className="h-6 w-6"
                     title="הורדה"
                     onClick={() => onDownload(a.id)}
                   >
-                    <Download className="h-4 w-4" />
+                    <Download className="h-3.5 w-3.5" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
+                    className="h-6 w-6 text-red-500"
                     title="מחיקה"
                     onClick={() => setConfirmingId(a.id)}
-                    className="text-red-600"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </>
               )}

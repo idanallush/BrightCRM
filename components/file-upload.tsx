@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Upload, Loader2 } from "lucide-react";
+import { Upload, Loader2, Clipboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
@@ -19,53 +19,97 @@ export function FileUpload({
 }: {
   clientId?: string;
   taskId?: string;
-  /** Called after each successful upload. Use to refetch in client contexts. */
   onUploaded?: () => void;
 }) {
   const router = useRouter();
   const [pending, setPending] = React.useState(false);
-  const [progress, setProgress] = React.useState(0);
+  const [uploaded, setUploaded] = React.useState(0);
+  const [total, setTotal] = React.useState(0);
   const [dragOver, setDragOver] = React.useState(false);
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const handleFilesRef = React.useRef(handleFiles);
+  handleFilesRef.current = handleFiles;
 
   async function handleFiles(files: FileList | File[]) {
     const list = Array.from(files);
-    if (list.length === 0) return;
+    if (list.length === 0 || pending) return;
+
+    const valid: File[] = [];
     for (const file of list) {
       if (file.size > MAX_BYTES) {
         toast.error(`"${file.name}" גדול מ-10MB`);
-        continue;
-      }
-      setPending(true);
-      // We don't have a real upload-progress event from the server action
-      // (the file is streamed to the server). Show an indeterminate-ish bar
-      // that walks toward 90% and snaps to 100% when the action resolves.
-      setProgress(5);
-      const tick = setInterval(
-        () => setProgress((p) => (p < 90 ? p + 5 : p)),
-        180,
-      );
-
-      const fd = new FormData();
-      fd.append("file", file);
-      if (clientId) fd.append("clientId", clientId);
-      if (taskId) fd.append("taskId", taskId);
-      const res = await uploadAttachment(fd);
-
-      clearInterval(tick);
-      setProgress(100);
-      setPending(false);
-      setTimeout(() => setProgress(0), 400);
-
-      if ("error" in res) {
-        toast.error(res.error);
       } else {
-        toast.success(`"${file.name}" הועלה`);
-        router.refresh();
-        onUploaded?.();
+        valid.push(file);
       }
     }
+    if (valid.length === 0) return;
+
+    setPending(true);
+    setTotal(valid.length);
+    setUploaded(0);
+
+    const results = await Promise.allSettled(
+      valid.map(async (file) => {
+        const fd = new FormData();
+        fd.append("file", file);
+        if (clientId) fd.append("clientId", clientId);
+        if (taskId) fd.append("taskId", taskId);
+        const res = await uploadAttachment(fd);
+        setUploaded((n) => n + 1);
+        return { file, res };
+      }),
+    );
+
+    let ok = 0;
+    for (const r of results) {
+      if (r.status === "fulfilled") {
+        if ("error" in r.value.res) {
+          toast.error(`${r.value.file.name}: ${r.value.res.error}`);
+        } else {
+          ok++;
+        }
+      }
+    }
+
+    if (ok > 0) {
+      toast.success(ok === 1 ? "קובץ הועלה" : `${ok} קבצים הועלו`);
+      router.refresh();
+      onUploaded?.();
+    }
+
+    setPending(false);
+    setTotal(0);
+    setUploaded(0);
+    if (inputRef.current) inputRef.current.value = "";
   }
+
+  React.useEffect(() => {
+    function onPaste(e: ClipboardEvent) {
+      const active = document.activeElement;
+      if (
+        active instanceof HTMLInputElement ||
+        active instanceof HTMLTextAreaElement ||
+        (active as HTMLElement)?.isContentEditable
+      )
+        return;
+
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      const files: File[] = [];
+      for (const item of Array.from(items)) {
+        if (item.kind === "file") {
+          const f = item.getAsFile();
+          if (f) files.push(f);
+        }
+      }
+      if (files.length > 0) {
+        e.preventDefault();
+        handleFilesRef.current(files);
+      }
+    }
+    document.addEventListener("paste", onPaste);
+    return () => document.removeEventListener("paste", onPaste);
+  }, []);
 
   function onDrop(e: React.DragEvent) {
     e.preventDefault();
@@ -74,7 +118,7 @@ export function FileUpload({
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1.5">
       <div
         onDragOver={(e) => {
           e.preventDefault();
@@ -83,34 +127,33 @@ export function FileUpload({
         onDragLeave={() => setDragOver(false)}
         onDrop={onDrop}
         className={cn(
-          "flex flex-col items-center justify-center gap-2 rounded-[18px] border-2 border-dashed p-6 text-center transition",
+          "flex items-center gap-2 rounded-lg border-2 border-dashed px-3 py-2 transition",
           dragOver
-            ? "border-[color:var(--color-brand)] bg-[color:var(--color-brand)]/5"
-            : "border-[color:var(--color-hairline)] bg-white",
+            ? "border-primary bg-primary/5"
+            : "border-border bg-white",
         )}
       >
-        <Upload className="h-6 w-6 text-[color:var(--color-ink-muted)]" />
-        <p className="text-sm text-[color:var(--color-ink-muted)]">
-          גרור קובץ לכאן או
-        </p>
+        <Upload className="h-4 w-4 shrink-0 text-ink-muted" />
+        <span className="min-w-0 flex-1 text-xs text-ink-muted">
+          גרור קבצים, הדבק תמונה (Ctrl+V), או
+        </span>
         <Button
           type="button"
           variant="secondary"
           size="sm"
+          className="h-7 shrink-0 text-xs"
           onClick={() => inputRef.current?.click()}
           disabled={pending}
         >
           {pending ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin" /> מעלה...
+              <Loader2 className="h-3 w-3 animate-spin" />
+              {total > 1 ? `${uploaded}/${total}` : "מעלה..."}
             </>
           ) : (
-            "בחר קובץ"
+            "בחר קבצים"
           )}
         </Button>
-        <p className="text-xs text-[color:var(--color-ink-muted)]">
-          תמונות (jpg/png/webp), PDF, docx, xlsx · עד 10MB
-        </p>
         <input
           ref={inputRef}
           type="file"
@@ -121,11 +164,11 @@ export function FileUpload({
         />
       </div>
 
-      {progress > 0 && (
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-black/5">
+      {pending && total > 1 && (
+        <div className="h-1 w-full overflow-hidden rounded-full bg-black/5">
           <div
-            className="h-full bg-[color:var(--color-brand)] transition-[width]"
-            style={{ width: `${progress}%` }}
+            className="h-full bg-primary transition-[width] duration-300"
+            style={{ width: `${total > 0 ? (uploaded / total) * 100 : 0}%` }}
           />
         </div>
       )}

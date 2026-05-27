@@ -26,20 +26,15 @@ export function TaskAttachments({ taskId }: { taskId: string }) {
     };
   }, [taskId, tick]);
 
+  const bump = () => setTick((n) => n + 1);
+
   return (
     <div className="flex flex-col gap-2">
-      <h4 className="text-sm font-medium text-[color:var(--color-ink-muted)]">
-        קבצים ({attachments.length})
-      </h4>
-      <FileUpload taskId={taskId} onUploaded={() => setTick((n) => n + 1)} />
+      <FileUpload taskId={taskId} onUploaded={bump} />
       {loading ? (
-        <div className="text-xs text-[color:var(--color-ink-muted)]">טוען...</div>
+        <div className="text-xs text-ink-muted">טוען...</div>
       ) : (
-        <FileList
-          attachments={attachments}
-          thumbUrls={thumbs}
-          onChange={() => setTick((n) => n + 1)}
-        />
+        <FileList attachments={attachments} thumbUrls={thumbs} onChange={bump} />
       )}
     </div>
   );
