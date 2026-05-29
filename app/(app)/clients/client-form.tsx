@@ -31,6 +31,7 @@ const ONBOARDING_OPTIONS: { value: ClientInput["onboarding_status"]; label: stri
   { value: null, label: "ללא" },
   { value: "בתהליך קליטה", label: "בתהליך קליטה" },
   { value: "באוויר", label: "באוויר" },
+  { value: "בהשהייה", label: "בהשהייה" },
 ];
 
 const DIGITAL_ASSET_OPTIONS = [

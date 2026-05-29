@@ -3,7 +3,7 @@
 import * as React from "react";
 import { motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Plus, Search, Globe, FileText, Loader2, CheckCircle2 } from "lucide-react";
+import { Plus, Search, Globe, FileText, Loader2, CheckCircle2, PauseCircle } from "lucide-react";
 import { MetaAdsIcon, GoogleDriveIcon } from "@/components/brand-icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,7 @@ const ONBOARDING_PILLS = [
   { key: ALL, label: "הכל" },
   { key: "בתהליך קליטה", label: "בתהליך קליטה" },
   { key: "באוויר", label: "באוויר" },
+  { key: "בהשהייה", label: "בהשהייה" },
   { key: "none", label: "ללא סטטוס" },
 ];
 
@@ -107,8 +108,8 @@ export function ClientsClient({
         <td className="hidden px-4 py-3 sm:table-cell">
           {c.onboarding_status ? (
             <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium",
-              c.onboarding_status === "בתהליך קליטה" ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700")}>
-              {c.onboarding_status === "בתהליך קליטה" ? <Loader2 className="h-3 w-3" /> : <CheckCircle2 className="h-3 w-3" />}
+              c.onboarding_status === "בתהליך קליטה" ? "bg-amber-100 text-amber-700" : c.onboarding_status === "בהשהייה" ? "bg-slate-100 text-slate-600" : "bg-emerald-100 text-emerald-700")}>
+              {c.onboarding_status === "בתהליך קליטה" ? <Loader2 className="h-3 w-3" /> : c.onboarding_status === "בהשהייה" ? <PauseCircle className="h-3 w-3" /> : <CheckCircle2 className="h-3 w-3" />}
               {c.onboarding_status}
             </span>
           ) : <span className="text-ink-muted">{"--"}</span>}

@@ -31,7 +31,7 @@ export type Client = {
   health: "בריא" | "אסטרטגיה צריכה" | "קריטי" | null;
   logo_url: string | null;
   brief: string | null;
-  onboarding_status: "בתהליך קליטה" | "באוויר" | null;
+  onboarding_status: "בתהליך קליטה" | "באוויר" | "בהשהייה" | null;
   onboarding_date: string | null;
   competitors: string | null;
   target_audience: string | null;
