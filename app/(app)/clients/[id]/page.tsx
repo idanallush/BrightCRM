@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, Phone, Mail, User, CreditCard, Contact, FileText, ImageIcon } from "lucide-react";
+import { ArrowRight, Phone, Mail, User, CreditCard, Contact, FileText, ImageIcon, CalendarDays, Target, MessageSquare, Crosshair, Sparkles, Loader2, CheckCircle2, Monitor, Megaphone } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge, healthVariant } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -160,6 +160,124 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
                 {l.label}
               </a>
             ))}
+          </div>
+        </div>
+        </StaggerItem>
+      )}
+
+      {/* Onboarding / Characterization */}
+      {(client.onboarding_status || client.onboarding_date || client.competitors || client.target_audience || client.core_message || client.campaign_goal || client.differentiation || (client.digital_assets?.length > 0) || (client.previous_campaigns?.length > 0)) && (
+        <StaggerItem>
+        <div id="onboarding" className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
+          <div className="flex items-center justify-between bg-surface px-4 py-2.5">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-ink-secondary" />
+              <span className="text-caption font-medium text-ink-secondary">קליטה ואפיון</span>
+            </div>
+            {client.onboarding_status && (
+              <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
+                client.onboarding_status === "בתהליך קליטה" ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"
+              }`}>
+                {client.onboarding_status === "בתהליך קליטה" ? <Loader2 className="h-3 w-3" /> : <CheckCircle2 className="h-3 w-3" />}
+                {client.onboarding_status}
+              </span>
+            )}
+          </div>
+          <div className="p-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {client.onboarding_date && (
+                <div className="flex items-start gap-2.5">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-pastel-blue">
+                    <CalendarDays className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] text-ink-muted">תאריך קליטה</div>
+                    <div className="text-sm font-medium text-ink">{new Date(client.onboarding_date).toLocaleDateString("he-IL")}</div>
+                  </div>
+                </div>
+              )}
+              {client.competitors && (
+                <div className="flex items-start gap-2.5">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-pastel-coral">
+                    <Crosshair className="h-4 w-4 text-orange-600" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] text-ink-muted">מתחרים</div>
+                    <div className="text-sm font-medium text-ink">{client.competitors}</div>
+                  </div>
+                </div>
+              )}
+              {client.core_message && (
+                <div className="flex items-start gap-2.5">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-pastel-purple">
+                    <MessageSquare className="h-4 w-4 text-purple-600" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] text-ink-muted">מסר מרכזי</div>
+                    <div className="text-sm font-medium text-ink">{client.core_message}</div>
+                  </div>
+                </div>
+              )}
+              {client.differentiation && (
+                <div className="flex items-start gap-2.5">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-pastel-yellow">
+                    <Sparkles className="h-4 w-4 text-yellow-600" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] text-ink-muted">בידול</div>
+                    <div className="text-sm font-medium text-ink">{client.differentiation}</div>
+                  </div>
+                </div>
+              )}
+            </div>
+            {client.target_audience && (
+              <div className="mt-4 flex items-start gap-2.5">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-pastel-teal">
+                  <Target className="h-4 w-4 text-green-600" />
+                </div>
+                <div>
+                  <div className="text-[11px] text-ink-muted">קהל יעד</div>
+                  <div className="whitespace-pre-wrap text-sm leading-relaxed text-ink">{client.target_audience}</div>
+                </div>
+              </div>
+            )}
+            {client.campaign_goal && (
+              <div className="mt-4 flex items-start gap-2.5">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-pastel-rose">
+                  <Megaphone className="h-4 w-4 text-rose-600" />
+                </div>
+                <div>
+                  <div className="text-[11px] text-ink-muted">מטרת הקמפיינים</div>
+                  <div className="whitespace-pre-wrap text-sm leading-relaxed text-ink">{client.campaign_goal}</div>
+                </div>
+              </div>
+            )}
+            {client.digital_assets?.length > 0 && (
+              <div className="mt-4">
+                <div className="mb-2 flex items-center gap-2">
+                  <Monitor className="h-3.5 w-3.5 text-ink-muted" />
+                  <span className="text-[11px] text-ink-muted">נכסים דיגיטליים</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {client.digital_assets.map((a) => (
+                    <span key={a} className="rounded-full bg-pastel-blue px-2.5 py-0.5 text-[11px] font-medium text-primary">{a}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+            {client.previous_campaigns?.length > 0 && (
+              <div className="mt-4">
+                <div className="mb-2 flex items-center gap-2">
+                  <Megaphone className="h-3.5 w-3.5 text-ink-muted" />
+                  <span className="text-[11px] text-ink-muted">קמפיינים קודמים</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {client.previous_campaigns.map((p) => (
+                    <span key={p} className="rounded-full bg-pastel-purple px-2.5 py-0.5 text-[11px] font-medium text-purple-700">{p}</span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
         </StaggerItem>

@@ -27,6 +27,21 @@ const HEALTH_OPTIONS: { value: ClientInput["health"]; label: string }[] = [
   { value: "קריטי", label: "קריטי" },
 ];
 
+const ONBOARDING_OPTIONS: { value: ClientInput["onboarding_status"]; label: string }[] = [
+  { value: null, label: "ללא" },
+  { value: "בתהליך קליטה", label: "בתהליך קליטה" },
+  { value: "באוויר", label: "באוויר" },
+];
+
+const DIGITAL_ASSET_OPTIONS = [
+  "אתר", "עמוד עסקי פייסבוק", "חשבון אינסטגרם", "וואטסאפ עסקי",
+  "רשימת תפוצה", "חשבון פרסום מטא", "מערכת ניהול שיחות", "אוטומציות קיימות",
+];
+
+const CAMPAIGN_PLATFORM_OPTIONS = [
+  "Meta | Facebook ads", "Google Ads", "TikTok Ads", "LinkedIn Ads",
+];
+
 const NONE = "__none__";
 
 export function ClientForm({
@@ -34,14 +49,7 @@ export function ClientForm({
   team,
   onDone,
 }: {
-  client?: Client & {
-    budget_note?: string | null;
-    drive_url?: string | null;
-    facebook_ads_url?: string | null;
-    google_ads_url?: string | null;
-    cms_url?: string | null;
-    analytics_url?: string | null;
-  };
+  client?: Client;
   team: TeamMember[];
   onDone: () => void;
 }) {
@@ -64,6 +72,15 @@ export function ClientForm({
     analytics_url: client?.analytics_url ?? "",
     logo_url: client?.logo_url ?? "",
     brief: client?.brief ?? "",
+    onboarding_status: client?.onboarding_status ?? null,
+    onboarding_date: client?.onboarding_date ?? "",
+    competitors: client?.competitors ?? "",
+    target_audience: client?.target_audience ?? "",
+    core_message: client?.core_message ?? "",
+    campaign_goal: client?.campaign_goal ?? "",
+    differentiation: client?.differentiation ?? "",
+    digital_assets: client?.digital_assets ?? [],
+    previous_campaigns: client?.previous_campaigns ?? [],
   });
 
   function set<K extends keyof ClientInput>(k: K, v: ClientInput[K]) {
@@ -231,6 +248,118 @@ export function ClientForm({
             rows={5}
             className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
+        </Field>
+      </Section>
+
+      <Section title="קליטה ואפיון">
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="סטטוס קליטה">
+            <Select
+              value={form.onboarding_status ?? NONE}
+              onValueChange={(v) =>
+                set("onboarding_status", v === NONE ? null : (v as ClientInput["onboarding_status"]))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="ללא" />
+              </SelectTrigger>
+              <SelectContent>
+                {ONBOARDING_OPTIONS.map((o) => (
+                  <SelectItem key={o.label} value={o.value ?? NONE}>
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field label="תאריך קליטה">
+            <Input
+              type="date"
+              value={form.onboarding_date ?? ""}
+              onChange={(e) => set("onboarding_date", e.target.value)}
+            />
+          </Field>
+        </div>
+        <Field label="מתחרים עיקריים">
+          <Input
+            value={form.competitors ?? ""}
+            onChange={(e) => set("competitors", e.target.value)}
+            placeholder="מופרדים בפסיק"
+          />
+        </Field>
+        <Field label="קהל יעד">
+          <textarea
+            value={form.target_audience ?? ""}
+            onChange={(e) => set("target_audience", e.target.value)}
+            placeholder="תיאור קהלי היעד העיקריים"
+            rows={3}
+            className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+        </Field>
+        <Field label="מסר מרכזי">
+          <Input
+            value={form.core_message ?? ""}
+            onChange={(e) => set("core_message", e.target.value)}
+            placeholder="המסר העיקרי של העסק"
+          />
+        </Field>
+        <Field label="מטרת הקמפיינים">
+          <textarea
+            value={form.campaign_goal ?? ""}
+            onChange={(e) => set("campaign_goal", e.target.value)}
+            placeholder="המטרה העיקרית של הקמפיינים"
+            rows={2}
+            className="w-full rounded-xl border border-border bg-white px-3 py-2 text-sm text-ink placeholder:text-ink-muted focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+        </Field>
+        <Field label="בידול">
+          <Input
+            value={form.differentiation ?? ""}
+            onChange={(e) => set("differentiation", e.target.value)}
+            placeholder="מה מייחד את העסק"
+          />
+        </Field>
+        <Field label="נכסים דיגיטליים">
+          <div className="flex flex-wrap gap-2">
+            {DIGITAL_ASSET_OPTIONS.map((asset) => (
+              <label key={asset} className="flex cursor-pointer items-center gap-1.5">
+                <input
+                  type="checkbox"
+                  checked={form.digital_assets.includes(asset)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      set("digital_assets", [...form.digital_assets, asset]);
+                    } else {
+                      set("digital_assets", form.digital_assets.filter((a) => a !== asset));
+                    }
+                  }}
+                  className="h-4 w-4 rounded border-border text-primary focus:ring-primary/20"
+                />
+                <span className="text-sm text-ink">{asset}</span>
+              </label>
+            ))}
+          </div>
+        </Field>
+        <Field label="קמפיינים קודמים">
+          <div className="flex flex-wrap gap-2">
+            {CAMPAIGN_PLATFORM_OPTIONS.map((platform) => (
+              <label key={platform} className="flex cursor-pointer items-center gap-1.5">
+                <input
+                  type="checkbox"
+                  checked={form.previous_campaigns.includes(platform)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      set("previous_campaigns", [...form.previous_campaigns, platform]);
+                    } else {
+                      set("previous_campaigns", form.previous_campaigns.filter((p) => p !== platform));
+                    }
+                  }}
+                  className="h-4 w-4 rounded border-border text-primary focus:ring-primary/20"
+                />
+                <span className="text-sm text-ink">{platform}</span>
+              </label>
+            ))}
+          </div>
         </Field>
       </Section>
 

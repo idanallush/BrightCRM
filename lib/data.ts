@@ -31,6 +31,15 @@ export type Client = {
   health: "בריא" | "אסטרטגיה צריכה" | "קריטי" | null;
   logo_url: string | null;
   brief: string | null;
+  onboarding_status: "בתהליך קליטה" | "באוויר" | null;
+  onboarding_date: string | null;
+  competitors: string | null;
+  target_audience: string | null;
+  core_message: string | null;
+  campaign_goal: string | null;
+  differentiation: string | null;
+  digital_assets: string[];
+  previous_campaigns: string[];
 };
 
 export type Campaign = {
@@ -97,7 +106,7 @@ export async function getTasks(filters?: {
 }
 
 const CLIENT_COLS =
-  "id,name,contact_name,account_manager_id,phone,email,website_url,budget_note,drive_url,facebook_ads_url,google_ads_url,cms_url,analytics_url,health,logo_url,brief";
+  "id,name,contact_name,account_manager_id,phone,email,website_url,budget_note,drive_url,facebook_ads_url,google_ads_url,cms_url,analytics_url,health,logo_url,brief,onboarding_status,onboarding_date,competitors,target_audience,core_message,campaign_goal,differentiation,digital_assets,previous_campaigns";
 
 export async function getClients(): Promise<Client[]> {
   const sb = createClient();

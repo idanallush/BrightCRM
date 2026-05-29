@@ -3,7 +3,7 @@
 import * as React from "react";
 import { motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Plus, Search, Globe, FileText } from "lucide-react";
+import { Plus, Search, Globe, FileText, Loader2, CheckCircle2 } from "lucide-react";
 import { MetaAdsIcon, GoogleDriveIcon } from "@/components/brand-icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,13 @@ const HEALTH_PILLS = [
   { key: "קריטי", label: "קריטי", color: "#E2445C" },
 ];
 
+const ONBOARDING_PILLS = [
+  { key: ALL, label: "הכל" },
+  { key: "בתהליך קליטה", label: "בתהליך קליטה" },
+  { key: "באוויר", label: "באוויר" },
+  { key: "none", label: "ללא סטטוס" },
+];
+
 export function ClientsClient({
   clients, team, openTaskCounts, currentMemberId,
 }: {
@@ -37,6 +44,7 @@ export function ClientsClient({
   const [search, setSearch] = React.useState("");
   const [health, setHealth] = React.useState(ALL);
   const [managerId, setManagerId] = React.useState(ALL);
+  const [onboardingFilter, setOnboardingFilter] = React.useState(ALL);
   const [createOpen, setCreateOpen] = React.useState(false);
 
   React.useEffect(() => {
@@ -47,10 +55,14 @@ export function ClientsClient({
     return clients.filter((c) => {
       if (health !== ALL && c.health !== health) return false;
       if (managerId !== ALL && c.account_manager_id !== managerId) return false;
+      if (onboardingFilter !== ALL) {
+        if (onboardingFilter === "none" && c.onboarding_status !== null) return false;
+        if (onboardingFilter !== "none" && c.onboarding_status !== onboardingFilter) return false;
+      }
       if (search && !c.name.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
-  }, [clients, search, health, managerId]);
+  }, [clients, search, health, managerId, onboardingFilter]);
 
   const { myClients, otherClients } = React.useMemo(() => {
     if (!currentMemberId) return { myClients: [], otherClients: filtered };
@@ -62,8 +74,8 @@ export function ClientsClient({
     return { myClients: mine, otherClients: others };
   }, [filtered, currentMemberId]);
 
-  const activeFilterCount = (health !== ALL ? 1 : 0) + (managerId !== ALL ? 1 : 0) + (search.trim().length > 0 ? 1 : 0);
-  function clearFilters() { setSearch(""); setHealth(ALL); setManagerId(ALL); }
+  const activeFilterCount = (health !== ALL ? 1 : 0) + (managerId !== ALL ? 1 : 0) + (onboardingFilter !== ALL ? 1 : 0) + (search.trim().length > 0 ? 1 : 0);
+  function clearFilters() { setSearch(""); setHealth(ALL); setManagerId(ALL); setOnboardingFilter(ALL); }
 
   function renderRow(c: (typeof clients)[0]) {
     const openCount = openTaskCounts[c.id] ?? 0;
@@ -91,6 +103,15 @@ export function ClientsClient({
         <td className="px-4 py-3 text-ink-secondary">{c.manager_name ?? "ללא"}</td>
         <td className="hidden px-4 py-3 sm:table-cell">
           {c.health ? <HealthCell health={c.health} /> : <span className="text-ink-muted">{"--"}</span>}
+        </td>
+        <td className="hidden px-4 py-3 sm:table-cell">
+          {c.onboarding_status ? (
+            <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium",
+              c.onboarding_status === "בתהליך קליטה" ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700")}>
+              {c.onboarding_status === "בתהליך קליטה" ? <Loader2 className="h-3 w-3" /> : <CheckCircle2 className="h-3 w-3" />}
+              {c.onboarding_status}
+            </span>
+          ) : <span className="text-ink-muted">{"--"}</span>}
         </td>
         <td className="px-4 py-3">
           <span className={openCount > 0 ? "font-semibold text-primary" : "text-ink-muted"}>{openCount}</span>
@@ -149,6 +170,16 @@ export function ClientsClient({
                 {p.label}
               </button>
             ))}
+            <span className="mx-1 self-center text-border">|</span>
+            {ONBOARDING_PILLS.map((p) => (
+              <button key={p.key} type="button" onClick={() => setOnboardingFilter(p.key)}
+                className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-caption transition-colors duration-150",
+                  onboardingFilter === p.key
+                    ? "bg-primary font-medium text-white"
+                    : "text-ink-secondary hover:bg-surface")}>
+                {p.label}
+              </button>
+            ))}
           </div>
           <div className="flex flex-1 flex-wrap items-center gap-2">
             <div className="relative min-w-[160px] flex-1 sm:max-w-[220px]">
@@ -183,6 +214,7 @@ export function ClientsClient({
                 <th className="px-4 py-2.5 text-right font-medium">לקוח</th>
                 <th className="px-4 py-2.5 text-right font-medium">מנהל</th>
                 <th className="hidden px-4 py-2.5 text-right font-medium sm:table-cell">בריאות</th>
+                <th className="hidden px-4 py-2.5 text-right font-medium sm:table-cell">קליטה</th>
                 <th className="px-4 py-2.5 text-right font-medium">משימות</th>
                 <th className="hidden px-4 py-2.5 text-right font-medium md:table-cell">קישורים</th>
               </tr>
@@ -191,14 +223,14 @@ export function ClientsClient({
               {myClients.length > 0 && (
                 <>
                   <tr>
-                    <td colSpan={5} className="bg-sidebar px-4 py-1.5 text-caption font-semibold text-white">הלקוחות שלי</td>
+                    <td colSpan={6} className="bg-sidebar px-4 py-1.5 text-caption font-semibold text-white">הלקוחות שלי</td>
                   </tr>
                   {myClients.map(renderRow)}
                 </>
               )}
               {myClients.length > 0 && otherClients.length > 0 && (
                 <tr>
-                  <td colSpan={5} className="bg-surface px-4 py-1.5 text-caption font-medium text-ink-secondary">לקוחות נוספים</td>
+                  <td colSpan={6} className="bg-surface px-4 py-1.5 text-caption font-medium text-ink-secondary">לקוחות נוספים</td>
                 </tr>
               )}
               {otherClients.map(renderRow)}

@@ -19,6 +19,15 @@ export type ClientInput = {
   analytics_url: string | null;
   logo_url: string | null;
   brief: string | null;
+  onboarding_status: "בתהליך קליטה" | "באוויר" | null;
+  onboarding_date: string | null;
+  competitors: string | null;
+  target_audience: string | null;
+  core_message: string | null;
+  campaign_goal: string | null;
+  differentiation: string | null;
+  digital_assets: string[];
+  previous_campaigns: string[];
 };
 
 function clean(input: ClientInput): ClientInput {
@@ -37,6 +46,14 @@ function clean(input: ClientInput): ClientInput {
     analytics_url: input.analytics_url?.trim() || null,
     logo_url: input.logo_url?.trim() || null,
     brief: input.brief?.trim() || null,
+    onboarding_date: input.onboarding_date?.trim() || null,
+    competitors: input.competitors?.trim() || null,
+    target_audience: input.target_audience?.trim() || null,
+    core_message: input.core_message?.trim() || null,
+    campaign_goal: input.campaign_goal?.trim() || null,
+    differentiation: input.differentiation?.trim() || null,
+    digital_assets: input.digital_assets.filter((s) => s.trim()),
+    previous_campaigns: input.previous_campaigns.filter((s) => s.trim()),
   };
 }
 
