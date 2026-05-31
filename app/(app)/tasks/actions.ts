@@ -66,6 +66,10 @@ export async function createTask(input: TaskInput) {
 
   revalidatePath("/tasks");
   revalidatePath("/dashboard");
+
+  // Fire-and-forget email notification to assignees
+  import("@/lib/email/notify").then((m) => m.notifyNewTask(data.id)).catch(() => {});
+
   return { ok: true as const };
 }
 
@@ -137,7 +141,7 @@ export async function quickParseTask(text: string) {
   if (!member) return { error: "משתמש לא נמצא" };
 
   try {
-    const { parseTaskFromText } = await import("@/lib/telegram/parse-task");
+    const { parseTaskFromText } = await import("@/lib/whatsapp/parse-task");
     const parsed = await parseTaskFromText(text, { id: member.id, full_name: member.full_name });
     return { ok: true as const, parsed };
   } catch {
@@ -192,6 +196,13 @@ export async function addComment(
   }
 
   revalidatePath("/tasks");
+
+  // Fire-and-forget email notifications for comment + mentions
+  import("@/lib/email/notify").then(async (m) => {
+    await m.notifyNewComment(data.id);
+    if (mentions.length > 0) await m.notifyMentions(data.id);
+  }).catch(() => {});
+
   return { ok: true as const, commentId: data.id as string };
 }
 
