@@ -4,6 +4,7 @@ import * as React from "react";
 import { AlertTriangle } from "lucide-react";
 import { STATUS_COLORS } from "@/components/ui/badge";
 import type { TaskWithRelations } from "@/lib/data";
+import { AvatarStack } from "@/components/user-avatar";
 
 const COLUMNS = [
   { key: "מחכה לטיפול", label: "ממתין" },
@@ -19,10 +20,6 @@ function relativeDate(iso: string | null): { text: string; overdue: boolean } {
   if (diffDays === 0) return { text: "היום", overdue: false };
   if (diffDays === 1) return { text: "מחר", overdue: false };
   return { text: `עוד ${diffDays} ימים`, overdue: false };
-}
-
-function getInitials(name: string): string {
-  return name.split(/\s+/).map((w) => w[0]).join("").toUpperCase().slice(0, 2);
 }
 
 export function TaskKanban({
@@ -88,13 +85,7 @@ function KanbanCard({ task, color, onClick }: {
           {overdue && <AlertTriangle className="mb-px me-1 inline h-3 w-3" />}
           {dateText}
         </span>
-        <div className="flex items-center -space-x-1">
-          {task.assignees.slice(0, 2).map((a) => (
-            <span key={a.id} className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-pastel-blue text-[9px] font-medium text-primary" title={a.full_name}>
-              {getInitials(a.full_name)}
-            </span>
-          ))}
-        </div>
+        <AvatarStack people={task.assignees} size="xs" max={3} />
       </div>
     </button>
   );

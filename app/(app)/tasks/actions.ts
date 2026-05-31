@@ -17,6 +17,8 @@ export type TaskInput = {
   status: TaskStatus;
   due_date: string | null;
   assignee_ids: string[];
+  // Optional: callers like quick-add / WhatsApp don't set watchers; defaults to [].
+  watcher_ids?: string[];
   tag_ids: string[];
 };
 
@@ -57,6 +59,14 @@ export async function createTask(input: TaskInput) {
     if (aErr) return { error: aErr.message };
   }
 
+  const watcherIds = input.watcher_ids ?? [];
+  if (watcherIds.length > 0) {
+    const { error: wErr } = await sb
+      .from("task_watchers")
+      .insert(watcherIds.map((id) => ({ task_id: data.id, member_id: id })));
+    if (wErr) return { error: wErr.message };
+  }
+
   if (input.tag_ids.length > 0) {
     const { error: tErr } = await sb
       .from("task_tags")
@@ -94,6 +104,16 @@ export async function updateTask(id: string, input: TaskInput) {
       .from("task_assignees")
       .insert(input.assignee_ids.map((mid) => ({ task_id: id, member_id: mid })));
     if (aErr) return { error: aErr.message };
+  }
+
+  const { error: dwErr } = await sb.from("task_watchers").delete().eq("task_id", id);
+  if (dwErr) return { error: dwErr.message };
+  const watcherIds = input.watcher_ids ?? [];
+  if (watcherIds.length > 0) {
+    const { error: wErr } = await sb
+      .from("task_watchers")
+      .insert(watcherIds.map((mid) => ({ task_id: id, member_id: mid })));
+    if (wErr) return { error: wErr.message };
   }
 
   const { error: dtErr } = await sb.from("task_tags").delete().eq("task_id", id);
@@ -154,6 +174,23 @@ export async function createTag(name: string, color: string) {
   const { data, error } = await sb
     .from("tags")
     .insert({ name: name.trim(), color })
+    .select("id,name,color,created_at")
+    .single();
+  if (error) return { error: error.message };
+  revalidatePath("/tasks");
+  return { ok: true as const, tag: data };
+}
+
+export async function updateTag(tagId: string, fields: { name?: string; color?: string }) {
+  const sb = createClient();
+  const updates: Record<string, string> = {};
+  if (fields.name !== undefined) updates.name = fields.name.trim();
+  if (fields.color !== undefined) updates.color = fields.color;
+  if (Object.keys(updates).length === 0) return { error: "אין שדות לעדכון" };
+  const { data, error } = await sb
+    .from("tags")
+    .update(updates)
+    .eq("id", tagId)
     .select("id,name,color,created_at")
     .single();
   if (error) return { error: error.message };
@@ -235,8 +272,10 @@ export async function uploadCommentAttachment(commentId: string, formData: FormD
     .eq("email", user.email)
     .maybeSingle();
 
-  const safeName = file.name.replace(/[^\w.\-א-ת ]+/g, "_");
-  const path = `comments/${commentId}/${Date.now()}_${safeName}`;
+  const ext = file.name.includes(".")
+    ? file.name.slice(file.name.lastIndexOf(".")).toLowerCase()
+    : "";
+  const path = `comments/${commentId}/${Date.now()}-${crypto.randomUUID()}${ext}`;
 
   const { error: upErr } = await sb.storage
     .from(COMMENT_BUCKET)

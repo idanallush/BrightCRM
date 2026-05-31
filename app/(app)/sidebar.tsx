@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, CheckSquare, Users, Bot, Settings, Info, ChevronsLeft, ChevronsRight, X, LogOut } from "lucide-react";
+import { LayoutDashboard, CheckSquare, Users, Bot, Settings, Info, ChevronsLeft, ChevronsRight, X, LogOut, UserCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMobileMenu, useSidebarCollapsed } from "./shell-context";
 import { NotificationBell } from "@/components/notification-bell";
@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { UserAvatar } from "@/components/user-avatar";
 
 const NAV_MAIN = [
   { href: "/dashboard", label: "דשבורד", Icon: LayoutDashboard },
@@ -18,13 +19,12 @@ const NAV_MAIN = [
   { href: "/chat", label: "צ'אט AI", Icon: Bot },
 ];
 const NAV_BOTTOM = [
+  { href: "/profile", label: "פרופיל", Icon: UserCircle },
   { href: "/settings", label: "הגדרות", Icon: Settings },
   { href: "/about", label: "אודות", Icon: Info },
 ];
 
-function getInitials(name: string) { return name.split(/\s+/).map((w) => w[0]).join("").toUpperCase().slice(0, 2); }
-
-export function Sidebar({ userLabel }: { userLabel: string }) {
+export function Sidebar({ userLabel, userAvatarUrl }: { userLabel: string; userAvatarUrl?: string | null }) {
   const pathname = usePathname();
   const router = useRouter();
   const { collapsed, setCollapsed } = useSidebarCollapsed();
@@ -32,7 +32,6 @@ export function Sidebar({ userLabel }: { userLabel: string }) {
   React.useEffect(() => { setMobileOpen(false); }, [pathname, setMobileOpen]);
 
   async function signOut() { const sb = createClient(); await sb.auth.signOut(); router.push("/login"); router.refresh(); }
-  const initials = getInitials(userLabel);
 
   function NavLink({ href, label, Icon, isMobile, index }: { href: string; label: string; Icon: React.ComponentType<{ className?: string }>; isMobile: boolean; index: number }) {
     const active = pathname === href || pathname.startsWith(href + "/");
@@ -73,11 +72,11 @@ export function Sidebar({ userLabel }: { userLabel: string }) {
       <div className="flex flex-col gap-0.5 border-t border-sidebar-border px-3 pt-2 pb-1">{NAV_BOTTOM.map((item, i) => <NavLink key={item.href} {...item} isMobile={isMobile} index={NAV_MAIN.length + i} />)}</div>
       <div className="shrink-0 border-t border-sidebar-border p-3">
         <div className={cn("flex items-center gap-3 rounded-xl px-2 py-2", collapsed && !isMobile && "justify-center px-0")}>
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/20 text-caption font-semibold text-accent">{initials}</div>
-          {(isMobile || !collapsed) && <div className="flex min-w-0 flex-1 items-center justify-between">
-            <span className="truncate text-body-sm text-white/80">{userLabel}</span>
-            <button type="button" onClick={signOut} className="rounded-xl p-1.5 text-white/40 transition-colors duration-150 hover:bg-white/5 hover:text-white/80" title="התנתקות"><LogOut className="h-4 w-4" /></button>
-          </div>}
+          <Link href="/profile" className="flex min-w-0 flex-1 items-center gap-3 transition-opacity hover:opacity-80" title="פרופיל">
+            <UserAvatar name={userLabel} avatarUrl={userAvatarUrl} size="sm" />
+            {(isMobile || !collapsed) && <span className="truncate text-body-sm text-white/80">{userLabel}</span>}
+          </Link>
+          {(isMobile || !collapsed) && <button type="button" onClick={signOut} className="rounded-xl p-1.5 text-white/40 transition-colors duration-150 hover:bg-white/5 hover:text-white/80" title="התנתקות"><LogOut className="h-4 w-4" /></button>}
         </div>
       </div>
     </div>

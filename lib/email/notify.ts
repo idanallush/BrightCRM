@@ -7,6 +7,27 @@ import {
   overdueEmail,
 } from "./templates";
 
+type NotifyMember = {
+  id: string;
+  full_name?: string;
+  email?: string | null;
+  notify_email?: boolean | null;
+};
+
+// Collapse assignees + watchers into a unique email list.
+// Skips members who opted out of email (notify_email === false) and anyone
+// failing the `keep` predicate (e.g. the actor who triggered the event).
+function dedupeRecipients(members: NotifyMember[], keep: (m: NotifyMember) => boolean): string[] {
+  const emails = new Set<string>();
+  for (const m of members) {
+    if (!m) continue;
+    if (m.notify_email === false) continue;
+    if (!keep(m)) continue;
+    if (m.email) emails.add(m.email);
+  }
+  return [...emails];
+}
+
 export async function notifyNewTask(taskId: string) {
   const db = createAdminClient();
 
@@ -22,11 +43,20 @@ export async function notifyNewTask(taskId: string) {
 
   const { data: assigneeRows } = await db
     .from("task_assignees")
-    .select("member:team_members!inner(id, full_name, email)")
+    .select("member:team_members!inner(id, full_name, email, notify_email)")
     .eq("task_id", taskId);
 
   const assignees = ((assigneeRows ?? []) as any[]).map((r) => r.member);
-  if (assignees.length === 0) return;
+
+  const { data: watcherRows } = await db
+    .from("task_watchers")
+    .select("member:team_members!inner(id, full_name, email, notify_email)")
+    .eq("task_id", taskId);
+
+  const watchers = ((watcherRows ?? []) as any[]).map((r) => r.member);
+
+  // Nobody to notify if there are neither assignees nor watchers.
+  if (assignees.length === 0 && watchers.length === 0) return;
 
   let creator = { full_name: "המערכת" };
   if (task.created_by_id) {
@@ -40,10 +70,11 @@ export async function notifyNewTask(taskId: string) {
 
   const client = task.clients as unknown as { name: string };
 
-  const recipients = assignees
-    .filter((a: any) => a.id !== task.created_by_id)
-    .map((a: any) => a.email as string)
-    .filter(Boolean);
+  // Assignees + watchers, minus the creator, minus opt-outs, de-duplicated by email.
+  const recipients = dedupeRecipients(
+    [...assignees, ...watchers],
+    (m) => m.id !== task.created_by_id,
+  );
 
   if (recipients.length === 0) return;
 
@@ -90,16 +121,24 @@ export async function notifyNewComment(commentId: string) {
 
   const { data: assigneeRows } = await db
     .from("task_assignees")
-    .select("member:team_members!inner(id, full_name, email)")
+    .select("member:team_members!inner(id, full_name, email, notify_email)")
     .eq("task_id", comment.task_id);
 
   const assignees = ((assigneeRows ?? []) as any[]).map((r) => r.member);
+
+  const { data: watcherRows } = await db
+    .from("task_watchers")
+    .select("member:team_members!inner(id, full_name, email, notify_email)")
+    .eq("task_id", comment.task_id);
+
+  const watchers = ((watcherRows ?? []) as any[]).map((r) => r.member);
   const client = task.clients as unknown as { name: string };
 
-  const recipients = assignees
-    .filter((a: any) => a.id !== comment.author_id)
-    .map((a: any) => a.email as string)
-    .filter(Boolean);
+  // Assignees + watchers, minus the comment author, minus opt-outs, de-duplicated.
+  const recipients = dedupeRecipients(
+    [...assignees, ...watchers],
+    (m) => m.id !== comment.author_id,
+  );
 
   if (recipients.length === 0) return;
 

@@ -9,7 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["DM Sans", "Heebo", "system-ui", "-apple-system", "Segoe UI", "Arial", "sans-serif"],
+        sans: ["var(--font-almoni)", "system-ui", "-apple-system", "Segoe UI", "Arial", "sans-serif"],
       },
       fontSize: {
         "body-md": ["15px", { lineHeight: "1.55" }],
@@ -77,7 +77,7 @@ const config: Config = {
       animation: { shimmer: "shimmer 1.5s ease-in-out infinite" },
     },
   },
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
 };
 
 export default config;

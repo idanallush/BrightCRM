@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Plus, Users, Loader2, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Hint } from "@/components/ui/tooltip";
 import { motion, AnimatePresence } from "framer-motion";
 import { quickParseTask, createTask } from "@/app/(app)/tasks/actions";
 import { toast } from "@/components/ui/toaster";
@@ -75,7 +76,7 @@ export function QuickAdd() {
   }
 
   return (
-    <div ref={wrapRef} className="fixed bottom-24 start-5 z-40 flex flex-col items-start gap-2 md:bottom-6">
+    <div ref={wrapRef} className="fixed bottom-24 end-5 z-40 flex flex-col items-end gap-2 md:bottom-6">
       <AnimatePresence>
         {/* Menu */}
         {mode === "menu" && (
@@ -150,10 +151,12 @@ export function QuickAdd() {
         )}
       </AnimatePresence>
 
-      <motion.button type="button" onClick={() => setMode((m) => m === "closed" ? "menu" : "closed")} title="יצירה מהירה" aria-label="יצירה מהירה" whileTap={{ scale: 0.93 }}
-        className="flex h-12 w-12 items-center justify-center rounded-full bg-accent text-ink shadow-elevation-2 transition-colors hover:bg-accent/85">
-        <Plus className={cn("h-5 w-5 transition-transform duration-150", mode !== "closed" && "rotate-45")} strokeWidth={2.5} />
-      </motion.button>
+      <Hint label="יצירה מהירה" side="top" delay={400}>
+        <motion.button type="button" onClick={() => setMode((m) => m === "closed" ? "menu" : "closed")} aria-label="יצירה מהירה" whileTap={{ scale: 0.93 }}
+          className="flex h-12 w-12 items-center justify-center rounded-full bg-accent text-ink shadow-elevation-2 transition-colors hover:bg-accent/85">
+          <Plus className={cn("h-5 w-5 transition-transform duration-150", mode !== "closed" && "rotate-45")} strokeWidth={2.5} />
+        </motion.button>
+      </Hint>
     </div>
   );
 }
