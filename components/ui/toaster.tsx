@@ -9,7 +9,7 @@ export function Toaster() {
       position="bottom-left"
       toastOptions={{
         style: {
-          fontFamily: "Heebo, system-ui, -apple-system, sans-serif",
+          fontFamily: "var(--font-almoni), system-ui, -apple-system, sans-serif",
           textAlign: "right",
         },
       }}

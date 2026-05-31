@@ -18,13 +18,15 @@ import {
 import { toast } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/empty-state";
+import { UserChip } from "@/components/user-hover-card";
+import { Eye } from "lucide-react";
 import { TaskTable } from "./task-table";
 import { TaskKanban } from "./task-kanban";
 import { TaskCalendar } from "./task-calendar";
 import { TaskForm } from "./task-form";
 import { TaskAttachments } from "./task-attachments";
 import { TaskComments } from "./task-comments";
-import { deleteTask } from "./actions";
+import { deleteTask, updateTask, type TaskInput } from "./actions";
 import type { Client, Tag, TaskWithRelations, TeamMember } from "@/lib/data";
 
 const STATUS_PILLS = [
@@ -39,7 +41,7 @@ const VIEW_KEY = "brightcrm:tasks-view";
 
 
 function TaskDetailPanel({
-  task, clients, team, tags, onClose, onDelete, confirmingDelete, setConfirmingDelete,
+  task, clients, team, tags, onClose, onDelete, confirmingDelete, setConfirmingDelete, onTitleSaved,
 }: {
   task: TaskWithRelations;
   clients: Client[];
@@ -49,21 +51,83 @@ function TaskDetailPanel({
   onDelete: () => void;
   confirmingDelete: boolean;
   setConfirmingDelete: (v: boolean) => void;
+  onTitleSaved: (title: string) => void;
 }) {
+  const router = useRouter();
   const [fileCount, setFileCount] = React.useState<number | null>(null);
   const filesOpen = fileCount !== null && fileCount > 0;
+
+  const [editingTitle, setEditingTitle] = React.useState(false);
+  const [titleDraft, setTitleDraft] = React.useState(task.title);
+  const [savingTitle, setSavingTitle] = React.useState(false);
 
   const creatorName = task.creator?.full_name ?? null;
   const isCreatorDifferent = creatorName && !task.assignees.some((a) => a.id === task.created_by_id);
 
+  async function saveTitle() {
+    const next = titleDraft.trim();
+    setEditingTitle(false);
+    if (!next || next === task.title) { setTitleDraft(task.title); return; }
+    setSavingTitle(true);
+    const payload = {
+      title: next,
+      client_id: task.client_id,
+      description: task.description,
+      status: task.status as TaskInput["status"],
+      due_date: task.due_date,
+      assignee_ids: task.assignees.map((a) => a.id),
+      watcher_ids: task.watchers.map((w) => w.id),
+      tag_ids: task.tags.map((t) => t.id),
+    };
+    const res = await updateTask(task.id, payload);
+    setSavingTitle(false);
+    if ("error" in res) { toast.error(res.error); setTitleDraft(task.title); return; }
+    onTitleSaved(next);
+    router.refresh();
+  }
+
   return (
     <>
       <div className="shrink-0 border-b border-border px-5 pb-3 pt-5 md:px-6 md:pt-6">
-        <h2 className="text-lg font-semibold text-ink leading-snug">{task.title}</h2>
+        {editingTitle ? (
+          <Input
+            autoFocus
+            value={titleDraft}
+            disabled={savingTitle}
+            onChange={(e) => setTitleDraft(e.target.value)}
+            onBlur={saveTitle}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") { e.preventDefault(); saveTitle(); }
+              if (e.key === "Escape") { setTitleDraft(task.title); setEditingTitle(false); }
+            }}
+            className="text-lg font-semibold text-ink"
+          />
+        ) : (
+          <h2
+            onClick={() => { setTitleDraft(task.title); setEditingTitle(true); }}
+            title="לחץ לעריכה"
+            className="-mx-1.5 cursor-text rounded-lg px-1.5 py-0.5 text-lg font-semibold leading-snug text-ink transition-colors hover:bg-surface"
+          >
+            {task.title}
+          </h2>
+        )}
         {isCreatorDifferent && (
           <p className="mt-1 text-sm text-ink-secondary">
             נפתח ע&quot;י {creatorName}
           </p>
+        )}
+        {task.watchers.length > 0 && (
+          <div className="mt-2 flex items-center gap-2">
+            <span className="inline-flex items-center gap-1 text-caption text-ink-secondary">
+              <Eye className="h-3.5 w-3.5 text-ink-muted" />
+              עוקבים
+            </span>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {task.watchers.map((w) => (
+                <UserChip key={w.id} member={w} size="xs" />
+              ))}
+            </div>
+          </div>
         )}
       </div>
 
@@ -369,8 +433,8 @@ export function TasksClient({
 
       {/* Task detail panel */}
       <Sheet open={!!editing} onOpenChange={(open) => !open && closeSheet()}>
-        <SheetContent side="left" className="flex flex-col gap-0 p-0 sm:max-w-[450px]">
-          {editing && <TaskDetailPanel key={editing.id} task={editing} clients={clients} team={team} tags={tags} onClose={closeSheet} onDelete={onDelete} confirmingDelete={confirmingDelete} setConfirmingDelete={setConfirmingDelete} />}
+        <SheetContent side="left" className="flex flex-col gap-0 p-0 sm:max-w-[720px]">
+          {editing && <TaskDetailPanel key={editing.id} task={editing} clients={clients} team={team} tags={tags} onClose={closeSheet} onDelete={onDelete} confirmingDelete={confirmingDelete} setConfirmingDelete={setConfirmingDelete} onTitleSaved={(t) => setEditing((prev) => prev ? { ...prev, title: t } : prev)} />}
         </SheetContent>
       </Sheet>
     </motion.div>

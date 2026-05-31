@@ -6,14 +6,14 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap font-semibold transition-[color,background-color,border-color,transform] duration-150 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap font-semibold transition-[color,background-color,border-color,box-shadow,transform] duration-150 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        primary: "rounded-full bg-accent text-ink text-button hover:bg-accent/85 shadow-elevation-1",
-        secondary: "rounded-full border-2 border-border bg-white text-ink text-button hover:bg-surface hover:border-ink-muted",
+        primary: "rounded-full bg-accent text-ink text-button shadow-elevation-1 hover:bg-accent/85 hover:-translate-y-px hover:shadow-elevation-2",
+        secondary: "rounded-full border-2 border-border bg-white text-ink text-button hover:bg-surface hover:border-ink-muted hover:-translate-y-px hover:shadow-elevation-1",
         ghost: "rounded-xl text-ink text-button hover:bg-surface",
-        danger: "rounded-full bg-overdue text-white text-button hover:opacity-90 shadow-elevation-1",
+        danger: "rounded-full bg-overdue text-white text-button shadow-elevation-1 hover:opacity-90 hover:-translate-y-px hover:shadow-elevation-2",
         link: "bg-transparent text-primary p-0 text-body-sm hover:underline",
       },
       size: {

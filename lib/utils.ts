@@ -11,3 +11,24 @@ export function isBrightEmail(email: string | null | undefined): boolean {
   if (!email) return false;
   return email.toLowerCase().endsWith(`@${BRIGHT_DOMAIN}`);
 }
+
+export function getInitials(name: string | null | undefined): string {
+  if (!name) return "?";
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+// Deterministic avatar color from a name — stable per user, picked from a tasteful palette.
+const AVATAR_COLORS = [
+  "bg-[#4262FF]", "bg-[#A25DDC]", "bg-[#00C875]", "bg-[#FF642E]",
+  "bg-[#E2445C]", "bg-[#0AA5C2]", "bg-[#7E5BEF]", "bg-[#1FAD66]",
+];
+
+export function avatarColor(seed: string | null | undefined): string {
+  const s = seed ?? "";
+  let hash = 0;
+  for (let i = 0; i < s.length; i++) hash = (hash * 31 + s.charCodeAt(i)) >>> 0;
+  return AVATAR_COLORS[hash % AVATAR_COLORS.length];
+}

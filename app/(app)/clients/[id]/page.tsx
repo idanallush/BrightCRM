@@ -16,6 +16,7 @@ import { FileUpload } from "@/components/file-upload";
 import { EditClientButton, DeleteClientButton } from "./edit-button";
 import { ClientTasksSection } from "./client-tasks-section";
 import { StaggerContainer, StaggerItem } from "@/components/motion";
+import { UserChip } from "@/components/user-hover-card";
 
 export const dynamic = "force-dynamic";
 
@@ -64,7 +65,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
             )}
             <h1 className="text-base font-bold text-white">{client.name}</h1>
             {healthV && client.health && <Badge variant={healthV}>{client.health}</Badge>}
-            {manager && <span className="text-caption text-white/70">{manager.full_name}</span>}
+            {manager && <UserChip member={manager} size="xs" />}
           </div>
           <div className="flex items-center gap-2">
             <DeleteClientButton client={client} />
@@ -99,7 +100,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
               </div>
               <div>
                 <div className="text-[11px] text-ink-muted">מנהל לקוח</div>
-                <div className="text-sm font-medium text-ink">{manager.full_name}</div>
+                <UserChip member={manager} size="sm" withName />
               </div>
             </div>
           )}

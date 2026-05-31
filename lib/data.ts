@@ -60,6 +60,10 @@ export type TeamMember = {
   role: string | null;
   email: string;
   active: boolean;
+  whatsapp_phone?: string | null;
+  avatar_url?: string | null;
+  notify_email?: boolean;
+  notify_whatsapp?: boolean;
 };
 
 export type Tag = {
@@ -72,6 +76,7 @@ export type Tag = {
 export type TaskWithRelations = Task & {
   client: { id: string; name: string } | null;
   assignees: { id: string; full_name: string }[];
+  watchers: { id: string; full_name: string }[];
   creator: { id: string; full_name: string } | null;
   tags: Tag[];
 };
@@ -86,7 +91,7 @@ export async function getTasks(filters?: {
   let q = sb
     .from("tasks")
     .select(
-      "id,title,client_id,description,status,start_date,due_date,created_by_id,source,created_at,updated_at,client:clients(id,name),assignees:task_assignees(member:team_members(id,full_name)),creator:team_members!tasks_created_by_id_fkey(id,full_name),task_tags(tag:tags(id,name,color,created_at))",
+      "id,title,client_id,description,status,start_date,due_date,created_by_id,source,created_at,updated_at,client:clients(id,name),assignees:task_assignees(member:team_members(id,full_name)),watchers:task_watchers(member:team_members(id,full_name)),creator:team_members!tasks_created_by_id_fkey(id,full_name),task_tags(tag:tags(id,name,color,created_at))",
     )
     .order("due_date", { ascending: true, nullsFirst: false });
 
@@ -104,6 +109,7 @@ export async function getTasks(filters?: {
     ...row,
     client: row.client ?? null,
     assignees: (row.assignees ?? []).map((a: any) => a.member).filter(Boolean),
+    watchers: (row.watchers ?? []).map((w: any) => w.member).filter(Boolean),
     creator: row.creator ?? null,
     tags: (row.task_tags ?? []).map((tt: any) => tt.tag).filter(Boolean),
   })) as TaskWithRelations[];
@@ -277,7 +283,7 @@ export async function getTeam(): Promise<TeamMember[]> {
   const sb = createClient();
   const { data, error } = await sb
     .from("team_members")
-    .select("id,full_name,role,email,active")
+    .select("id,full_name,role,email,active,whatsapp_phone")
     .eq("active", true)
     .order("full_name");
   if (error) throw error;
@@ -289,21 +295,41 @@ export type DashboardCounts = {
   working: number;
   awaitingApproval: number;
   overdueTasks: number;
+  watching: number;
 };
 
-export async function getDashboardCounts(dateFrom?: string): Promise<DashboardCounts> {
+export async function getDashboardCounts(memberId?: string): Promise<DashboardCounts> {
   const sb = createClient();
   const today = new Date().toISOString().slice(0, 10);
 
-  // Simple counts — no date cutoffs. For a team of 4 with few hundred tasks, we want accurate numbers.
+  // Watching count is always scoped to the member (0 when no member given).
+  const watching = memberId ? await getWatchingCount(memberId) : 0;
+
+  // When scoped to a member, first resolve the task ids assigned to them.
+  let taskIds: string[] | null = null;
+  if (memberId) {
+    const { data: assigneeRows } = await sb
+      .from("task_assignees")
+      .select("task_id")
+      .eq("member_id", memberId);
+    taskIds = (assigneeRows ?? []).map((r: { task_id: string }) => r.task_id);
+    // Member has no assigned tasks — return zeros (but keep watching count).
+    if (taskIds.length === 0) {
+      return { incoming: 0, working: 0, awaitingApproval: 0, overdueTasks: 0, watching };
+    }
+  }
+
+  // Build count queries, optionally scoped to the member's task ids.
+  const qBase = () => {
+    const q = sb.from("tasks").select("*", { count: "exact", head: true });
+    return taskIds ? q.in("id", taskIds) : q;
+  };
+
   const [incoming, working, approval, overdue] = await Promise.all([
-    sb.from("tasks").select("*", { count: "exact", head: true })
-      .eq("status", "מחכה לטיפול"),
-    sb.from("tasks").select("*", { count: "exact", head: true })
-      .in("status", ["נכנס לעבודה", "בעבודה"]),
-    sb.from("tasks").select("*", { count: "exact", head: true })
-      .eq("status", "אישור לקוח"),
-    sb.from("tasks").select("*", { count: "exact", head: true })
+    qBase().eq("status", "מחכה לטיפול"),
+    qBase().in("status", ["נכנס לעבודה", "בעבודה"]),
+    qBase().eq("status", "אישור לקוח"),
+    qBase()
       .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח"])
       .lt("due_date", today),
   ]);
@@ -313,7 +339,52 @@ export async function getDashboardCounts(dateFrom?: string): Promise<DashboardCo
     working: working.count ?? 0,
     awaitingApproval: approval.count ?? 0,
     overdueTasks: overdue.count ?? 0,
+    watching,
   };
+}
+
+// Count of open tasks the member watches (excludes done).
+export async function getWatchingCount(memberId: string): Promise<number> {
+  const sb = createClient();
+  const { data: watchRows } = await sb
+    .from("task_watchers")
+    .select("task_id")
+    .eq("member_id", memberId);
+  const taskIds = (watchRows ?? []).map((r: { task_id: string }) => r.task_id);
+  if (taskIds.length === 0) return 0;
+  const { count } = await sb
+    .from("tasks")
+    .select("*", { count: "exact", head: true })
+    .in("id", taskIds)
+    .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח"]);
+  return count ?? 0;
+}
+
+// Open tasks a member watches — same shape as getMyTasks (for dashboard lists).
+export async function getWatchedTasks(memberId: string) {
+  const sb = createClient();
+
+  const { data: watchRows } = await sb
+    .from("task_watchers")
+    .select("task_id")
+    .eq("member_id", memberId);
+  const taskIds = (watchRows ?? []).map((r: { task_id: string }) => r.task_id);
+  if (taskIds.length === 0) return [];
+
+  const { data } = await sb
+    .from("tasks")
+    .select("id,title,status,due_date,client:clients(name)")
+    .in("id", taskIds)
+    .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח"])
+    .order("due_date", { ascending: true, nullsFirst: false });
+
+  return ((data ?? []) as any[]).map((t) => ({
+    id: t.id as string,
+    title: t.title as string,
+    status: t.status as string,
+    due_date: t.due_date as string | null,
+    client_name: (t.client?.name as string | undefined) ?? null,
+  }));
 }
 
 export type StatTrend = { delta: number; period: "day" | "week" };

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
   Plus, Phone, TrendingUp, TrendingDown, Clock, AlertTriangle,
-  CheckCircle2, ArrowLeft, Users, Inbox, ListChecks,
+  CheckCircle2, ArrowLeft, Users, Inbox, ListChecks, Eye,
 } from "lucide-react";
 import { StatusCell } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -79,10 +79,22 @@ export default async function DashboardPage() {
   const userLabel = user?.user_metadata?.full_name || user?.email || "";
   const firstName = getFirstName(userLabel);
 
+  // Resolve the current user's team_member id so dashboard counts are per-user.
+  const userEmail = user?.email ?? "";
+  let currentMemberId: string | undefined;
+  if (userEmail) {
+    const { data: memberRow } = await sb
+      .from("team_members")
+      .select("id")
+      .eq("email", userEmail)
+      .maybeSingle();
+    currentMemberId = memberRow?.id ?? undefined;
+  }
+
   const [counts, trends, myTasks, recent, clientsOpen, criticalClients] = await Promise.all([
-    getDashboardCounts(),
+    getDashboardCounts(currentMemberId),
     getDashboardTrends(),
-    getMyTasks(user?.email ?? ""),
+    getMyTasks(userEmail),
     getRecentTasksDetailed(5),
     getClientsWithOpenTaskCounts(),
     getCriticalClients(),
@@ -167,6 +179,22 @@ export default async function DashboardPage() {
           );
         })}
       </div>
+      </AnimatedSection>
+
+      {/* Watching card — tasks the current user follows but isn't responsible for */}
+      <AnimatedSection>
+        <Link
+          href="/tasks"
+          className="flex items-center justify-between gap-4 overflow-hidden rounded-2xl bg-pastel-teal p-5 shadow-elevation-1 transition-shadow hover:shadow-elevation-2"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/60">
+              <Eye className="h-4.5 w-4.5 text-success" />
+            </div>
+            <span className="text-caption font-medium text-ink/70">משימות שאני עוקב אחריהן</span>
+          </div>
+          <div className="text-3xl font-bold text-ink"><AnimatedNumber value={counts.watching} /></div>
+        </Link>
       </AnimatedSection>
 
       {/* Main content: Tasks + Sidebar */}

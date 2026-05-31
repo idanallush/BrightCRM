@@ -1,13 +1,16 @@
 "use client";
 
 import * as React from "react";
-import { Send, Paperclip, FileText, FileSpreadsheet, FileImage, File as FileIcon, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { Send, Paperclip, AtSign, FileText, FileSpreadsheet, FileImage, File as FileIcon, Loader2, ChevronDown, ChevronUp, Maximize2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Hint } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/toaster";
 import { addComment, uploadCommentAttachment, getCommentAttachments } from "./actions";
 import type { CommentAttachment } from "./actions";
 import type { TeamMember } from "@/lib/data";
 import { createClient } from "@/lib/supabase/client";
+import { getInitials } from "@/lib/utils";
 
 type Comment = {
   id: string;
@@ -16,6 +19,7 @@ type Comment = {
   author_id: string | null;
   parent_id: string | null;
   created_at: string;
+  mentions: string[];
 };
 
 function timeAgo(iso: string): string {
@@ -25,10 +29,6 @@ function timeAgo(iso: string): string {
   const hours = Math.floor(mins / 60);
   if (hours < 24) return `לפני ${hours} שע'`;
   return `לפני ${Math.floor(hours / 24)} ימים`;
-}
-
-function getInitials(name: string): string {
-  return name.split(/\s+/).map((w) => w[0]).join("").toUpperCase().slice(0, 2);
 }
 
 function isImage(t: string | null) {
@@ -47,6 +47,39 @@ function iconFor(t: string | null) {
 const MAX_BYTES = 10 * 1024 * 1024;
 const ACCEPT =
   "image/jpeg,image/png,image/webp,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/msword,application/vnd.ms-excel";
+
+// Escape a string for safe use inside a RegExp.
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// Render comment content, turning known @mentions into inline blue chips.
+// `names` are the full names that were mentioned (resolved from stored mention IDs).
+// Line breaks are preserved.
+function renderContentWithMentions(content: string, names: string[]): React.ReactNode {
+  if (names.length === 0) return content;
+  // Longest names first so e.g. "@דני לוי" wins over "@דני".
+  const sorted = [...names].sort((a, b) => b.length - a.length);
+  const pattern = new RegExp(`@(?:${sorted.map(escapeRegExp).join("|")})`, "g");
+  const parts = content.split(pattern);
+  const matches = content.match(pattern) ?? [];
+
+  const nodes: React.ReactNode[] = [];
+  parts.forEach((part, i) => {
+    if (part) nodes.push(<React.Fragment key={`t${i}`}>{part}</React.Fragment>);
+    if (i < matches.length) {
+      nodes.push(
+        <span
+          key={`m${i}`}
+          className="rounded-full bg-pastel-blue px-1.5 font-medium text-primary"
+        >
+          {matches[i]}
+        </span>,
+      );
+    }
+  });
+  return nodes;
+}
 
 // ---- Comment input with file attach ----
 
@@ -68,6 +101,15 @@ function CommentInput({
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
   const fileRef = React.useRef<HTMLInputElement>(null);
 
+  // Local object URLs for image previews of pending files. Recreated on change, revoked on cleanup.
+  const previews = React.useMemo(
+    () => pendingFiles.map((f) => (f.type.startsWith("image/") ? URL.createObjectURL(f) : null)),
+    [pendingFiles],
+  );
+  React.useEffect(() => {
+    return () => { previews.forEach((u) => u && URL.revokeObjectURL(u)); };
+  }, [previews]);
+
   function handleTextChange(val: string) {
     setText(val);
     const lastAt = val.lastIndexOf("@");
@@ -76,6 +118,26 @@ function CommentInput({
       if (!query.includes(" ")) { setShowMentions(true); return; }
     }
     setShowMentions(false);
+  }
+
+  // Insert an "@" at the cursor (or end), focus the textarea, and open the mentions dropdown.
+  // Same flow as typing "@" manually.
+  function triggerMention() {
+    const ta = textareaRef.current;
+    const pos = ta ? ta.selectionStart : text.length;
+    const before = text.slice(0, pos);
+    const after = text.slice(pos);
+    // Ensure the "@" begins a mention token (preceded by start-of-text or a space).
+    const needsSpace = before.length > 0 && before[before.length - 1] !== " ";
+    const insert = (needsSpace ? " @" : "@");
+    const next = before + insert + after;
+    setText(next);
+    setShowMentions(true);
+    requestAnimationFrame(() => {
+      const caret = (before + insert).length;
+      ta?.focus();
+      ta?.setSelectionRange(caret, caret);
+    });
   }
 
   function insertMention(member: TeamMember) {
@@ -125,58 +187,102 @@ function CommentInput({
     ? team.filter((m) => m.full_name.toLowerCase().includes(mentionQuery))
     : [];
 
+  const canSend = (text.trim() || pendingFiles.length > 0) && !sending;
+
   return (
     <div className="relative">
-      {/* Pending files preview */}
-      {pendingFiles.length > 0 && (
-        <div className="mb-1.5 flex flex-wrap gap-1.5">
-          {pendingFiles.map((f, i) => (
-            <span
-              key={i}
-              className="inline-flex items-center gap-1 rounded-full bg-surface border border-border px-2.5 py-0.5 text-[11px] text-ink-secondary"
-            >
-              {f.name.length > 20 ? f.name.slice(0, 17) + "..." : f.name}
+      <div className="rounded-xl border border-border bg-white transition-colors focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+        <textarea
+          ref={textareaRef}
+          value={text}
+          onChange={(e) => handleTextChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
+          }}
+          placeholder={placeholder ?? "כתוב עדכון... (@ לאזכור)"}
+          rows={compact ? 1 : 2}
+          className="w-full resize-none rounded-t-xl bg-transparent px-3 pt-3 pb-1.5 text-sm text-ink placeholder:text-ink-muted focus:outline-none"
+        />
+
+        {/* Pending files preview */}
+        {pendingFiles.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 px-3 pb-1.5">
+            {pendingFiles.map((f, i) => {
+              const preview = previews[i];
+              if (preview) {
+                return (
+                  <span key={i} className="relative inline-block">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={preview}
+                      alt={f.name}
+                      className="h-14 w-14 rounded-lg border border-border object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeFile(i)}
+                      className="absolute -end-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-ink text-white shadow-elevation-2 hover:bg-ink-hover"
+                      aria-label="הסר קובץ"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                );
+              }
+              return (
+                <span
+                  key={i}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-[11px] text-ink-secondary"
+                >
+                  <FileIcon className="h-3.5 w-3.5 text-ink-muted" />
+                  {f.name.length > 20 ? f.name.slice(0, 17) + "..." : f.name}
+                  <button
+                    type="button"
+                    onClick={() => removeFile(i)}
+                    className="ms-0.5 text-ink-muted hover:text-ink"
+                    aria-label="הסר קובץ"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Toolbar */}
+        <div className="flex items-center justify-between border-t border-border px-2 py-1.5">
+          <div className="flex items-center gap-0.5">
+            <Hint label="צרף קובץ">
               <button
                 type="button"
-                onClick={() => removeFile(i)}
-                className="text-ink-muted hover:text-ink ms-0.5"
+                onClick={() => fileRef.current?.click()}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface hover:text-ink"
               >
-                &times;
+                <Paperclip className="h-4 w-4" />
               </button>
-            </span>
-          ))}
+            </Hint>
+            <Hint label="תייג מישהו">
+              <button
+                type="button"
+                onClick={triggerMention}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface hover:text-ink"
+              >
+                <AtSign className="h-4 w-4" />
+              </button>
+            </Hint>
+          </div>
+          <Hint label="שלח">
+            <Button
+              onClick={handleSend}
+              disabled={!canSend}
+              className="h-8 gap-1.5 px-3 text-xs"
+            >
+              {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              שלח
+            </Button>
+          </Hint>
         </div>
-      )}
-
-      <textarea
-        ref={textareaRef}
-        value={text}
-        onChange={(e) => handleTextChange(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
-        }}
-        placeholder={placeholder ?? "כתוב עדכון... (@ לאזכור)"}
-        rows={compact ? 1 : 2}
-        className={`w-full resize-none rounded-xl border border-border bg-white p-3 pe-20 text-sm text-ink placeholder:text-ink-muted transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 ${compact ? "py-2" : ""}`}
-      />
-
-      <div className="absolute bottom-2 end-2 flex items-center gap-1">
-        <button
-          type="button"
-          onClick={() => fileRef.current?.click()}
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface hover:text-ink"
-          title="צרף קובץ"
-        >
-          <Paperclip className="h-4 w-4" />
-        </button>
-        <Button
-          size="icon"
-          onClick={handleSend}
-          disabled={(!text.trim() && pendingFiles.length === 0) || sending}
-          className="h-8 w-8"
-        >
-          {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-        </Button>
       </div>
 
       <input
@@ -189,7 +295,7 @@ function CommentInput({
       />
 
       {showMentions && filteredMembers.length > 0 && (
-        <div className="absolute bottom-full mb-1 start-0 w-52 rounded-xl border border-border bg-white p-1 shadow-elevation-3 z-10">
+        <div className="absolute bottom-full mb-1 start-0 z-10 w-52 rounded-xl border border-border bg-white p-1 shadow-elevation-3">
           {filteredMembers.map((m) => (
             <button
               key={m.id}
@@ -255,6 +361,7 @@ function CommentAttachmentList({
 
 function SingleComment({
   comment,
+  team,
   replyCount,
   attachments,
   thumbs,
@@ -262,12 +369,22 @@ function SingleComment({
   isReply,
 }: {
   comment: Comment;
+  team: TeamMember[];
   replyCount?: number;
   attachments: CommentAttachment[];
   thumbs: Record<string, string>;
   onReplyClick?: () => void;
   isReply?: boolean;
 }) {
+  // Resolve stored mention IDs to the names actually present in the content.
+  const mentionNames = React.useMemo(() => {
+    if (!comment.mentions || comment.mentions.length === 0) return [];
+    const byId = new Map(team.map((m) => [m.id, m.full_name]));
+    return comment.mentions
+      .map((id) => byId.get(id))
+      .filter((n): n is string => !!n);
+  }, [comment.mentions, team]);
+
   return (
     <div className="flex gap-3">
       <div className={`flex shrink-0 items-center justify-center rounded-full bg-pastel-blue text-[11px] font-semibold text-primary ${isReply ? "h-6 w-6 text-[9px]" : "h-8 w-8"}`}>
@@ -281,7 +398,7 @@ function SingleComment({
           <span className="text-[11px] text-ink-muted">{timeAgo(comment.created_at)}</span>
         </div>
         <p className={`mt-0.5 text-ink-secondary whitespace-pre-wrap leading-relaxed ${isReply ? "text-xs" : "text-sm"}`}>
-          {comment.content}
+          {renderContentWithMentions(comment.content, mentionNames)}
         </p>
         <CommentAttachmentList attachments={attachments} thumbs={thumbs} />
         {!isReply && (
@@ -314,6 +431,7 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
   const [expandedThreads, setExpandedThreads] = React.useState<Set<string>>(new Set());
   const [attachmentMap, setAttachmentMap] = React.useState<Record<string, CommentAttachment[]>>({});
   const [thumbMap, setThumbMap] = React.useState<Record<string, string>>({});
+  const [expanded, setExpanded] = React.useState(false);
 
   // Fetch current user's team member ID
   React.useEffect(() => {
@@ -332,7 +450,7 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
     const sb = createClient();
     const { data } = await sb
       .from("task_comments")
-      .select("id,content,created_at,parent_id,author:team_members!task_comments_author_id_fkey(id,full_name)")
+      .select("id,content,created_at,parent_id,mentions,author:team_members!task_comments_author_id_fkey(id,full_name)")
       .eq("task_id", taskId)
       .order("created_at", { ascending: true });
     if (data) {
@@ -343,6 +461,7 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
         author_id: c.author?.id ?? null,
         parent_id: c.parent_id ?? null,
         created_at: c.created_at,
+        mentions: Array.isArray(c.mentions) ? c.mentions : [],
       }));
       setComments(mapped);
 
@@ -423,21 +542,22 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
 
   const totalComments = comments.length;
 
-  return (
+  // Comment list + composer. Rendered once and relocated into the Dialog when expanded,
+  // so list state (fetched in this parent) stays intact.
+  const body = (
     <div className="flex flex-col gap-3">
-      <h4 className="text-sm font-semibold text-ink">עדכונים ({totalComments})</h4>
-
       {topLevel.length > 0 && (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col divide-y divide-border">
           {topLevel.map((c) => {
             const replies = repliesMap[c.id] ?? [];
             const isExpanded = expandedThreads.has(c.id);
             const showReplies = replies.length > 0 && isExpanded;
 
             return (
-              <div key={c.id} className="flex flex-col">
+              <div key={c.id} className="flex flex-col py-3 first:pt-0 last:pb-0">
                 <SingleComment
                   comment={c}
+                  team={team}
                   replyCount={replies.length}
                   attachments={attachmentMap[c.id] ?? []}
                   thumbs={thumbMap}
@@ -466,6 +586,7 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
                       <SingleComment
                         key={r.id}
                         comment={r}
+                        team={team}
                         attachments={attachmentMap[r.id] ?? []}
                         thumbs={thumbMap}
                         isReply
@@ -496,6 +617,38 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
         team={team}
         onSend={(text, mentions, files) => handleSend(text, mentions, files, null)}
       />
+    </div>
+  );
+
+  const header = (
+    <div className="flex items-center justify-between">
+      <h4 className="text-sm font-semibold text-ink">עדכונים ({totalComments})</h4>
+      <Hint label="הגדל">
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="flex h-7 w-7 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface hover:text-ink"
+          aria-label="הגדל"
+        >
+          <Maximize2 className="h-4 w-4" />
+        </button>
+      </Hint>
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col gap-3">
+      {header}
+      {!expanded && body}
+
+      <Dialog open={expanded} onOpenChange={setExpanded}>
+        <DialogContent className="max-w-2xl">
+          <DialogTitle>עדכונים ({totalComments})</DialogTitle>
+          <div className="-me-2 max-h-[70vh] overflow-y-auto pe-2">
+            {expanded && body}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

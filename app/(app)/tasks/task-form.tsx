@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown, Check, Plus, X } from "lucide-react";
+import { ChevronDown, Check, Plus, X, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Textarea } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,7 +11,8 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
-import { createTask, updateTask, createTag, type TaskInput } from "./actions";
+import { createTask, updateTask, createTag, updateTag, type TaskInput } from "./actions";
+import { Hint } from "@/components/ui/tooltip";
 import type { Client, Tag, TaskWithRelations, TeamMember } from "@/lib/data";
 
 const STATUS_OPTIONS: { value: TaskInput["status"]; label: string; color: string; textColor: string }[] = [
@@ -28,7 +29,9 @@ function getInitials(name: string): string {
   return name.split(/\s+/).map((w) => w[0]).join("").toUpperCase().slice(0, 2);
 }
 
-const DEFAULT_TAG_COLORS = ["#DCE4FF", "#D0F0E8", "#EDE0FF", "#FFF4CC", "#FFE0D0", "#FFE4E8"];
+// Gray is first — used as the default color for new tags. Pastels are available in the editor.
+const DEFAULT_TAG_COLORS = ["#E5E7EB", "#DCE4FF", "#D0F0E8", "#EDE0FF", "#FFF4CC", "#FFE0D0", "#FFE4E8"];
+const DEFAULT_NEW_TAG_COLOR = "#E5E7EB";
 
 export function TaskForm({
   task, clients, team, tags: initialTags, onDone, compact = false,
@@ -53,6 +56,9 @@ export function TaskForm({
   const [assigneeIds, setAssigneeIds] = React.useState<string[]>(
     task?.assignees.map((a) => a.id) ?? [],
   );
+  const [watcherIds, setWatcherIds] = React.useState<string[]>(
+    task?.watchers?.map((w) => w.id) ?? [],
+  );
   const [tagIds, setTagIds] = React.useState<string[]>(
     task?.tags?.map((t) => t.id) ?? [],
   );
@@ -62,27 +68,39 @@ export function TaskForm({
     setAssigneeIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
   }
 
+  function toggleWatcher(id: string) {
+    setWatcherIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  }
+
   function toggleTag(id: string) {
     setTagIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
   }
 
   async function handleCreateTag(name: string) {
-    const color = DEFAULT_TAG_COLORS[availableTags.length % DEFAULT_TAG_COLORS.length];
-    const res = await createTag(name, color);
+    const res = await createTag(name, DEFAULT_NEW_TAG_COLOR);
     if ("error" in res) { toast.error(res.error); return; }
     const newTag = res.tag as Tag;
     setAvailableTags((prev) => [...prev, newTag]);
     setTagIds((prev) => [...prev, newTag.id]);
   }
 
+  async function handleUpdateTag(tagId: string, fields: { name?: string; color?: string }) {
+    const res = await updateTag(tagId, fields);
+    if ("error" in res) { toast.error(res.error); return; }
+    const updated = res.tag as Tag;
+    setAvailableTags((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim()) { toast.error("חסרה כותרת"); return; }
+    // Compact form has no title field; for an existing task use the (panel-maintained) task title.
+    const finalTitle = (compact && task) ? task.title.trim() : title.trim();
+    if (!finalTitle) { toast.error("חסרה כותרת"); return; }
     if (!clientId) { toast.error("בחר לקוח"); return; }
     setPending(true);
     const payload: TaskInput = {
-      title: title.trim(), client_id: clientId, description: description.trim() || null,
-      status, due_date: dueDate || null, assignee_ids: assigneeIds, tag_ids: tagIds,
+      title: finalTitle, client_id: clientId, description: description.trim() || null,
+      status, due_date: dueDate || null, assignee_ids: assigneeIds, watcher_ids: watcherIds, tag_ids: tagIds,
     };
     const res = task ? await updateTask(task.id, payload) : await createTask(payload);
     setPending(false);
@@ -93,50 +111,64 @@ export function TaskForm({
   }
 
   const selectedStatus = STATUS_OPTIONS.find((o) => o.value === status);
+  const selectedClient = clients.find((c) => c.id === clientId);
 
   return (
     <form onSubmit={onSubmit} className={compact ? "flex flex-col" : "flex min-h-0 flex-1 flex-col"}>
       <div className={compact ? "flex flex-col gap-3" : "-mx-1 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-1 pb-1"}>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="title">כותרת</Label>
-          <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="מה צריך לעשות?" autoFocus={!compact} />
-        </div>
+        {!compact && (
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="title">כותרת</Label>
+            <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="מה צריך לעשות?" autoFocus />
+          </div>
+        )}
 
         {compact ? (
           <>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="flex flex-col gap-1">
-                <Label>לקוח</Label>
-                <Select value={clientId} onValueChange={setClientId}>
-                  <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="בחר לקוח" /></SelectTrigger>
-                  <SelectContent>
-                    {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex flex-col gap-1">
-                <Label>סטטוס</Label>
-                <Select value={status} onValueChange={(v) => setStatus(v as TaskInput["status"])}>
-                  <SelectTrigger className="h-8 text-xs">
-                    <div className="flex items-center gap-1.5">
-                      {selectedStatus && (
-                        <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: selectedStatus.color }} />
-                      )}
-                      <SelectValue />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {STATUS_OPTIONS.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>
-                        <div className="flex items-center gap-2">
-                          <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: opt.color }} />
-                          {opt.label}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="flex flex-col gap-1">
+              <Label>לקוח</Label>
+              <Select value={clientId} onValueChange={setClientId}>
+                <SelectTrigger className="h-8 text-xs">
+                  <div className="flex items-center gap-2">
+                    <ClientLogo client={selectedClient} />
+                    <SelectValue placeholder="בחר לקוח" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  {clients.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      <div className="flex items-center gap-2">
+                        <ClientLogo client={c} />
+                        {c.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <Label>סטטוס</Label>
+              <Select value={status} onValueChange={(v) => setStatus(v as TaskInput["status"])}>
+                <SelectTrigger className="h-8 text-xs">
+                  <div className="flex items-center gap-1.5">
+                    {selectedStatus && (
+                      <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: selectedStatus.color }} />
+                    )}
+                    <SelectValue />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  {STATUS_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      <div className="flex items-center gap-2">
+                        <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: opt.color }} />
+                        {opt.label}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
@@ -151,13 +183,18 @@ export function TaskForm({
             </div>
 
             <div className="flex flex-col gap-1">
+              <Label>עוקבים</Label>
+              <AssigneeDropdown team={team} selected={watcherIds} onToggle={toggleWatcher} noun="עוקבים" />
+            </div>
+
+            <div className="flex flex-col gap-1">
               <Label>תגיות</Label>
-              <TagSelector tags={availableTags} selected={tagIds} onToggle={toggleTag} onCreateTag={handleCreateTag} />
+              <TagSelector tags={availableTags} selected={tagIds} onToggle={toggleTag} onCreateTag={handleCreateTag} onUpdateTag={handleUpdateTag} />
             </div>
 
             <div className="flex flex-col gap-1">
               <Label htmlFor="description">תיאור</Label>
-              <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="פרטים נוספים (לא חובה)" rows={2} className="text-xs" />
+              <CollapsibleTextarea id="description" value={description} onChange={setDescription} placeholder="פרטים נוספים (לא חובה)" />
             </div>
           </>
         ) : (
@@ -227,8 +264,32 @@ export function TaskForm({
             </div>
 
             <div className="flex flex-col gap-1.5">
+              <Label>עוקבים</Label>
+              <div className="flex flex-wrap gap-2">
+                {team.map((m) => {
+                  const active = watcherIds.includes(m.id);
+                  return (
+                    <button key={m.id} type="button" onClick={() => toggleWatcher(m.id)}
+                      className={cn(
+                        "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-caption transition-[color,background-color,opacity,box-shadow] duration-200",
+                        active ? "bg-ink text-white" : "border border-border bg-white text-ink hover:bg-surface",
+                      )}>
+                      <span className={cn(
+                        "flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-semibold",
+                        active ? "bg-white/20 text-white" : "bg-surface-soft text-ink-secondary",
+                      )}>
+                        {getInitials(m.full_name)}
+                      </span>
+                      {m.full_name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
               <Label>תגיות</Label>
-              <TagSelector tags={availableTags} selected={tagIds} onToggle={toggleTag} onCreateTag={handleCreateTag} />
+              <TagSelector tags={availableTags} selected={tagIds} onToggle={toggleTag} onCreateTag={handleCreateTag} onUpdateTag={handleUpdateTag} />
             </div>
           </>
         )}
@@ -244,12 +305,66 @@ export function TaskForm({
   );
 }
 
+function ClientLogo({ client }: { client?: Client }) {
+  if (!client) return null;
+  if (client.logo_url) {
+    return <img src={client.logo_url} alt="" className="h-5 w-5 shrink-0 rounded object-cover" />;
+  }
+  return (
+    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-pastel-blue text-[9px] font-semibold text-primary">
+      {getInitials(client.name)}
+    </span>
+  );
+}
+
+// Description input that caps height + shows a fade and "read more" toggle when the text is long.
+function CollapsibleTextarea({
+  id, value, onChange, placeholder,
+}: {
+  id: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+}) {
+  const [expanded, setExpanded] = React.useState(false);
+  const isLong = value.length > 300;
+  const collapsed = isLong && !expanded;
+
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="relative">
+        <Textarea
+          id={id}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          rows={2}
+          className={cn("text-xs", collapsed && "max-h-24 overflow-hidden")}
+        />
+        {collapsed && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 rounded-b-xl bg-gradient-to-t from-white to-transparent" />
+        )}
+      </div>
+      {isLong && (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="self-start text-xs font-medium text-primary hover:underline"
+        >
+          {expanded ? "הצג פחות" : "קרא עוד"}
+        </button>
+      )}
+    </div>
+  );
+}
+
 function AssigneeDropdown({
-  team, selected, onToggle,
+  team, selected, onToggle, noun = "אחראים",
 }: {
   team: TeamMember[];
   selected: string[];
   onToggle: (id: string) => void;
+  noun?: string;
 }) {
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
@@ -273,7 +388,7 @@ function AssigneeDropdown({
         className="flex h-8 w-full items-center justify-between rounded-xl border border-border bg-white px-2 text-xs text-ink transition-colors hover:bg-surface"
       >
         <span className="truncate">
-          {names.length === 0 ? "בחר אחראים" : names.length === 1 ? names[0] : `${names.length} אחראים`}
+          {names.length === 0 ? `בחר ${noun}` : names.length === 1 ? names[0] : `${names.length} ${noun}`}
         </span>
         <ChevronDown className="h-3.5 w-3.5 shrink-0 text-ink-muted" />
       </button>
@@ -305,15 +420,20 @@ function AssigneeDropdown({
 }
 
 function TagSelector({
-  tags, selected, onToggle, onCreateTag,
+  tags, selected, onToggle, onCreateTag, onUpdateTag,
 }: {
   tags: Tag[];
   selected: string[];
   onToggle: (id: string) => void;
   onCreateTag: (name: string) => void;
+  onUpdateTag: (tagId: string, fields: { name?: string; color?: string }) => void;
 }) {
   const [showInput, setShowInput] = React.useState(false);
   const [newName, setNewName] = React.useState("");
+  // editingId: which tag is currently being edited inline
+  const [editingId, setEditingId] = React.useState<string | null>(null);
+  const [editName, setEditName] = React.useState("");
+  const [editColor, setEditColor] = React.useState("");
 
   function handleAdd() {
     const trimmed = newName.trim();
@@ -329,25 +449,97 @@ function TagSelector({
     setShowInput(false);
   }
 
+  function startEditing(tag: Tag) {
+    setEditingId(tag.id);
+    setEditName(tag.name);
+    setEditColor(tag.color ?? DEFAULT_NEW_TAG_COLOR);
+  }
+
+  function cancelEditing() {
+    setEditingId(null);
+    setEditName("");
+    setEditColor("");
+  }
+
+  function commitEditing() {
+    if (!editingId) return;
+    const trimmed = editName.trim();
+    if (!trimmed) { cancelEditing(); return; }
+    onUpdateTag(editingId, { name: trimmed, color: editColor });
+    cancelEditing();
+  }
+
   return (
     <div className="flex flex-wrap gap-1.5">
       {tags.map((tag) => {
         const active = selected.includes(tag.id);
-        const bg = tag.color ?? "#DCE4FF";
+        const bg = tag.color ?? DEFAULT_NEW_TAG_COLOR;
+
+        // Inline editor for this tag
+        if (editingId === tag.id) {
+          return (
+            <div key={tag.id} className="flex flex-col gap-1.5 rounded-xl border border-border bg-white p-2 shadow-elevation-2">
+              <input
+                autoFocus
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") { e.preventDefault(); commitEditing(); }
+                  if (e.key === "Escape") cancelEditing();
+                }}
+                className="h-6 w-28 rounded-lg border border-border bg-surface px-2 text-xs outline-none focus:ring-2 focus:ring-primary"
+              />
+              <div className="flex flex-wrap gap-1">
+                {DEFAULT_TAG_COLORS.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setEditColor(c)}
+                    className={cn(
+                      "h-5 w-5 rounded-full border-2 transition-transform",
+                      editColor === c ? "scale-110 border-ink" : "border-transparent hover:scale-105",
+                    )}
+                    style={{ backgroundColor: c }}
+                  />
+                ))}
+              </div>
+              <div className="flex gap-1">
+                <button type="button" onClick={commitEditing} className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white hover:bg-primary-hover">
+                  <Check className="h-3 w-3" />
+                </button>
+                <button type="button" onClick={cancelEditing} className="flex h-5 w-5 items-center justify-center rounded-full text-ink-muted hover:bg-surface">
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            </div>
+          );
+        }
+
         return (
-          <button
-            key={tag.id}
-            type="button"
-            onClick={() => onToggle(tag.id)}
-            className={cn(
-              "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-all duration-200",
-              active ? "ring-2 ring-primary ring-offset-1 shadow-sm" : "opacity-60 hover:opacity-100",
-            )}
-            style={{ backgroundColor: bg, color: "#050038" }}
-          >
-            {tag.name}
-            {active && <X className="h-3 w-3" />}
-          </button>
+          <div key={tag.id} className="group relative inline-flex">
+            <button
+              type="button"
+              onClick={() => onToggle(tag.id)}
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-all duration-200",
+                active ? "ring-2 ring-primary ring-offset-1 shadow-sm" : "opacity-60 hover:opacity-100",
+              )}
+              style={{ backgroundColor: bg, color: "#050038" }}
+            >
+              {tag.name}
+              {active && <X className="h-3 w-3" />}
+            </button>
+            {/* Edit icon — appears on hover */}
+            <Hint label="ערוך תגית" side="top">
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); startEditing(tag); }}
+                className="absolute -top-1.5 -end-1.5 hidden h-4 w-4 items-center justify-center rounded-full bg-white shadow-elevation-2 ring-1 ring-border group-hover:flex"
+              >
+                <Pencil className="h-2.5 w-2.5 text-ink-muted" />
+              </button>
+            </Hint>
+          </div>
         );
       })}
       {showInput ? (

@@ -27,7 +27,7 @@ export async function checkAndNotifyOverdue() {
       due_date,
       clients!inner ( name ),
       task_assignees!inner (
-        team_members!inner ( full_name, whatsapp_phone )
+        team_members!inner ( full_name, whatsapp_phone, notify_whatsapp )
       )
     `,
     )
@@ -53,12 +53,13 @@ export async function checkAndNotifyOverdue() {
     const clientName = (row.clients as unknown as { name: string }).name;
 
     const assignees = row.task_assignees as unknown as {
-      team_members: { full_name: string; whatsapp_phone: string | null };
+      team_members: { full_name: string; whatsapp_phone: string | null; notify_whatsapp: boolean | null };
     }[];
 
     for (const a of assignees) {
       const phone = a.team_members.whatsapp_phone;
       if (!phone) continue;
+      if (a.team_members.notify_whatsapp === false) continue;
 
       if (!byAssignee.has(phone)) {
         byAssignee.set(phone, {

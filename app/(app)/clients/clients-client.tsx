@@ -14,6 +14,7 @@ import { EmptyState } from "@/components/empty-state";
 import { cn } from "@/lib/utils";
 import { ClientForm } from "./client-form";
 import type { Client, TeamMember } from "@/lib/data";
+import { UserChip } from "@/components/user-hover-card";
 
 const ALL = "__all__";
 
@@ -80,6 +81,7 @@ export function ClientsClient({
 
   function renderRow(c: (typeof clients)[0]) {
     const openCount = openTaskCounts[c.id] ?? 0;
+    const managerMember = team.find((m) => m.id === c.account_manager_id);
     const links = [
       c.website_url && { url: c.website_url, icon: <Globe className="h-3.5 w-3.5" />, label: "אתר" },
       c.drive_url && { url: c.drive_url, icon: <GoogleDriveIcon className="h-3.5 w-3.5" />, label: "Drive" },
@@ -101,7 +103,13 @@ export function ClientsClient({
             {c.name}
           </div>
         </td>
-        <td className="px-4 py-3 text-ink-secondary">{c.manager_name ?? "ללא"}</td>
+        <td className="px-4 py-3 text-ink-secondary">
+          {managerMember ? (
+            <UserChip member={managerMember} size="sm" />
+          ) : (
+            <span className="text-ink-muted">ללא</span>
+          )}
+        </td>
         <td className="hidden px-4 py-3 sm:table-cell">
           {c.health ? <HealthCell health={c.health} /> : <span className="text-ink-muted">{"--"}</span>}
         </td>

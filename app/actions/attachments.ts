@@ -54,8 +54,10 @@ export async function uploadAttachment(formData: FormData) {
     .maybeSingle();
 
   const folder = clientId ? `client/${clientId}` : `task/${taskId}`;
-  const safeName = file.name.replace(/[^\w.\-א-ת ]+/g, "_");
-  const path = `${folder}/${Date.now()}_${safeName}`;
+  const ext = file.name.includes(".")
+    ? file.name.slice(file.name.lastIndexOf(".")).toLowerCase()
+    : "";
+  const path = `${folder}/${crypto.randomUUID()}${ext}`;
 
   const { error: upErr } = await sb.storage
     .from(BUCKET)

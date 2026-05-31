@@ -1,7 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { ChevronLeft, ChevronDown, ChevronUp, AlertTriangle, MessageCircle, EyeOff, Eye } from "lucide-react";
+import { ArrowUpLeft, ChevronDown, ChevronUp, AlertTriangle, MessageCircle, EyeOff, Eye } from "lucide-react";
+import { UserChip } from "@/components/user-hover-card";
+import { AvatarStack } from "@/components/user-avatar";
+import { Hint } from "@/components/ui/tooltip";
 import { STATUS_COLORS } from "@/components/ui/badge";
 import { updateTaskStatus } from "./actions";
 import { toast } from "@/components/ui/toaster";
@@ -111,9 +114,6 @@ function isStale(t: TaskWithRelations, cutoff: string): boolean {
   return true;
 }
 
-function getInitials(name: string): string {
-  return name.split(/\s+/).map((w) => w[0]).join("").toUpperCase().slice(0, 2);
-}
 
 function relativeDate(iso: string | null): { text: string; class: string } {
   if (!iso) return { text: "ללא דדליין", class: "text-ink-muted italic" };
@@ -193,6 +193,19 @@ export function TaskTable({
         onClick={() => onRowClick(t)}
         className="group cursor-pointer border-b border-border transition-colors duration-150 hover:bg-surface"
       >
+        {/* Open arrow — start of row (RTL: right side) */}
+        <td className="w-8 px-2 pe-0 align-middle">
+          <Hint label="פתח משימה" side="bottom">
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onRowClick(t); }}
+              className="flex items-center justify-center rounded-lg p-1 text-ink-muted opacity-40 transition-all duration-150 group-hover:opacity-100 group-hover:text-primary hover:bg-surface-soft focus-visible:outline-none"
+              aria-label="פתח משימה"
+            >
+              <ArrowUpLeft className="h-4 w-4" />
+            </button>
+          </Hint>
+        </td>
         {/* Task title + comment badge + tags */}
         <td className="max-w-xs px-4 py-2.5 align-middle">
           <div className="flex items-center gap-2">
@@ -223,15 +236,13 @@ export function TaskTable({
         </td>
         {/* Assignee */}
         <td className="hidden px-4 py-2.5 align-middle lg:table-cell">
-          {t.assignees.length === 0 ? (
-            <span className="text-ink-muted">{""}</span>
+          {t.assignees.length === 0 ? null : t.assignees.length === 1 ? (
+            <UserChip member={t.assignees[0]} size="xs" />
           ) : (
-            <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-pastel-blue text-[10px] font-semibold text-primary">
-                {getInitials(t.assignees[0].full_name)}
-              </span>
-              <span className="text-body-sm text-ink">{t.assignees[0].full_name}</span>
-            </div>
+            <AvatarStack
+              people={t.assignees.map((a) => ({ full_name: a.full_name, avatar_url: undefined }))}
+              size="xs"
+            />
           )}
         </td>
         {/* Deadline */}
@@ -245,10 +256,6 @@ export function TaskTable({
         <td className="px-4 py-2.5 align-middle">
           <StatusDropdown taskId={t.id} status={t.status} onUpdated={() => router.refresh()} />
         </td>
-        {/* Row arrow */}
-        <td className="w-8 px-2 text-end text-ink-muted opacity-0 transition-opacity group-hover:opacity-100">
-          <ChevronLeft className="ms-auto h-4 w-4" />
-        </td>
       </tr>
     );
   }
@@ -261,12 +268,12 @@ export function TaskTable({
         <table className="w-full text-right text-body-sm">
           <thead>
             <tr className="bg-surface text-caption text-ink-secondary">
+              <th className="w-8 px-2 pe-0" />
               <th className="px-4 py-2.5 text-right font-medium">משימה</th>
               <th className="hidden px-4 py-2.5 text-right font-medium md:table-cell">לקוח</th>
               <th className="hidden px-4 py-2.5 text-right font-medium lg:table-cell">אחראי</th>
               <th className="px-4 py-2.5 text-right font-medium">דדליין</th>
               <th className="px-4 py-2.5 text-right font-medium">סטטוס</th>
-              <th className="w-8 px-2" />
             </tr>
           </thead>
           <tbody>
@@ -283,7 +290,7 @@ export function TaskTable({
                         style={{ backgroundColor: group.color }}
                       >
                         {isCollapsed
-                          ? <ChevronLeft className="h-4 w-4 text-white" />
+                          ? <ChevronDown className="h-4 w-4 -rotate-90 text-white" />
                           : <ChevronDown className="h-4 w-4 text-white" />}
                         <span className="text-sm font-semibold text-white">
                           {group.label} ({group.tasks.length})
@@ -329,12 +336,12 @@ export function TaskTable({
             <table className="w-full text-right text-body-sm">
               <thead>
                 <tr className="bg-surface text-caption text-ink-secondary">
+                  <th className="w-8 px-2 pe-0" />
                   <th className="px-4 py-2.5 text-right font-medium">משימה</th>
                   <th className="hidden px-4 py-2.5 text-right font-medium md:table-cell">לקוח</th>
                   <th className="hidden px-4 py-2.5 text-right font-medium lg:table-cell">אחראי</th>
                   <th className="px-4 py-2.5 text-right font-medium">דדליין</th>
                   <th className="px-4 py-2.5 text-right font-medium">סטטוס</th>
-                  <th className="w-8 px-2" />
                 </tr>
               </thead>
               <tbody>
