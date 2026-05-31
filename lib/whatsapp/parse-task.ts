@@ -36,7 +36,6 @@ export async function parseTaskFromText(
 ): Promise<ParsedTask> {
   const db = createAdminClient();
 
-  // Fetch context lists for Claude
   const [clientsRes, membersRes] = await Promise.all([
     db.from("clients").select("id, name").order("name"),
     db
@@ -107,7 +106,6 @@ ${memberList}
   }
 
   const parsed = JSON.parse(cleanJsonResponse(content.text)) as ParsedTask;
-  // Creator is always the sender — enforce even if the model omits it
   parsed.creator_id = sender.id;
   parsed.creator_name = sender.full_name;
   return parsed;

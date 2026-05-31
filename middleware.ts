@@ -4,7 +4,7 @@ import { updateSession } from "@/lib/supabase/middleware";
 export async function middleware(request: NextRequest) {
   // Server-to-server routes — no user session, skip auth
   if (
-    request.nextUrl.pathname.startsWith("/api/telegram/") ||
+    request.nextUrl.pathname.startsWith("/api/whatsapp") ||
     request.nextUrl.pathname.startsWith("/api/cron/")
   ) {
     return NextResponse.next();

@@ -84,10 +84,10 @@ async function handleQuickAction(action: string, memberId: string) {
         .eq("status", "בוצע")
         .gte("updated_at", weekAgo),
     ]);
-    const telegramCount = await db.from("tasks").select("*", { count: "exact", head: true })
-      .gte("created_at", weekAgo).eq("source", "telegram");
+    const whatsappCount = await db.from("tasks").select("*", { count: "exact", head: true })
+      .gte("created_at", weekAgo).eq("source", "whatsapp");
     return {
-      text: `סיכום שבועי:\n\n• ${created.count ?? 0} משימות נפתחו מהממשק\n• ${telegramCount.count ?? 0} משימות נפתחו מטלגרם\n• ${completed.count ?? 0} משימות הושלמו`,
+      text: `סיכום שבועי:\n\n• ${created.count ?? 0} משימות נפתחו מהממשק\n• ${whatsappCount.count ?? 0} משימות נפתחו מ-WhatsApp\n• ${completed.count ?? 0} משימות הושלמו`,
       tasks: [],
     };
   }

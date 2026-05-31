@@ -3,7 +3,7 @@ import { getTeam } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
 import {
   User,
-  Send,
+  Phone,
   MessageCircle,
   Mic,
   CheckCircle,
@@ -22,7 +22,7 @@ export default async function SettingsPage() {
 
   const { data: member } = await sb
     .from("team_members")
-    .select("id, full_name, role, email, telegram_user_id")
+    .select("id, full_name, role, email, whatsapp_phone")
     .eq("email", email)
     .maybeSingle();
 
@@ -30,11 +30,11 @@ export default async function SettingsPage() {
 
   const { data: allMembers } = await sb
     .from("team_members")
-    .select("id, full_name, role, email, telegram_user_id, active")
+    .select("id, full_name, role, email, whatsapp_phone, active")
     .eq("active", true)
     .order("full_name");
 
-  const telegramConnected = !!member?.telegram_user_id;
+  const whatsappConnected = !!member?.whatsapp_phone;
 
   return (
     <StaggerContainer className="flex flex-col gap-5" stagger={0.07}>
@@ -63,39 +63,36 @@ export default async function SettingsPage() {
             </div>
           </div>
           <div className="mt-4 flex items-center gap-3 rounded-xl bg-surface p-3">
-            <Send className="h-5 w-5 text-primary" />
+            <Phone className="h-5 w-5 text-primary" />
             <div className="flex-1">
-              <span className="text-sm font-medium text-ink">טלגרם</span>
+              <span className="text-sm font-medium text-ink">WhatsApp</span>
               <span className="mr-2 text-caption text-ink-secondary">
-                {telegramConnected ? "מחובר" : "לא מחובר"}
+                {whatsappConnected ? "מחובר" : "לא מחובר"}
               </span>
             </div>
-            <Badge variant={telegramConnected ? "done" : "neutral"}>
-              {telegramConnected ? "פעיל" : "לא פעיל"}
+            <Badge variant={whatsappConnected ? "done" : "neutral"}>
+              {whatsappConnected ? "פעיל" : "לא פעיל"}
             </Badge>
           </div>
         </div>
       </div>
       </StaggerItem>
 
-      {/* Telegram Guide */}
+      {/* WhatsApp Guide */}
       <StaggerItem>
       <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
         <div className="bg-sidebar px-4 py-3">
-          <h2 className="text-base font-bold text-white">מדריך חיבור טלגרם</h2>
+          <h2 className="text-base font-bold text-white">מדריך חיבור WhatsApp</h2>
         </div>
         <div className="p-4">
           <div className="flex flex-col gap-4">
-            <Step num={1} icon={<MessageCircle className="h-5 w-5 text-primary" />}
-              title="פתח את הבוט בטלגרם"
-              desc="חפש @BrightCRM_bot בטלגרם ולחץ Start" />
-            <Step num={2} icon={<Send className="h-5 w-5 text-primary" />}
-              title="שלח הודעה כלשהי"
-              desc="הבוט יבקש את כתובת המייל שלך" />
-            <Step num={3} icon={<User className="h-5 w-5 text-primary" />}
+            <Step num={1} icon={<Phone className="h-5 w-5 text-primary" />}
+              title="שלח הודעה למספר הבוט"
+              desc="שלח הודעה כלשהי למספר ה-WhatsApp של BrightCRM" />
+            <Step num={2} icon={<MessageCircle className="h-5 w-5 text-primary" />}
               title="שלח את המייל שלך ב-Bright"
-              desc={`למשל: ${email}`} />
-            <Step num={4} icon={<CheckCircle className="h-5 w-5 text-success" />}
+              desc={`הבוט יבקש את כתובת המייל שלך, למשל: ${email}`} />
+            <Step num={3} icon={<CheckCircle className="h-5 w-5 text-success" />}
               title="קיבלת אישור? מעולה!"
               desc="עכשיו אפשר לשלוח הודעות טקסט או קוליות כדי לפתוח משימות" />
           </div>
@@ -142,10 +139,10 @@ export default async function SettingsPage() {
                 <span className="text-caption text-ink-secondary">{m.email}</span>
               </div>
               <div className="flex items-center gap-2">
-                {m.telegram_user_id ? (
-                  <Badge variant="done">Telegram</Badge>
+                {m.whatsapp_phone ? (
+                  <Badge variant="done">WhatsApp</Badge>
                 ) : (
-                  <Badge variant="neutral">ללא טלגרם</Badge>
+                  <Badge variant="neutral">ללא WhatsApp</Badge>
                 )}
               </div>
             </div>

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { quickParseTask, createTask } from "@/app/(app)/tasks/actions";
 import { toast } from "@/components/ui/toaster";
-import type { ParsedTask } from "@/lib/telegram/parse-task";
+import type { ParsedTask } from "@/lib/whatsapp/parse-task";
 
 export function QuickAdd() {
   const router = useRouter();

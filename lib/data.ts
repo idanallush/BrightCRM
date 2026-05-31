@@ -9,7 +9,7 @@ export type Task = {
   start_date: string;
   due_date: string | null;
   created_by_id: string | null;
-  source: "web" | "telegram" | "import";
+  source: "web" | "telegram" | "whatsapp" | "import";
   created_at: string;
   updated_at: string;
 };
@@ -350,7 +350,7 @@ export async function getDashboardTrends(): Promise<{
   };
 }
 
-export type SourceCounts = { telegram: number; web: number; import: number; total: number };
+export type SourceCounts = { whatsapp: number; web: number; import: number; total: number };
 
 // TODO: client-side counting — replace with per-source count queries when scale requires it
 export async function getWeeklySourceCounts(): Promise<SourceCounts> {
@@ -360,9 +360,9 @@ export async function getWeeklySourceCounts(): Promise<SourceCounts> {
     .from("tasks")
     .select("source")
     .gte("created_at", weekAgo);
-  const counts: SourceCounts = { telegram: 0, web: 0, import: 0, total: 0 };
+  const counts: SourceCounts = { whatsapp: 0, web: 0, import: 0, total: 0 };
   for (const row of (data ?? []) as { source: string }[]) {
-    if (row.source === "telegram") counts.telegram++;
+    if (row.source === "whatsapp") counts.whatsapp++;
     else if (row.source === "web") counts.web++;
     else counts.import++;
     counts.total++;

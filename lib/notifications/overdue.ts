@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { sendTextMessage } from "@/lib/whatsapp/api";
 
 type OverdueTask = {
   title: string;
@@ -8,26 +9,10 @@ type OverdueTask = {
 };
 
 type AssigneeTasks = {
-  telegram_user_id: number;
+  whatsapp_phone: string;
   full_name: string;
   tasks: OverdueTask[];
 };
-
-async function sendTelegramMessage(chatId: number, text: string) {
-  const res = await fetch(
-    `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML" }),
-    },
-  );
-  const data = await res.json();
-  if (!data.ok) {
-    console.error(`[Overdue] Telegram send failed for ${chatId}:`, data);
-  }
-  return data.ok;
-}
 
 export async function checkAndNotifyOverdue() {
   const db = createAdminClient();
@@ -42,7 +27,7 @@ export async function checkAndNotifyOverdue() {
       due_date,
       clients!inner ( name ),
       task_assignees!inner (
-        team_members!inner ( full_name, telegram_user_id )
+        team_members!inner ( full_name, whatsapp_phone )
       )
     `,
     )
@@ -58,8 +43,7 @@ export async function checkAndNotifyOverdue() {
     return { tasksFound: 0, messagesSent: 0 };
   }
 
-  // Group by assignee telegram_user_id (skip members without one)
-  const byAssignee = new Map<number, AssigneeTasks>();
+  const byAssignee = new Map<string, AssigneeTasks>();
 
   for (const row of rows) {
     const dueDate = new Date(row.due_date!);
@@ -69,21 +53,21 @@ export async function checkAndNotifyOverdue() {
     const clientName = (row.clients as unknown as { name: string }).name;
 
     const assignees = row.task_assignees as unknown as {
-      team_members: { full_name: string; telegram_user_id: number | null };
+      team_members: { full_name: string; whatsapp_phone: string | null };
     }[];
 
     for (const a of assignees) {
-      const tgId = a.team_members.telegram_user_id;
-      if (!tgId) continue;
+      const phone = a.team_members.whatsapp_phone;
+      if (!phone) continue;
 
-      if (!byAssignee.has(tgId)) {
-        byAssignee.set(tgId, {
-          telegram_user_id: tgId,
+      if (!byAssignee.has(phone)) {
+        byAssignee.set(phone, {
+          whatsapp_phone: phone,
           full_name: a.team_members.full_name,
           tasks: [],
         });
       }
-      byAssignee.get(tgId)!.tasks.push({
+      byAssignee.get(phone)!.tasks.push({
         title: row.title,
         due_date: row.due_date!,
         client_name: clientName,
@@ -103,10 +87,14 @@ export async function checkAndNotifyOverdue() {
       )
       .join("\n");
 
-    const text = `⚠️ יש לך ${assignee.tasks.length} משימות שעברו דדליין:\n\n${taskLines}`;
+    const text = `יש לך ${assignee.tasks.length} משימות שעברו דדליין:\n\n${taskLines}`;
 
-    const ok = await sendTelegramMessage(assignee.telegram_user_id, text);
-    if (ok) messagesSent++;
+    try {
+      await sendTextMessage(assignee.whatsapp_phone, text);
+      messagesSent++;
+    } catch (err) {
+      console.error(`[Overdue] WhatsApp send failed for ${assignee.whatsapp_phone}:`, err);
+    }
   }
 
   return { tasksFound: rows.length, messagesSent };

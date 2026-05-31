@@ -1,6 +1,6 @@
 import Link from "next/link";
 import {
-  Plus, Send, TrendingUp, TrendingDown, Clock, AlertTriangle,
+  Plus, Phone, TrendingUp, TrendingDown, Clock, AlertTriangle,
   CheckCircle2, ArrowLeft, Users, Inbox, ListChecks,
 } from "lucide-react";
 import { StatusCell } from "@/components/ui/badge";
@@ -288,7 +288,7 @@ export default async function DashboardPage() {
                         <span className="text-ink-secondary">{task.title}</span>
                       </span>
                       <span className="shrink-0 text-caption text-ink-muted">{timeAgo(task.created_at)}</span>
-                      {task.source === "telegram" && <Send className="h-3 w-3 shrink-0 text-ink-muted" />}
+                      {task.source === "whatsapp" && <Phone className="h-3 w-3 shrink-0 text-ink-muted" />}
                     </Link>
                   );
                 })}
