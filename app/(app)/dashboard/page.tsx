@@ -10,7 +10,6 @@ import {
   getRecentTasksDetailed, getClientsWithOpenTaskCounts, getCriticalClients,
 } from "@/lib/data";
 import { createClient } from "@/lib/supabase/server";
-import { AiChat } from "@/components/dashboard/ai-chat";
 import { MarkDoneButton } from "@/components/dashboard/mark-done-button";
 import { DashboardSearch } from "@/components/dashboard/dashboard-search";
 import {
@@ -297,8 +296,6 @@ export default async function DashboardPage() {
             )}
           </div>
 
-          {/* AI Chat */}
-          <AiChat userEmail={user?.email ?? ""} />
         </div>
       </div>
       </AnimatedSection>

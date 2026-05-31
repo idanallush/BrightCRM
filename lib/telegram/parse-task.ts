@@ -8,6 +8,8 @@ export type ParsedTask = {
   description: string;
   assignee_name: string;
   assignee_id: string;
+  creator_name: string;
+  creator_id: string;
   due_date: string | null;
   priority: string;
   confidence: number;
@@ -72,7 +74,8 @@ ${memberList}
 
 כללים:
 - client_name ו-client_id חייבים להתאים ללקוח מהרשימה. אם השם לא מדויק, בחר את ההתאמה הקרובה ביותר.
-- assignee ברירת מחדל = השולח, אלא אם ההודעה מציינת מישהו אחר.
+- creator = השולח תמיד. creator_name ו-creator_id הם תמיד של השולח.
+- assignee ברירת מחדל = השולח, אלא אם ההודעה מציינת מישהו אחר (למשל "תפתח משימה לשרון" → assignee = שרון, creator = השולח).
 - due_date בפורמט YYYY-MM-DD. תמיד תרגם תאריכים יחסיים לתאריך מלא:
   "מחר" / "מחרתיים" = יום אחד/יומיים מ-${today}
   "יום ראשון" / "יום א׳" = יום ראשון הקרוב (אם היום כבר יום ראשון, הכוונה ליום ראשון הבא)
@@ -87,7 +90,7 @@ ${memberList}
 - description: תיאור מלא יותר אם ההודעה מכילה פרטים, אחרת זהה ל-title.
 
 החזר JSON בלבד, בלי טקסט נוסף. הפורמט:
-{"client_name":"...","client_id":"...","title":"...","description":"...","assignee_name":"...","assignee_id":"...","due_date":null,"priority":"normal","confidence":0.9}`;
+{"client_name":"...","client_id":"...","title":"...","description":"...","assignee_name":"...","assignee_id":"...","creator_name":"...","creator_id":"...","due_date":null,"priority":"normal","confidence":0.9}`;
 
   const anthropic = new Anthropic();
 
@@ -103,5 +106,9 @@ ${memberList}
     throw new Error("Unexpected response type from Claude API");
   }
 
-  return JSON.parse(cleanJsonResponse(content.text)) as ParsedTask;
+  const parsed = JSON.parse(cleanJsonResponse(content.text)) as ParsedTask;
+  // Creator is always the sender — enforce even if the model omits it
+  parsed.creator_id = sender.id;
+  parsed.creator_name = sender.full_name;
+  return parsed;
 }

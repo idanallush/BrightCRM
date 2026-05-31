@@ -62,6 +62,8 @@ const FULL_TASK: ParsedTask = {
   description: "לעדכן קריאייטיבים לקמפיין חדש",
   assignee_name: "Idan Alush",
   assignee_id: "m1-uuid",
+  creator_name: "Idan Alush",
+  creator_id: "m1-uuid",
   due_date: "2026-05-25",
   priority: "normal",
   confidence: 0.9,
@@ -70,6 +72,14 @@ const FULL_TASK: ParsedTask = {
 const NO_DATE_TASK: ParsedTask = {
   ...FULL_TASK,
   due_date: null,
+};
+
+const DIFFERENT_CREATOR_TASK: ParsedTask = {
+  ...FULL_TASK,
+  creator_name: "Idan Alush",
+  creator_id: "m1-uuid",
+  assignee_name: "Sharon Raz",
+  assignee_id: "m2-uuid",
 };
 
 beforeEach(() => {
@@ -92,6 +102,24 @@ describe("buildConfirmationText", () => {
 
     expect(text).toContain("לא צוין");
     expect(text).not.toContain("null");
+  });
+
+  it("shows creator and assignee separately when they differ", () => {
+    const text = buildConfirmationText(DIFFERENT_CREATOR_TASK);
+
+    expect(text).toContain("פותח:");
+    expect(text).toContain("Idan Alush");
+    expect(text).toContain("מבצע:");
+    expect(text).toContain("Sharon Raz");
+    expect(text).not.toContain("אחראי:");
+  });
+
+  it('shows single "אחראי" when creator equals assignee', () => {
+    const text = buildConfirmationText(FULL_TASK);
+
+    expect(text).toContain("אחראי:");
+    expect(text).not.toContain("פותח:");
+    expect(text).not.toContain("מבצע:");
   });
 });
 
@@ -147,12 +175,13 @@ describe("confirmTask", () => {
 
     expect(taskId).toBe("task-1");
 
-    // Task created with source='telegram'
+    // Task created with source='telegram' and created_by_id
     expect(mockTaskInsert).toHaveBeenCalledWith(
       expect.objectContaining({
         title: FULL_TASK.title,
         client_id: FULL_TASK.client_id,
         source: "telegram",
+        created_by_id: FULL_TASK.creator_id,
       }),
     );
 

@@ -73,6 +73,15 @@ function KanbanCard({ task, color, onClick }: {
       className="w-full rounded-xl border border-border bg-white p-3 text-right transition-shadow duration-150 hover:shadow-elevation-2"
       style={{ borderRightWidth: 3, borderRightColor: color }}>
       <div className="text-body-sm font-medium text-ink">{task.title}</div>
+      {task.tags && task.tags.length > 0 && (
+        <div className="mt-1 flex flex-wrap gap-1">
+          {task.tags.map((tag) => (
+            <span key={tag.id} className="inline-flex rounded-full px-1.5 py-0.5 text-[10px] font-medium" style={{ backgroundColor: tag.color ?? "#DCE4FF", color: "#050038" }}>
+              {tag.name}
+            </span>
+          ))}
+        </div>
+      )}
       <div className="mt-1 text-body-sm text-ink-secondary">{task.client?.name ?? "\u2014"}</div>
       <div className="mt-2 flex items-center justify-between">
         <span className={`text-caption ${overdue ? "font-medium text-overdue" : "text-ink-muted"}`}>

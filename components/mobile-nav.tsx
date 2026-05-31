@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, CheckSquare, Users } from "lucide-react";
+import { LayoutDashboard, CheckSquare, Users, Bot } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
   { href: "/dashboard", label: "דשבורד", Icon: LayoutDashboard },
   { href: "/tasks", label: "משימות", Icon: CheckSquare },
   { href: "/clients", label: "לקוחות", Icon: Users },
+  { href: "/chat", label: "צ'אט AI", Icon: Bot },
 ];
 
 export function MobileNav() {

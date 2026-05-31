@@ -78,6 +78,8 @@ describe("parseTaskFromText", () => {
       description: "לעדכן קריאייטיבים לקמפיין",
       assignee_name: "Idan Alush",
       assignee_id: "m1-uuid",
+      creator_name: "Idan Alush",
+      creator_id: "m1-uuid",
       due_date: null,
       priority: "normal",
       confidence: 0.9,
@@ -96,6 +98,9 @@ describe("parseTaskFromText", () => {
     expect(result.client_id).toBe("c1-uuid");
     expect(result.title).toBe("לעדכן קריאייטיבים");
     expect(result.assignee_id).toBe("m1-uuid");
+    // Creator is always the sender
+    expect(result.creator_id).toBe("m1-uuid");
+    expect(result.creator_name).toBe("Idan Alush");
   });
 
   it("parses due date when mentioned", async () => {
@@ -106,6 +111,8 @@ describe("parseTaskFromText", () => {
       description: "להכין באנרים לקמפיין שנקר",
       assignee_name: "Idan Alush",
       assignee_id: "m1-uuid",
+      creator_name: "Idan Alush",
+      creator_id: "m1-uuid",
       due_date: "2026-05-22",
       priority: "normal",
       confidence: 0.85,
@@ -133,6 +140,8 @@ describe("parseTaskFromText", () => {
       description: "לעדכן משהו",
       assignee_name: "Idan Alush",
       assignee_id: "m1-uuid",
+      creator_name: "Idan Alush",
+      creator_id: "m1-uuid",
       due_date: null,
       priority: "normal",
       confidence: 0.3,
@@ -159,6 +168,8 @@ describe("parseTaskFromText", () => {
             description: "test",
             assignee_name: "Idan Alush",
             assignee_id: "m1-uuid",
+            creator_name: "Idan Alush",
+            creator_id: "m1-uuid",
             due_date: null,
             priority: "normal",
             confidence: 0.5,

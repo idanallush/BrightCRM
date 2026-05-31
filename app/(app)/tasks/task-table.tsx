@@ -193,7 +193,7 @@ export function TaskTable({
         onClick={() => onRowClick(t)}
         className="group cursor-pointer border-b border-border transition-colors duration-150 hover:bg-surface"
       >
-        {/* Task title + comment badge */}
+        {/* Task title + comment badge + tags */}
         <td className="max-w-xs px-4 py-2.5 align-middle">
           <div className="flex items-center gap-2">
             <span className="font-medium text-ink">{t.title}</span>
@@ -203,6 +203,15 @@ export function TaskTable({
               </span>
             )}
           </div>
+          {t.tags && t.tags.length > 0 && (
+            <div className="mt-1 flex flex-wrap gap-1">
+              {t.tags.map((tag) => (
+                <span key={tag.id} className="inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium" style={{ backgroundColor: tag.color ?? "#DCE4FF", color: "#050038" }}>
+                  {tag.name}
+                </span>
+              ))}
+            </div>
+          )}
           {t.description && (
             <div className="mt-0.5 max-w-xs truncate text-sm text-ink-secondary">{t.description}</div>
           )}

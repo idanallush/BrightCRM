@@ -54,6 +54,7 @@ export function QuickAdd() {
       status: "מחכה לטיפול",
       due_date: parsed.due_date,
       assignee_ids: parsed.assignee_id ? [parsed.assignee_id] : [],
+      tag_ids: [],
     });
     setSaving(false);
     if ("error" in res) {
@@ -127,7 +128,14 @@ export function QuickAdd() {
             <div className="flex flex-col gap-1.5 text-sm">
               <Row label="משימה" value={parsed.title} />
               <Row label="לקוח" value={parsed.client_name} />
-              <Row label="אחראי" value={parsed.assignee_name} />
+              {parsed.creator_id && parsed.creator_id !== parsed.assignee_id ? (
+                <>
+                  <Row label="פותח" value={parsed.creator_name} />
+                  <Row label="מבצע" value={parsed.assignee_name} />
+                </>
+              ) : (
+                <Row label="אחראי" value={parsed.assignee_name} />
+              )}
               <Row label="דדליין" value={parsed.due_date ? new Date(parsed.due_date).toLocaleDateString("he-IL") : "ללא"} />
             </div>
             <div className="mt-3 flex gap-2">

@@ -62,9 +62,18 @@ export type TeamMember = {
   active: boolean;
 };
 
+export type Tag = {
+  id: string;
+  name: string;
+  color: string | null;
+  created_at: string;
+};
+
 export type TaskWithRelations = Task & {
   client: { id: string; name: string } | null;
   assignees: { id: string; full_name: string }[];
+  creator: { id: string; full_name: string } | null;
+  tags: Tag[];
 };
 
 export async function getTasks(filters?: {
@@ -77,7 +86,7 @@ export async function getTasks(filters?: {
   let q = sb
     .from("tasks")
     .select(
-      "id,title,client_id,description,status,start_date,due_date,created_by_id,source,created_at,updated_at,client:clients(id,name),assignees:task_assignees(member:team_members(id,full_name))",
+      "id,title,client_id,description,status,start_date,due_date,created_by_id,source,created_at,updated_at,client:clients(id,name),assignees:task_assignees(member:team_members(id,full_name)),creator:team_members!tasks_created_by_id_fkey(id,full_name),task_tags(tag:tags(id,name,color,created_at))",
     )
     .order("due_date", { ascending: true, nullsFirst: false });
 
@@ -95,6 +104,8 @@ export async function getTasks(filters?: {
     ...row,
     client: row.client ?? null,
     assignees: (row.assignees ?? []).map((a: any) => a.member).filter(Boolean),
+    creator: row.creator ?? null,
+    tags: (row.task_tags ?? []).map((tt: any) => tt.tag).filter(Boolean),
   })) as TaskWithRelations[];
 
   if (filters?.assigneeId) {
@@ -380,7 +391,7 @@ export async function getRecentTasksDetailed(limit = 5) {
   const { data } = await sb
     .from("tasks")
     .select(
-      "id,title,status,due_date,source,created_at,client:clients(name),assignees:task_assignees(member:team_members(full_name))",
+      "id,title,status,due_date,source,created_at,client:clients(name),assignees:task_assignees(member:team_members(full_name)),creator:team_members!tasks_created_by_id_fkey(full_name)",
     )
     .order("created_at", { ascending: false })
     .limit(limit);
@@ -393,6 +404,7 @@ export async function getRecentTasksDetailed(limit = 5) {
     created_at: r.created_at as string,
     client_name: (r.client?.name as string | undefined) ?? null,
     created_by:
+      (r.creator?.full_name as string | undefined) ??
       (r.assignees?.[0]?.member?.full_name as string | undefined) ?? null,
   }));
 }
@@ -484,6 +496,16 @@ export async function getClientsWithOpenTaskCounts(): Promise<
     }))
     .filter((c) => c.open_count > 0)
     .sort((a, b) => b.open_count - a.open_count);
+}
+
+export async function getTags(): Promise<Tag[]> {
+  const sb = createClient();
+  const { data, error } = await sb
+    .from("tags")
+    .select("id,name,color,created_at")
+    .order("name");
+  if (error) throw error;
+  return (data ?? []) as Tag[];
 }
 
 export async function getCriticalClients() {

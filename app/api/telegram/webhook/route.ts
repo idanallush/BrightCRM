@@ -9,6 +9,14 @@ import {
   confirmTask,
   showReassignOptions,
   reassignPendingTask,
+  showEditMenu,
+  showClientOptions,
+  setEditState,
+  updatePendingField,
+  updatePendingClient,
+  cancelPendingTask,
+  getPendingEditState,
+  parseHebrewDate,
 } from "@/lib/telegram/confirmation";
 import { transcribeVoice } from "@/lib/telegram/voice";
 import {
@@ -81,6 +89,14 @@ async function handleMessage(message: {
   if (message.text) {
     const text = message.text.trim();
     if (!text || text === "/start") return;
+
+    // Check if user has a pending task waiting for text input (edit flow)
+    const editState = await getPendingEditState(telegramUserId);
+    if (editState) {
+      await handleFieldEdit(chatId, editState, text);
+      return;
+    }
+
     await handleTaskText(chatId, telegramUserId, sender, text);
   }
 }
@@ -133,6 +149,30 @@ async function handleTaskText(
   }
 }
 
+/** Handles a text message that updates a field being edited on a pending task. */
+async function handleFieldEdit(
+  chatId: number,
+  editState: { id: string; edit_field: string | null },
+  text: string,
+) {
+  const field = editState.edit_field;
+  const pendingId = editState.id;
+
+  if (field === "title") {
+    await updatePendingField(chatId, pendingId, "title", text);
+  } else if (field === "due_date") {
+    const parsed = parseHebrewDate(text);
+    if (!parsed) {
+      await sendMessage(
+        chatId,
+        "לא הצלחתי לפענח את התאריך. נסה שוב, למשל: מחר, יום ראשון, 05/06/2026",
+      );
+      return;
+    }
+    await updatePendingField(chatId, pendingId, "due_date", parsed);
+  }
+}
+
 async function handleCallbackQuery(callbackQuery: {
   id: string;
   from: { id: number };
@@ -159,23 +199,47 @@ async function handleCallbackQuery(callbackQuery: {
       await answerCallbackQuery(callbackQuery.id);
       await sendMessage(chatId, "שגיאה ביצירת המשימה. נסה שוב.");
     }
-  } else if (action === "edit") {
+  } else if (action === "edit_menu") {
+    // Show field selection menu
     await editMessageReplyMarkup(chatId, messageId);
-    const siteUrl =
-      process.env.NEXT_PUBLIC_SITE_URL ??
-      (process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : "http://localhost:3000");
-
     await answerCallbackQuery(callbackQuery.id);
+    await showEditMenu(chatId, pendingTaskId);
+  } else if (action === "edit_client") {
+    // Show client list buttons
+    await editMessageReplyMarkup(chatId, messageId);
+    await answerCallbackQuery(callbackQuery.id);
+    await showClientOptions(chatId, pendingTaskId);
+  } else if (action === "edit_assignee") {
+    // Reuse existing reassign flow
+    await editMessageReplyMarkup(chatId, messageId);
+    await answerCallbackQuery(callbackQuery.id);
+    await showReassignOptions(chatId, pendingTaskId);
+  } else if (action === "edit_title") {
+    // Set state so next text message updates the title
+    await editMessageReplyMarkup(chatId, messageId);
+    await answerCallbackQuery(callbackQuery.id);
+    await setEditState(pendingTaskId, "title");
+    await sendMessage(chatId, "שלח כותרת חדשה:");
+  } else if (action === "edit_due") {
+    // Set state so next text message updates the due date
+    await editMessageReplyMarkup(chatId, messageId);
+    await answerCallbackQuery(callbackQuery.id);
+    await setEditState(pendingTaskId, "due_date");
     await sendMessage(
       chatId,
-      `המשימה לא נשמרה. ניתן ליצור אותה בממשק:\n${siteUrl}/tasks`,
+      "שלח תאריך חדש (למשל: מחר, יום ראשון, 05/06/2026):",
     );
-
-    const { createAdminClient } = await import("@/lib/supabase/admin");
-    const db = createAdminClient();
-    await db.from("telegram_pending_tasks").delete().eq("id", pendingTaskId);
+  } else if (action === "select_client") {
+    // "select_client:{pendingTaskId}:{clientId}"
+    const clientId = parts[2];
+    await editMessageReplyMarkup(chatId, messageId);
+    await answerCallbackQuery(callbackQuery.id);
+    await updatePendingClient(chatId, pendingTaskId, clientId);
+  } else if (action === "cancel_edit") {
+    // Delete the pending task
+    await editMessageReplyMarkup(chatId, messageId);
+    await answerCallbackQuery(callbackQuery.id);
+    await cancelPendingTask(chatId, pendingTaskId);
   } else if (action === "reassign") {
     await answerCallbackQuery(callbackQuery.id);
     await showReassignOptions(chatId, pendingTaskId);

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, LayoutGrid, Rows3, CalendarDays, AlertTriangle, Search } from "lucide-react";
+import { Plus, LayoutGrid, Rows3, CalendarDays, AlertTriangle, Search, Tag as TagIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +25,7 @@ import { TaskForm } from "./task-form";
 import { TaskAttachments } from "./task-attachments";
 import { TaskComments } from "./task-comments";
 import { deleteTask } from "./actions";
-import type { Client, TaskWithRelations, TeamMember } from "@/lib/data";
+import type { Client, Tag, TaskWithRelations, TeamMember } from "@/lib/data";
 
 const STATUS_PILLS = [
   { key: "__all__", label: "הכל", color: "" },
@@ -39,11 +39,12 @@ const VIEW_KEY = "brightcrm:tasks-view";
 
 
 function TaskDetailPanel({
-  task, clients, team, onClose, onDelete, confirmingDelete, setConfirmingDelete,
+  task, clients, team, tags, onClose, onDelete, confirmingDelete, setConfirmingDelete,
 }: {
   task: TaskWithRelations;
   clients: Client[];
   team: TeamMember[];
+  tags: Tag[];
   onClose: () => void;
   onDelete: () => void;
   confirmingDelete: boolean;
@@ -52,10 +53,18 @@ function TaskDetailPanel({
   const [fileCount, setFileCount] = React.useState<number | null>(null);
   const filesOpen = fileCount !== null && fileCount > 0;
 
+  const creatorName = task.creator?.full_name ?? null;
+  const isCreatorDifferent = creatorName && !task.assignees.some((a) => a.id === task.created_by_id);
+
   return (
     <>
       <div className="shrink-0 border-b border-border px-5 pb-3 pt-5 md:px-6 md:pt-6">
         <h2 className="text-lg font-semibold text-ink leading-snug">{task.title}</h2>
+        {isCreatorDifferent && (
+          <p className="mt-1 text-sm text-ink-secondary">
+            נפתח ע&quot;י {creatorName}
+          </p>
+        )}
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
@@ -65,7 +74,7 @@ function TaskDetailPanel({
             פרטי משימה
           </summary>
           <div className="px-5 pb-4 md:px-6">
-            <TaskForm key={task.id} task={task} clients={clients} team={team} onDone={onClose} compact />
+            <TaskForm key={task.id} task={task} clients={clients} team={team} tags={tags} onDone={onClose} compact />
           </div>
         </details>
 
@@ -109,11 +118,12 @@ function TaskDetailPanel({
 }
 
 export function TasksClient({
-  tasks, clients, team, commentCounts, initialFilters, initialOpenTaskId,
+  tasks, clients, team, tags, commentCounts, initialFilters, initialOpenTaskId,
 }: {
   tasks: TaskWithRelations[];
   clients: Client[];
   team: TeamMember[];
+  tags: Tag[];
   commentCounts: Record<string, number>;
   initialFilters: { status: string; clientId: string; assigneeId: string; overdue: boolean };
   initialOpenTaskId: string | null;
@@ -125,6 +135,7 @@ export function TasksClient({
   const [editing, setEditing] = React.useState<TaskWithRelations | null>(null);
   const [confirmingDelete, setConfirmingDelete] = React.useState(false);
   const [filters, setFilters] = React.useState(initialFilters);
+  const [tagFilter, setTagFilter] = React.useState<string>("__all__");
   const [searchText, setSearchText] = React.useState("");
 
   React.useEffect(() => {
@@ -151,17 +162,25 @@ export function TasksClient({
   }, [searchParams]);
 
   const filteredTasks = React.useMemo(() => {
-    if (!searchText.trim()) return tasks;
-    const q = searchText.toLowerCase();
-    return tasks.filter((t) => t.title.toLowerCase().includes(q) || t.client?.name?.toLowerCase().includes(q));
-  }, [tasks, searchText]);
+    let result = tasks;
+    if (tagFilter !== "__all__") {
+      result = result.filter((t) => t.tags.some((tag) => tag.id === tagFilter));
+    }
+    if (searchText.trim()) {
+      const q = searchText.toLowerCase();
+      result = result.filter((t) => t.title.toLowerCase().includes(q) || t.client?.name?.toLowerCase().includes(q));
+    }
+    return result;
+  }, [tasks, searchText, tagFilter]);
 
   const activeFilterCount =
     (filters.status !== "__all__" ? 1 : 0) + (filters.clientId !== "__all__" ? 1 : 0) +
-    (filters.assigneeId !== "__all__" ? 1 : 0) + (filters.overdue ? 1 : 0);
+    (filters.assigneeId !== "__all__" ? 1 : 0) + (filters.overdue ? 1 : 0) +
+    (tagFilter !== "__all__" ? 1 : 0);
 
   function clearFilters() {
     setFilters({ status: "__all__", clientId: "__all__", assigneeId: "__all__", overdue: false });
+    setTagFilter("__all__");
     setSearchText("");
     router.push("/tasks");
   }
@@ -284,6 +303,28 @@ export function TasksClient({
                 filters.overdue ? "border-overdue bg-pastel-rose text-overdue" : "border-border bg-white text-ink-secondary hover:bg-surface")}>
               <AlertTriangle className="h-3.5 w-3.5" />עבר דדליין
             </button>
+
+            {tags.length > 0 && (
+              <Select value={tagFilter} onValueChange={setTagFilter}>
+                <SelectTrigger className="h-9 w-auto min-w-[100px]">
+                  <div className="flex items-center gap-1.5">
+                    <TagIcon className="h-3.5 w-3.5" />
+                    <SelectValue placeholder="תגית" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__all__">כל התגיות</SelectItem>
+                  {tags.map((tag) => (
+                    <SelectItem key={tag.id} value={tag.id}>
+                      <div className="flex items-center gap-2">
+                        <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: tag.color ?? "#DCE4FF" }} />
+                        {tag.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
         </div>
       </div>
@@ -322,14 +363,14 @@ export function TasksClient({
             <DialogTitle>משימה חדשה</DialogTitle>
             <DialogDescription>מלא את הפרטים ולחץ צור משימה.</DialogDescription>
           </DialogHeader>
-          <TaskForm clients={clients} team={team} onDone={() => setCreateOpen(false)} />
+          <TaskForm clients={clients} team={team} tags={tags} onDone={() => setCreateOpen(false)} />
         </DialogContent>
       </Dialog>
 
       {/* Task detail panel */}
       <Sheet open={!!editing} onOpenChange={(open) => !open && closeSheet()}>
         <SheetContent side="left" className="flex flex-col gap-0 p-0 sm:max-w-[450px]">
-          {editing && <TaskDetailPanel key={editing.id} task={editing} clients={clients} team={team} onClose={closeSheet} onDelete={onDelete} confirmingDelete={confirmingDelete} setConfirmingDelete={setConfirmingDelete} />}
+          {editing && <TaskDetailPanel key={editing.id} task={editing} clients={clients} team={team} tags={tags} onClose={closeSheet} onDelete={onDelete} confirmingDelete={confirmingDelete} setConfirmingDelete={setConfirmingDelete} />}
         </SheetContent>
       </Sheet>
     </motion.div>

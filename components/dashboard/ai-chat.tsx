@@ -39,7 +39,7 @@ const QUICK_ACTIONS = [
 const fmtDate = (iso: string | null) =>
   iso ? new Date(iso).toLocaleDateString("he-IL") : "ללא דדליין";
 
-export function AiChat({ userEmail }: { userEmail: string }) {
+export function AiChat({ userEmail, fullPage = false }: { userEmail: string; fullPage?: boolean }) {
   const [question, setQuestion] = React.useState("");
   const [loading, setLoading] = React.useState(false);
   const [response, setResponse] = React.useState<ChatResponse | null>(null);
@@ -67,13 +67,13 @@ export function AiChat({ userEmail }: { userEmail: string }) {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
+    <div className={`overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1 ${fullPage ? "flex flex-1 flex-col" : ""}`}>
       <div className="flex items-center gap-2 bg-sidebar px-4 py-3">
         <Bot className="h-4 w-4 text-white/80" />
         <h2 className="text-base font-bold text-white">עוזר AI</h2>
       </div>
 
-      <div className="p-4">
+      <div className={`p-4 ${fullPage ? "flex flex-1 flex-col overflow-y-auto" : ""}`}>
       <div className="-mx-1 mb-3 flex gap-1.5 overflow-x-auto px-1 pb-1">
         {QUICK_ACTIONS.map((qa) => (
           <button

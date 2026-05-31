@@ -1,4 +1,4 @@
-import { getClients, getCommentCountsByTask, getTasks, getTeam } from "@/lib/data";
+import { getClients, getCommentCountsByTask, getTags, getTasks, getTeam } from "@/lib/data";
 import { TasksClient } from "./tasks-client";
 
 export const dynamic = "force-dynamic";
@@ -19,11 +19,12 @@ export default async function TasksPage({
   const assigneeId = searchParams.assignee;
   const overdue = searchParams.overdue === "true";
 
-  const [tasks, clients, team, commentCounts] = await Promise.all([
+  const [tasks, clients, team, commentCounts, tags] = await Promise.all([
     getTasks({ status, clientId, assigneeId, overdue }),
     getClients(),
     getTeam(),
     getCommentCountsByTask(),
+    getTags(),
   ]);
 
   return (
@@ -31,6 +32,7 @@ export default async function TasksPage({
       tasks={tasks}
       clients={clients}
       team={team}
+      tags={tags}
       commentCounts={commentCounts}
       initialFilters={{
         status: status ?? "__all__",
