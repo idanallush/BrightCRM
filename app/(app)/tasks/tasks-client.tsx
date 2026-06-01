@@ -363,7 +363,7 @@ export function TasksClient({
 
         {/* Filter row */}
         <div className="flex flex-col gap-3 border-t border-border px-4 py-3 sm:flex-row sm:items-center">
-          <div className="flex gap-1 overflow-x-auto pb-1">
+          <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-none sm:overflow-x-visible sm:pb-0">
             {STATUS_PILLS.map((pill) => (
               <button key={pill.key} type="button" onClick={() => updateFilter("status", pill.key)}
                 className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-caption transition-colors duration-200",

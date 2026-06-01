@@ -64,7 +64,7 @@ export function Sidebar({ userLabel, userAvatarUrl }: { userLabel: string; userA
           {!isMobile && <button type="button" onClick={() => setCollapsed((v) => !v)} className="rounded-xl p-1.5 text-white/40 transition-colors duration-150 hover:bg-white/5 hover:text-white/80">
             {collapsed ? <ChevronsRight className="h-4 w-4" /> : <ChevronsLeft className="h-4 w-4" />}
           </button>}
-          {isMobile && <button type="button" onClick={() => setMobileOpen(false)} className="rounded-xl p-1.5 text-white/40"><X className="h-5 w-5" /></button>}
+          {isMobile && <button type="button" onClick={() => setMobileOpen(false)} className="rounded-xl p-2.5 text-white/40 hover:text-white/80"><X className="h-5 w-5" /></button>}
         </div>
       </div>
       <nav className="mt-1 flex flex-col gap-0.5 px-3">{NAV_MAIN.map((item, i) => <NavLink key={item.href} {...item} isMobile={isMobile} index={i} />)}</nav>
