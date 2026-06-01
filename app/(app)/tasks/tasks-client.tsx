@@ -62,6 +62,7 @@ function TaskDetailPanel({
   const [savingTitle, setSavingTitle] = React.useState(false);
 
   const creatorName = task.creator?.full_name ?? null;
+  const creatorRole = team.find(m => m.id === task.created_by_id)?.role ?? null;
   const isCreatorDifferent = creatorName && !task.assignees.some((a) => a.id === task.created_by_id);
 
   async function saveTitle() {
@@ -100,13 +101,13 @@ function TaskDetailPanel({
               if (e.key === "Enter") { e.preventDefault(); saveTitle(); }
               if (e.key === "Escape") { setTitleDraft(task.title); setEditingTitle(false); }
             }}
-            className="text-lg font-semibold text-ink"
+            className="text-xl font-semibold text-ink"
           />
         ) : (
           <h2
             onClick={() => { setTitleDraft(task.title); setEditingTitle(true); }}
             title="לחץ לעריכה"
-            className="-mx-1.5 cursor-text rounded-lg px-1.5 py-0.5 text-lg font-semibold leading-snug text-ink transition-colors hover:bg-surface"
+            className="-mx-1.5 cursor-text rounded-lg px-1.5 py-0.5 text-xl font-semibold leading-snug text-ink transition-colors hover:bg-surface"
           >
             {task.title}
           </h2>
@@ -114,13 +115,14 @@ function TaskDetailPanel({
         {isCreatorDifferent && (
           <p className="mt-1 text-sm text-ink-secondary">
             נפתח ע&quot;י {creatorName}
+            {creatorRole && <span className="text-xs text-ink-muted"> — {creatorRole}</span>}
           </p>
         )}
         {task.watchers.length > 0 && (
           <div className="mt-2 flex items-center gap-2">
             <span className="inline-flex items-center gap-1 text-caption text-ink-secondary">
               <Eye className="h-3.5 w-3.5 text-ink-muted" />
-              עוקבים
+              במעקב
             </span>
             <div className="flex flex-wrap items-center gap-1.5">
               {task.watchers.map((w) => (
@@ -134,7 +136,7 @@ function TaskDetailPanel({
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
         {/* 1. Task details */}
         <details open className="border-b border-border">
-          <summary className="cursor-pointer px-5 py-3 text-sm font-semibold text-ink hover:bg-surface md:px-6">
+          <summary className="cursor-pointer px-5 py-3 text-base font-semibold text-ink hover:bg-surface md:px-6">
             פרטי משימה
           </summary>
           <div className="px-5 pb-4 md:px-6">
@@ -144,7 +146,7 @@ function TaskDetailPanel({
 
         {/* 2. Updates */}
         <details open className="border-b border-border">
-          <summary className="cursor-pointer px-5 py-3 text-sm font-semibold text-ink hover:bg-surface md:px-6">
+          <summary className="cursor-pointer px-5 py-3 text-base font-semibold text-ink hover:bg-surface md:px-6">
             עדכונים
           </summary>
           <div className="px-5 pb-4 md:px-6">
@@ -154,7 +156,7 @@ function TaskDetailPanel({
 
         {/* 3. Files */}
         <details open={filesOpen} className="border-b border-border">
-          <summary className="cursor-pointer px-5 py-3 text-sm font-semibold text-ink hover:bg-surface md:px-6">
+          <summary className="cursor-pointer px-5 py-3 text-base font-semibold text-ink hover:bg-surface md:px-6">
             קבצים{fileCount !== null ? ` (${fileCount})` : ""}
           </summary>
           <div className="px-5 pb-4 md:px-6">

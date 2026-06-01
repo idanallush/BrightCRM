@@ -258,6 +258,7 @@ const COMMENT_ALLOWED = [
 
 export async function uploadCommentAttachment(commentId: string, formData: FormData) {
   const file = formData.get("file") as File | null;
+  const fileName = (formData.get("fileName") as string) || file?.name || "unnamed";
   if (!file) return { error: "לא נשלח קובץ" };
   if (file.size > COMMENT_MAX_BYTES) return { error: "הקובץ גדול מ-10MB" };
   if (!COMMENT_ALLOWED.includes(file.type)) return { error: `סוג קובץ לא נתמך: ${file.type}` };
@@ -272,8 +273,8 @@ export async function uploadCommentAttachment(commentId: string, formData: FormD
     .eq("email", user.email)
     .maybeSingle();
 
-  const ext = file.name.includes(".")
-    ? file.name.slice(file.name.lastIndexOf(".")).toLowerCase()
+  const ext = fileName.includes(".")
+    ? fileName.slice(fileName.lastIndexOf(".")).toLowerCase()
     : "";
   const path = `comments/${commentId}/${Date.now()}-${crypto.randomUUID()}${ext}`;
 
@@ -284,7 +285,7 @@ export async function uploadCommentAttachment(commentId: string, formData: FormD
 
   const { error: insErr } = await sb.from("comment_attachments").insert({
     comment_id: commentId,
-    file_name: file.name,
+    file_name: fileName,
     file_size: file.size,
     content_type: file.type,
     storage_path: path,
@@ -335,12 +336,11 @@ export async function getCommentAttachments(commentIds: string[]) {
     if (!attachments[att.comment_id]) attachments[att.comment_id] = [];
     attachments[att.comment_id].push(att);
 
-    if (att.content_type?.startsWith("image/")) {
-      const { data: signedData } = await sb.storage
-        .from(COMMENT_BUCKET)
-        .createSignedUrl(att.storage_path, 600);
-      if (signedData?.signedUrl) thumbs[att.storage_path] = signedData.signedUrl;
-    }
+    // Generate signed URLs for ALL files (images and non-images)
+    const { data: signedData } = await sb.storage
+      .from(COMMENT_BUCKET)
+      .createSignedUrl(att.storage_path, 600);
+    if (signedData?.signedUrl) thumbs[att.storage_path] = signedData.signedUrl;
   }
 
   return { attachments, thumbs };

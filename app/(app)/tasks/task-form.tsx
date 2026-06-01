@@ -29,9 +29,8 @@ function getInitials(name: string): string {
   return name.split(/\s+/).map((w) => w[0]).join("").toUpperCase().slice(0, 2);
 }
 
-// Gray is first — used as the default color for new tags. Pastels are available in the editor.
-const DEFAULT_TAG_COLORS = ["#E5E7EB", "#DCE4FF", "#D0F0E8", "#EDE0FF", "#FFF4CC", "#FFE0D0", "#FFE4E8"];
-const DEFAULT_NEW_TAG_COLOR = "#E5E7EB";
+const TAG_COLOR_OPTIONS = ["#E0E0E6", "#DCE4FF", "#D0F0E8", "#EDE0FF", "#FFF4CC", "#FFE0D0", "#FFE4E8"];
+const DEFAULT_NEW_TAG_COLOR = "#E0E0E6";
 
 export function TaskForm({
   task, clients, team, tags: initialTags, onDone, compact = false,
@@ -76,8 +75,8 @@ export function TaskForm({
     setTagIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
   }
 
-  async function handleCreateTag(name: string) {
-    const res = await createTag(name, DEFAULT_NEW_TAG_COLOR);
+  async function handleCreateTag(name: string, color: string) {
+    const res = await createTag(name, color);
     if ("error" in res) { toast.error(res.error); return; }
     const newTag = res.tag as Tag;
     setAvailableTags((prev) => [...prev, newTag]);
@@ -126,9 +125,8 @@ export function TaskForm({
         {compact ? (
           <>
             <div className="flex flex-col gap-1">
-              <Label>לקוח</Label>
               <Select value={clientId} onValueChange={setClientId}>
-                <SelectTrigger className="h-8 text-xs">
+                <SelectTrigger className="h-9 text-sm">
                   <div className="flex items-center gap-2">
                     <ClientLogo client={selectedClient} />
                     <SelectValue placeholder="בחר לקוח" />
@@ -148,9 +146,8 @@ export function TaskForm({
             </div>
 
             <div className="flex flex-col gap-1">
-              <Label>סטטוס</Label>
               <Select value={status} onValueChange={(v) => setStatus(v as TaskInput["status"])}>
-                <SelectTrigger className="h-8 text-xs">
+                <SelectTrigger className="h-9 text-sm">
                   <div className="flex items-center gap-1.5">
                     {selectedStatus && (
                       <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: selectedStatus.color }} />
@@ -173,28 +170,23 @@ export function TaskForm({
 
             <div className="grid grid-cols-2 gap-2">
               <div className="flex flex-col gap-1">
-                <Label htmlFor="due">תאריך יעד</Label>
-                <Input id="due" type="date" className="h-8 text-xs" value={dueDate ?? ""} onChange={(e) => setDueDate(e.target.value)} />
+                <Input id="due" type="date" className="h-9 text-sm" value={dueDate ?? ""} onChange={(e) => setDueDate(e.target.value)} placeholder="תאריך יעד" />
               </div>
               <div className="flex flex-col gap-1">
-                <Label>אחראים</Label>
                 <AssigneeDropdown team={team} selected={assigneeIds} onToggle={toggleAssignee} />
               </div>
             </div>
 
             <div className="flex flex-col gap-1">
-              <Label>עוקבים</Label>
-              <AssigneeDropdown team={team} selected={watcherIds} onToggle={toggleWatcher} noun="עוקבים" />
+              <AssigneeDropdown team={team} selected={watcherIds} onToggle={toggleWatcher} noun="במעקב" />
             </div>
 
             <div className="flex flex-col gap-1">
-              <Label>תגיות</Label>
               <TagSelector tags={availableTags} selected={tagIds} onToggle={toggleTag} onCreateTag={handleCreateTag} onUpdateTag={handleUpdateTag} />
             </div>
 
             <div className="flex flex-col gap-1">
-              <Label htmlFor="description">תיאור</Label>
-              <CollapsibleTextarea id="description" value={description} onChange={setDescription} placeholder="פרטים נוספים (לא חובה)" />
+              <CollapsibleTextarea id="description" value={description} onChange={setDescription} placeholder="הוסף תיאור..." />
             </div>
           </>
         ) : (
@@ -264,7 +256,7 @@ export function TaskForm({
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label>עוקבים</Label>
+              <Label>במעקב</Label>
               <div className="flex flex-wrap gap-2">
                 {team.map((m) => {
                   const active = watcherIds.includes(m.id);
@@ -385,7 +377,7 @@ function AssigneeDropdown({
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex h-8 w-full items-center justify-between rounded-xl border border-border bg-white px-2 text-xs text-ink transition-colors hover:bg-surface"
+        className="flex h-9 w-full items-center justify-between rounded-xl border border-border bg-white px-2 text-sm text-ink transition-colors hover:bg-surface"
       >
         <span className="truncate">
           {names.length === 0 ? `בחר ${noun}` : names.length === 1 ? names[0] : `${names.length} ${noun}`}
@@ -401,7 +393,7 @@ function AssigneeDropdown({
                 key={m.id}
                 type="button"
                 onClick={() => onToggle(m.id)}
-                className="flex w-full items-center gap-2 px-2.5 py-1.5 text-xs text-ink transition-colors hover:bg-surface"
+                className="flex w-full items-center gap-2 px-2.5 py-1.5 text-sm text-ink transition-colors hover:bg-surface"
               >
                 <span className={cn(
                   "flex h-4 w-4 items-center justify-center rounded border",
@@ -425,12 +417,12 @@ function TagSelector({
   tags: Tag[];
   selected: string[];
   onToggle: (id: string) => void;
-  onCreateTag: (name: string) => void;
+  onCreateTag: (name: string, color: string) => void;
   onUpdateTag: (tagId: string, fields: { name?: string; color?: string }) => void;
 }) {
   const [showInput, setShowInput] = React.useState(false);
   const [newName, setNewName] = React.useState("");
-  // editingId: which tag is currently being edited inline
+  const [newColor, setNewColor] = React.useState("#E0E0E6");
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [editName, setEditName] = React.useState("");
   const [editColor, setEditColor] = React.useState("");
@@ -443,9 +435,10 @@ function TagSelector({
       const existing = tags.find((t) => t.name === trimmed);
       if (existing && !selected.includes(existing.id)) onToggle(existing.id);
     } else {
-      onCreateTag(trimmed);
+      onCreateTag(trimmed, newColor);
     }
     setNewName("");
+    setNewColor("#E0E0E6");
     setShowInput(false);
   }
 
@@ -490,7 +483,7 @@ function TagSelector({
                 className="h-6 w-28 rounded-lg border border-border bg-surface px-2 text-xs outline-none focus:ring-2 focus:ring-primary"
               />
               <div className="flex flex-wrap gap-1">
-                {DEFAULT_TAG_COLORS.map((c) => (
+                {TAG_COLOR_OPTIONS.map((c) => (
                   <button
                     key={c}
                     type="button"
@@ -543,21 +536,37 @@ function TagSelector({
         );
       })}
       {showInput ? (
-        <div className="flex items-center gap-1">
-          <input
-            autoFocus
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAdd(); } if (e.key === "Escape") setShowInput(false); }}
-            placeholder="שם התגית..."
-            className="h-7 w-24 rounded-full border border-border bg-white px-2.5 text-xs outline-none focus:ring-2 focus:ring-primary"
-          />
-          <button type="button" onClick={handleAdd} className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white hover:bg-primary-hover">
-            <Check className="h-3 w-3" />
-          </button>
-          <button type="button" onClick={() => { setShowInput(false); setNewName(""); }} className="flex h-6 w-6 items-center justify-center rounded-full text-ink-muted hover:bg-surface">
-            <X className="h-3 w-3" />
-          </button>
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-1">
+            <input
+              autoFocus
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAdd(); } if (e.key === "Escape") { setShowInput(false); setNewColor("#E0E0E6"); } }}
+              placeholder="שם התגית..."
+              className="h-7 w-24 rounded-full border border-border bg-white px-2.5 text-xs outline-none focus:ring-2 focus:ring-primary"
+            />
+            <button type="button" onClick={handleAdd} className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white hover:bg-primary-hover">
+              <Check className="h-3 w-3" />
+            </button>
+            <button type="button" onClick={() => { setShowInput(false); setNewName(""); setNewColor("#E0E0E6"); }} className="flex h-6 w-6 items-center justify-center rounded-full text-ink-muted hover:bg-surface">
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+          <div className="flex items-center gap-1">
+            {TAG_COLOR_OPTIONS.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setNewColor(c)}
+                className={cn(
+                  "h-5 w-5 rounded-full transition-all",
+                  newColor === c ? "ring-2 ring-primary ring-offset-1" : "hover:scale-110",
+                )}
+                style={{ backgroundColor: c }}
+              />
+            ))}
+          </div>
         </div>
       ) : (
         <button

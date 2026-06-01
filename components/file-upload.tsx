@@ -48,33 +48,40 @@ export function FileUpload({
     setTotal(valid.length);
     setUploaded(0);
 
-    const results = await Promise.allSettled(
-      valid.map(async (file) => {
-        const fd = new FormData();
-        fd.append("file", file);
-        if (clientId) fd.append("clientId", clientId);
-        if (taskId) fd.append("taskId", taskId);
-        const res = await uploadAttachment(fd);
-        setUploaded((n) => n + 1);
-        return { file, res };
-      }),
-    );
+    try {
+      const results = await Promise.allSettled(
+        valid.map(async (file) => {
+          const fd = new FormData();
+          fd.append("file", file);
+          fd.append("fileName", file.name);
+          if (clientId) fd.append("clientId", clientId);
+          if (taskId) fd.append("taskId", taskId);
+          const res = await uploadAttachment(fd);
+          setUploaded((n) => n + 1);
+          return { file, res };
+        }),
+      );
 
-    let ok = 0;
-    for (const r of results) {
-      if (r.status === "fulfilled") {
-        if ("error" in r.value.res) {
-          toast.error(`${r.value.file.name}: ${r.value.res.error}`);
+      let ok = 0;
+      for (const r of results) {
+        if (r.status === "fulfilled") {
+          if ("error" in r.value.res) {
+            toast.error(`${r.value.file.name}: ${r.value.res.error}`);
+          } else {
+            ok++;
+          }
         } else {
-          ok++;
+          toast.error("העלאה נכשלה, ייתכן שהקובץ גדול מדי");
         }
       }
-    }
 
-    if (ok > 0) {
-      toast.success(ok === 1 ? "קובץ הועלה" : `${ok} קבצים הועלו`);
-      router.refresh();
-      onUploaded?.();
+      if (ok > 0) {
+        toast.success(ok === 1 ? "קובץ הועלה" : `${ok} קבצים הועלו`);
+        router.refresh();
+        onUploaded?.();
+      }
+    } catch {
+      toast.error("העלאה נכשלה, ייתכן שהקובץ גדול מדי");
     }
 
     setPending(false);

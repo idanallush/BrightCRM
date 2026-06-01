@@ -32,6 +32,7 @@ export type Attachment = {
 
 export async function uploadAttachment(formData: FormData) {
   const file = formData.get("file") as File | null;
+  const fileName = (formData.get("fileName") as string) || file?.name || "unnamed";
   const clientId = (formData.get("clientId") as string | null) || null;
   const taskId = (formData.get("taskId") as string | null) || null;
 
@@ -54,8 +55,8 @@ export async function uploadAttachment(formData: FormData) {
     .maybeSingle();
 
   const folder = clientId ? `client/${clientId}` : `task/${taskId}`;
-  const ext = file.name.includes(".")
-    ? file.name.slice(file.name.lastIndexOf(".")).toLowerCase()
+  const ext = fileName.includes(".")
+    ? fileName.slice(fileName.lastIndexOf(".")).toLowerCase()
     : "";
   const path = `${folder}/${crypto.randomUUID()}${ext}`;
 
@@ -65,7 +66,7 @@ export async function uploadAttachment(formData: FormData) {
   if (upErr) return { error: `העלאה נכשלה: ${upErr.message}` };
 
   const { error: insErr } = await sb.from("attachments").insert({
-    file_name: file.name,
+    file_name: fileName,
     file_size: file.size,
     content_type: file.type,
     storage_path: path,

@@ -343,14 +343,18 @@ function CommentAttachmentList({
           );
         }
         const Icon = iconFor(att.content_type);
+        const url = thumbs[att.storage_path];
         return (
-          <span
+          <a
             key={att.id}
-            className="inline-flex items-center gap-1.5 rounded-full bg-surface border border-border px-3 py-1 text-[11px] text-ink-secondary"
+            href={url || "#"}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-full bg-surface border border-border px-3 py-1 text-[11px] text-ink-secondary cursor-pointer hover:bg-surface/80 transition-colors"
           >
             <Icon className="h-3.5 w-3.5 text-ink-muted" />
             {att.file_name.length > 25 ? att.file_name.slice(0, 22) + "..." : att.file_name}
-          </span>
+          </a>
         );
       })}
     </div>
@@ -392,12 +396,12 @@ function SingleComment({
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline justify-between gap-2">
-          <span className={`font-semibold text-ink ${isReply ? "text-xs" : "text-sm"}`}>
+          <span className={`font-semibold text-ink ${isReply ? "text-xs" : "text-base"}`}>
             {comment.author_name ?? "לא ידוע"}
           </span>
-          <span className="text-[11px] text-ink-muted">{timeAgo(comment.created_at)}</span>
+          <span className="text-xs text-ink-muted">{timeAgo(comment.created_at)}</span>
         </div>
-        <p className={`mt-0.5 text-ink-secondary whitespace-pre-wrap leading-relaxed ${isReply ? "text-xs" : "text-sm"}`}>
+        <p className={`mt-0.5 text-ink-secondary whitespace-pre-wrap leading-relaxed ${isReply ? "text-xs" : "text-base"}`}>
           {renderContentWithMentions(comment.content, mentionNames)}
         </p>
         <CommentAttachmentList attachments={attachments} thumbs={thumbs} />
@@ -406,12 +410,12 @@ function SingleComment({
             <button
               type="button"
               onClick={onReplyClick}
-              className="text-[11px] font-medium text-primary hover:text-primary/80 transition-colors"
+              className="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
             >
               השב
             </button>
             {replyCount && replyCount > 0 ? (
-              <span className="text-[11px] text-ink-muted">
+              <span className="text-xs text-ink-muted">
                 {replyCount} {replyCount === 1 ? "תגובה" : "תגובות"}
               </span>
             ) : null}
@@ -429,6 +433,7 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
   const [memberId, setMemberId] = React.useState<string | null>(null);
   const [replyingTo, setReplyingTo] = React.useState<string | null>(null);
   const [expandedThreads, setExpandedThreads] = React.useState<Set<string>>(new Set());
+  const [showAll, setShowAll] = React.useState(false);
   const [attachmentMap, setAttachmentMap] = React.useState<Record<string, CommentAttachment[]>>({});
   const [thumbMap, setThumbMap] = React.useState<Record<string, string>>({});
   const [expanded, setExpanded] = React.useState(false);
@@ -514,20 +519,25 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
 
     // Upload files if any
     if (files.length > 0 && res.commentId) {
-      const results = await Promise.allSettled(
-        files.map(async (file) => {
-          const fd = new FormData();
-          fd.append("file", file);
-          return uploadCommentAttachment(res.commentId, fd);
-        }),
-      );
-      let errors = 0;
-      for (const r of results) {
-        if (r.status === "rejected" || (r.status === "fulfilled" && "error" in r.value)) {
-          errors++;
+      try {
+        const results = await Promise.allSettled(
+          files.map(async (file) => {
+            const fd = new FormData();
+            fd.append("file", file);
+            fd.append("fileName", file.name);
+            return uploadCommentAttachment(res.commentId, fd);
+          }),
+        );
+        let errors = 0;
+        for (const r of results) {
+          if (r.status === "rejected" || (r.status === "fulfilled" && "error" in r.value)) {
+            errors++;
+          }
         }
+        if (errors > 0) toast.error(`${errors} קבצים נכשלו בהעלאה`);
+      } catch {
+        toast.error("העלאה נכשלה, ייתכן שהקובץ גדול מדי");
       }
-      if (errors > 0) toast.error(`${errors} קבצים נכשלו בהעלאה`);
     }
 
     // If replying, auto-expand that thread
@@ -548,7 +558,7 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
     <div className="flex flex-col gap-3">
       {topLevel.length > 0 && (
         <div className="flex flex-col divide-y divide-border">
-          {topLevel.map((c) => {
+          {(showAll ? topLevel : topLevel.slice(0, 2)).map((c) => {
             const replies = repliesMap[c.id] ?? [];
             const isExpanded = expandedThreads.has(c.id);
             const showReplies = replies.length > 0 && isExpanded;
@@ -572,7 +582,7 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
                   <button
                     type="button"
                     onClick={() => toggleThread(c.id)}
-                    className="ms-11 mt-1 flex items-center gap-1 text-[11px] font-medium text-primary hover:text-primary/80 transition-colors"
+                    className="ms-11 mt-1 flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
                   >
                     {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                     {isExpanded ? "הסתר תגובות" : `הצג ${replies.length} ${replies.length === 1 ? "תגובה" : "תגובות"}`}
@@ -609,6 +619,15 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
               </div>
             );
           })}
+          {!showAll && topLevel.length > 2 && (
+            <button
+              type="button"
+              onClick={() => setShowAll(true)}
+              className="text-sm font-medium text-primary hover:text-primary/80 transition-colors py-1"
+            >
+              צפה בעוד {topLevel.length - 2}
+            </button>
+          )}
         </div>
       )}
 
@@ -622,7 +641,7 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
 
   const header = (
     <div className="flex items-center justify-between">
-      <h4 className="text-sm font-semibold text-ink">עדכונים ({totalComments})</h4>
+      <h4 className="text-base font-semibold text-ink">עדכונים ({totalComments})</h4>
       <Hint label="הגדל">
         <button
           type="button"
