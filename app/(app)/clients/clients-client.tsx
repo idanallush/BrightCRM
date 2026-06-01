@@ -152,13 +152,13 @@ export function ClientsClient({
     >
       {/* Header bar */}
       <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
-        <div className="flex flex-wrap items-center justify-between gap-3 bg-sidebar px-5 py-3.5">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3.5">
           <div className="flex items-center gap-3">
-            <h1 className="text-base font-bold text-white">לקוחות</h1>
-            <span className="rounded-full bg-white/15 px-2.5 py-0.5 text-caption text-white">{filtered.length}</span>
+            <h1 className="text-base font-bold text-ink">לקוחות</h1>
+            <span className="rounded-full bg-surface px-2.5 py-0.5 text-caption text-ink-secondary">{filtered.length}</span>
             {activeFilterCount > 0 && (
               <button type="button" onClick={clearFilters}
-                className="rounded-full bg-white/15 px-3 py-1 text-[11px] font-medium text-white hover:bg-white/25">
+                className="rounded-full bg-surface px-3 py-1 text-[11px] font-medium text-ink-secondary hover:bg-border">
                 {activeFilterCount === 1 ? "פילטר 1" : `${activeFilterCount} פילטרים`} · נקה
               </button>
             )}
@@ -232,7 +232,7 @@ export function ClientsClient({
               {myClients.length > 0 && (
                 <>
                   <tr>
-                    <td colSpan={6} className="bg-sidebar px-4 py-1.5 text-caption font-semibold text-white">הלקוחות שלי</td>
+                    <td colSpan={6} className="border-b border-border bg-surface px-4 py-1.5 text-caption font-semibold text-ink-secondary">הלקוחות שלי</td>
                   </tr>
                   {myClients.map(renderRow)}
                 </>

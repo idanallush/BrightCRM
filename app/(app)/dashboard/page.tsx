@@ -114,10 +114,10 @@ export default async function DashboardPage() {
       {/* Welcome header */}
       <AnimatedSection>
       <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
-        <div className="flex flex-wrap items-center justify-between gap-4 bg-sidebar px-5 py-5">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border px-5 py-5">
           <div>
-            <h1 className="text-xl font-bold text-white">שלום, {firstName}</h1>
-            <p className="mt-0.5 text-sm text-white/50">{formatHebrewDate()}</p>
+            <h1 className="text-xl font-bold text-ink">שלום, {firstName}</h1>
+            <p className="mt-0.5 text-sm text-ink-secondary">{formatHebrewDate()}</p>
           </div>
           <div className="flex items-center gap-2">
             <DashboardSearch />
@@ -203,9 +203,9 @@ export default async function DashboardPage() {
         {/* My Tasks */}
         <div className="lg:col-span-2">
           <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
-            <div className="flex items-center justify-between bg-sidebar px-5 py-3.5">
-              <h2 className="text-base font-bold text-white">המשימות שלי</h2>
-              <Link href="/tasks" className="flex items-center gap-1 text-caption text-white/60 transition-colors hover:text-white">
+            <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
+              <h2 className="text-base font-bold text-ink">המשימות שלי</h2>
+              <Link href="/tasks" className="flex items-center gap-1 text-caption text-ink-secondary transition-colors hover:text-ink">
                 כל המשימות <ArrowLeft className="h-3 w-3" />
               </Link>
             </div>
@@ -288,9 +288,9 @@ export default async function DashboardPage() {
 
           {/* Recent activity */}
           <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
-            <div className="flex items-center justify-between bg-sidebar px-4 py-3">
-              <h2 className="text-base font-bold text-white">פעילות אחרונה</h2>
-              <Link href="/tasks" className="flex items-center gap-1 text-caption text-white/60 transition-colors hover:text-white">
+            <div className="flex items-center justify-between border-b border-border px-4 py-3">
+              <h2 className="text-base font-bold text-ink">פעילות אחרונה</h2>
+              <Link href="/tasks" className="flex items-center gap-1 text-caption text-ink-secondary transition-colors hover:text-ink">
                 הכל <ArrowLeft className="h-3 w-3" />
               </Link>
             </div>
@@ -332,12 +332,12 @@ export default async function DashboardPage() {
       {clientsOpen.length > 0 && (
         <AnimatedSection>
         <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
-          <div className="flex items-center justify-between bg-sidebar px-5 py-3.5">
+          <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
             <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-white/60" />
-              <h2 className="text-base font-bold text-white">לקוחות עם משימות פתוחות</h2>
+              <Users className="h-4 w-4 text-ink-secondary" />
+              <h2 className="text-base font-bold text-ink">לקוחות עם משימות פתוחות</h2>
             </div>
-            <Link href="/clients" className="flex items-center gap-1 text-caption text-white/60 transition-colors hover:text-white">
+            <Link href="/clients" className="flex items-center gap-1 text-caption text-ink-secondary transition-colors hover:text-ink">
               כל הלקוחות <ArrowLeft className="h-3 w-3" />
             </Link>
           </div>

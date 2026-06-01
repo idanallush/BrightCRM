@@ -51,19 +51,19 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
       {/* Header */}
       <StaggerItem>
       <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
-        <div className="flex flex-wrap items-center justify-between gap-3 bg-sidebar px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
           <div className="flex flex-wrap items-center gap-3">
-            <Link href="/clients" className="inline-flex items-center gap-1.5 text-caption text-white/70 transition-colors hover:text-white">
+            <Link href="/clients" className="inline-flex items-center gap-1.5 text-caption text-ink-secondary transition-colors hover:text-ink">
               <ArrowRight className="h-4 w-4" /> חזרה
             </Link>
             {client.logo_url ? (
               <img src={client.logo_url} alt={client.name} className="h-8 w-8 rounded-full object-cover bg-white" />
             ) : (
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-sm font-bold text-white">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface text-sm font-bold text-ink">
                 {client.name.charAt(0)}
               </span>
             )}
-            <h1 className="text-base font-bold text-white">{client.name}</h1>
+            <h1 className="text-base font-bold text-ink">{client.name}</h1>
             {healthV && client.health && <Badge variant={healthV}>{client.health}</Badge>}
             {manager && <UserChip member={manager} size="xs" />}
           </div>
