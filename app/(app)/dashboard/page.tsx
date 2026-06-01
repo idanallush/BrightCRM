@@ -157,10 +157,10 @@ export default async function DashboardPage() {
           const periodLabel = trend.period === "day" ? "מאתמול" : "השבוע";
           return (
             <AnimatedStatCard key={card.key}>
-            <div className={`overflow-hidden rounded-2xl ${card.pastel} p-5 shadow-elevation-1 transition-shadow hover:shadow-elevation-2`} role="status" aria-label={`${card.label}: ${value}`}>
+            <div className="overflow-hidden rounded-2xl bg-white border border-border p-5 shadow-elevation-1 transition-shadow hover:shadow-elevation-2" role="status" aria-label={`${card.label}: ${value}`}>
               <div className="flex items-center justify-between">
                 <span className="text-caption font-medium text-ink/70">{card.label}</span>
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/60">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full" style={{ backgroundColor: card.color + "15" }}>
                   <card.Icon className="h-4.5 w-4.5" style={{ color: card.color }} />
                 </div>
               </div>
@@ -185,11 +185,11 @@ export default async function DashboardPage() {
       <AnimatedSection>
         <Link
           href="/tasks"
-          className="flex items-center justify-between gap-4 overflow-hidden rounded-2xl bg-pastel-teal p-5 shadow-elevation-1 transition-shadow hover:shadow-elevation-2"
+          className="flex items-center justify-between gap-4 overflow-hidden rounded-2xl bg-white border border-border p-5 shadow-elevation-1 transition-shadow hover:shadow-elevation-2"
         >
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/60">
-              <Eye className="h-4.5 w-4.5 text-success" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface">
+              <Eye className="h-4.5 w-4.5 text-ink-secondary" />
             </div>
             <span className="text-caption font-medium text-ink/70">משימות שאני עוקב אחריהן</span>
           </div>
@@ -211,7 +211,7 @@ export default async function DashboardPage() {
             </div>
             {myTasks.length === 0 ? (
               <div className="flex flex-col items-center gap-3 px-4 py-10 text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-pastel-teal">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-surface">
                   <CheckCircle2 className="h-6 w-6 text-success" />
                 </div>
                 <div>
@@ -258,7 +258,7 @@ export default async function DashboardPage() {
           {/* Clients needing attention */}
           {criticalClients.length > 0 && (
             <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
-              <div className="flex items-center justify-between bg-pastel-rose px-4 py-3">
+              <div className="flex items-center justify-between border-b border-border px-4 py-3">
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="h-4 w-4 text-overdue" />
                   <h2 className="text-base font-bold text-ink">דורשים תשומת לב</h2>
@@ -269,7 +269,7 @@ export default async function DashboardPage() {
                   <Link key={c.id} href={`/clients/${c.id}`}
                     className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-surface">
                     <div className="flex items-center gap-2.5">
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-pastel-rose text-xs font-semibold text-overdue">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-overdue-bg text-xs font-semibold text-overdue">
                         {getInitials(c.name)}
                       </span>
                       <div>
@@ -347,7 +347,7 @@ export default async function DashboardPage() {
               return (
                 <Link key={c.id} href={`/clients/${c.id}`}
                   className="flex flex-col items-center gap-1.5 bg-white px-3 py-4 transition-colors hover:bg-surface">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-pastel-blue text-sm font-semibold text-primary">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface text-sm font-semibold text-ink">
                     {getInitials(c.name)}
                   </span>
                   <span className="max-w-full truncate text-center text-sm font-medium text-ink">{c.name}</span>
