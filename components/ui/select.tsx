@@ -11,7 +11,7 @@ export const SelectValue = SelectPrimitive.Value;
 export const SelectTrigger = React.forwardRef<React.ElementRef<typeof SelectPrimitive.Trigger>, React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>>(
   ({ className, children, ...props }, ref) => (
     <SelectPrimitive.Trigger ref={ref} className={cn(
-      "flex h-10 w-full items-center justify-between gap-2 rounded-xl border border-border bg-white px-3 text-body-sm text-ink transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50 [&>span]:line-clamp-1",
+      "flex h-11 w-full items-center justify-between gap-2 rounded-lg border border-border bg-white px-3 text-body-sm text-ink transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:opacity-50 [&>span]:line-clamp-1",
       className,
     )} {...props}>
       {children}
@@ -25,7 +25,7 @@ export const SelectContent = React.forwardRef<React.ElementRef<typeof SelectPrim
   ({ className, children, position = "popper", ...props }, ref) => (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content ref={ref} dir="rtl" position={position} className={cn(
-        "relative z-50 max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-xl border border-border bg-white shadow-elevation-3",
+        "relative z-50 max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-lg border border-border bg-white shadow-elevation-3",
         className,
       )} {...props}>
         <SelectPrimitive.Viewport className="p-1.5">{children}</SelectPrimitive.Viewport>
