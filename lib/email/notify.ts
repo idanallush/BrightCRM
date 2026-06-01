@@ -29,6 +29,7 @@ function dedupeRecipients(members: NotifyMember[], keep: (m: NotifyMember) => bo
 }
 
 export async function notifyNewTask(taskId: string) {
+  console.log("[Email] notifyNewTask called, looking up task:", taskId);
   const db = createAdminClient();
 
   const { data: task } = await db

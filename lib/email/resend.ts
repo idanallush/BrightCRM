@@ -11,6 +11,8 @@ export async function sendEmail(
 ) {
   const from = process.env.RESEND_FROM_EMAIL || DEFAULT_FROM;
 
+  console.log("[Email] Sending to:", to, "subject:", subject);
+
   const { data, error } = await resend.emails.send({
     from,
     to,
@@ -23,5 +25,6 @@ export async function sendEmail(
     throw new Error(`Email send failed: ${error.message}`);
   }
 
+  console.log("[Email] Resend response:", data);
   return data;
 }
