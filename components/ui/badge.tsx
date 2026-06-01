@@ -26,7 +26,7 @@ const HEALTH_CELL: Record<string, { bg: string; text: string }> = {
 
 /** Full-colored status pill */
 export function StatusCell({ status, className }: { status: string; className?: string }) {
-  const style = STATUS_CELL[status] ?? { bg: "bg-gray-400", text: "text-white" };
+  const style = STATUS_CELL[status] ?? { bg: "bg-st-cancelled", text: "text-white" };
   const label = STATUS_LABELS[status] ?? status;
   return (
     <span className={cn(
@@ -40,7 +40,7 @@ export function StatusCell({ status, className }: { status: string; className?: 
 
 /** Full-colored health pill */
 export function HealthCell({ health, className }: { health: string; className?: string }) {
-  const style = HEALTH_CELL[health] ?? { bg: "bg-gray-400", text: "text-white" };
+  const style = HEALTH_CELL[health] ?? { bg: "bg-st-cancelled", text: "text-white" };
   return (
     <span className={cn(
       "inline-block min-w-[80px] rounded-full px-3 py-1.5 text-center text-sm font-medium",
@@ -66,7 +66,7 @@ const VARIANT_CELL: Record<Variant, { bg: string; text: string }> = {
   done: { bg: "bg-st-done", text: "text-white" },
   cancelled: { bg: "bg-st-cancelled", text: "text-white" },
   overdue: { bg: "bg-overdue", text: "text-white" },
-  neutral: { bg: "bg-gray-400", text: "text-white" },
+  neutral: { bg: "bg-st-cancelled", text: "text-white" },
   good: { bg: "bg-health-good", text: "text-white" },
   warning: { bg: "bg-health-strategy", text: "text-white" },
   danger: { bg: "bg-health-critical", text: "text-white" },

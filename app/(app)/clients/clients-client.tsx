@@ -116,7 +116,7 @@ export function ClientsClient({
         <td className="hidden px-4 py-3 sm:table-cell">
           {c.onboarding_status ? (
             <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium",
-              c.onboarding_status === "בתהליך קליטה" ? "bg-amber-100 text-amber-700" : c.onboarding_status === "בהשהייה" ? "bg-slate-100 text-slate-600" : "bg-emerald-100 text-emerald-700")}>
+              c.onboarding_status === "בתהליך קליטה" ? "bg-pastel-yellow text-ink" : c.onboarding_status === "בהשהייה" ? "bg-surface text-ink-secondary" : "bg-pastel-teal text-ink")}>
               {c.onboarding_status === "בתהליך קליטה" ? <Loader2 className="h-3 w-3" /> : c.onboarding_status === "בהשהייה" ? <PauseCircle className="h-3 w-3" /> : <CheckCircle2 className="h-3 w-3" />}
               {c.onboarding_status}
             </span>

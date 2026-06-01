@@ -157,7 +157,7 @@ export default async function DashboardPage() {
           const periodLabel = trend.period === "day" ? "מאתמול" : "השבוע";
           return (
             <AnimatedStatCard key={card.key}>
-            <div className={`overflow-hidden rounded-2xl ${card.pastel} p-5 shadow-elevation-1 transition-shadow hover:shadow-elevation-2`}>
+            <div className={`overflow-hidden rounded-2xl ${card.pastel} p-5 shadow-elevation-1 transition-shadow hover:shadow-elevation-2`} role="status" aria-label={`${card.label}: ${value}`}>
               <div className="flex items-center justify-between">
                 <span className="text-caption font-medium text-ink/70">{card.label}</span>
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/60">

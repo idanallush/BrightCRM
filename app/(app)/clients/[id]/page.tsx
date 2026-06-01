@@ -177,7 +177,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
             </div>
             {client.onboarding_status && (
               <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
-                client.onboarding_status === "בתהליך קליטה" ? "bg-amber-100 text-amber-700" : client.onboarding_status === "בהשהייה" ? "bg-slate-100 text-slate-600" : "bg-emerald-100 text-emerald-700"
+                client.onboarding_status === "בתהליך קליטה" ? "bg-pastel-yellow text-ink" : client.onboarding_status === "בהשהייה" ? "bg-surface text-ink-secondary" : "bg-pastel-teal text-ink"
               }`}>
                 {client.onboarding_status === "בתהליך קליטה" ? <Loader2 className="h-3 w-3" /> : client.onboarding_status === "בהשהייה" ? <PauseCircle className="h-3 w-3" /> : <CheckCircle2 className="h-3 w-3" />}
                 {client.onboarding_status}

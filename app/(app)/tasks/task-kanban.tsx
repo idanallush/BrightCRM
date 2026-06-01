@@ -50,7 +50,7 @@ export function TaskKanban({
             </div>
             <div className="flex flex-col gap-2 p-2">
               {colTasks.map((t) => (
-                <KanbanCard key={t.id} task={t} color={color} onClick={() => onCardClick(t)} />
+                <KanbanCard key={t.id} task={t} onClick={() => onCardClick(t)} />
               ))}
             </div>
           </div>
@@ -60,15 +60,14 @@ export function TaskKanban({
   );
 }
 
-function KanbanCard({ task, color, onClick }: {
-  task: TaskWithRelations; color: string; onClick: () => void;
+function KanbanCard({ task, onClick }: {
+  task: TaskWithRelations; onClick: () => void;
 }) {
   const { text: dateText, overdue } = relativeDate(task.due_date);
 
   return (
     <button type="button" onClick={onClick}
-      className="w-full rounded-xl border border-border bg-white p-3 text-right transition-shadow duration-150 hover:shadow-elevation-2"
-      style={{ borderRightWidth: 3, borderRightColor: color }}>
+      className="w-full rounded-xl border border-border bg-white p-3 text-right transition-shadow duration-150 hover:shadow-elevation-2">
       <div className="text-body-sm font-medium text-ink">{task.title}</div>
       {task.tags && task.tags.length > 0 && (
         <div className="mt-1 flex flex-wrap gap-1">

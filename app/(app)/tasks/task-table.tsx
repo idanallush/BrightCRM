@@ -61,7 +61,7 @@ function StatusDropdown({ taskId, status, onUpdated }: { taskId: string; status:
     onUpdated();
   }
 
-  const bg = STATUS_BG[current] ?? "bg-gray-400";
+  const bg = STATUS_BG[current] ?? "bg-st-cancelled";
   const text = STATUS_TEXT[current] ?? "text-white";
   const label = STATUS_LABELS[current] ?? current;
 
@@ -81,7 +81,7 @@ function StatusDropdown({ taskId, status, onUpdated }: { taskId: string; status:
           onClick={(e) => e.stopPropagation()}
         >
           {ALL_STATUSES.map((s) => {
-            const sBg = STATUS_BG[s] ?? "bg-gray-400";
+            const sBg = STATUS_BG[s] ?? "bg-st-cancelled";
             const sLabel = STATUS_LABELS[s] ?? s;
             return (
               <button
