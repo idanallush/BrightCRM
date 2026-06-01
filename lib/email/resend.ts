@@ -2,7 +2,7 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const DEFAULT_FROM = "BrightCRM <onboarding@resend.dev>";
+const DEFAULT_FROM = "BrightCRM <notifications@b-bright.co.il>";
 
 export async function sendEmail(
   to: string[],
