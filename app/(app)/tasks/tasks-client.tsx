@@ -10,7 +10,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 import {
-  Sheet, SheetContent,
+  Sheet, SheetContent, SheetTitle,
 } from "@/components/ui/sheet";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -559,6 +559,7 @@ export function TasksClient({
       {/* Task detail panel */}
       <Sheet open={!!editing} onOpenChange={(open) => !open && closeSheet()}>
         <SheetContent side="left" className="flex flex-col gap-0 p-0 sm:max-w-[720px]">
+          <SheetTitle className="sr-only">{editing?.title ?? "פרטי משימה"}</SheetTitle>
           {editing && <TaskDetailPanel key={editing.id} task={editing} clients={clients} team={team} tags={tags} onClose={closeSheet} onDelete={onDelete} confirmingDelete={confirmingDelete} setConfirmingDelete={setConfirmingDelete} onTitleSaved={(t) => setEditing((prev) => prev ? { ...prev, title: t } : prev)} />}
         </SheetContent>
       </Sheet>

@@ -19,9 +19,9 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const HEALTH_CELL: Record<string, { bg: string; text: string }> = {
-  "בריא": { bg: "bg-health-good", text: "text-white" },
-  "אסטרטגיה צריכה": { bg: "bg-health-strategy", text: "text-white" },
-  "קריטי": { bg: "bg-health-critical", text: "text-white" },
+  "בריא": { bg: "bg-health-good-bg", text: "text-health-good-text" },
+  "אסטרטגיה צריכה": { bg: "bg-health-strategy-bg", text: "text-health-strategy-text" },
+  "קריטי": { bg: "bg-health-critical-bg", text: "text-health-critical-text" },
 };
 
 /** Full-colored status pill */
@@ -67,9 +67,9 @@ const VARIANT_CELL: Record<Variant, { bg: string; text: string }> = {
   cancelled: { bg: "bg-st-cancelled",   text: "text-white" },
   overdue:   { bg: "bg-overdue-bg",     text: "text-overdue-text" },
   neutral:   { bg: "bg-st-cancelled",   text: "text-white" },
-  good:      { bg: "bg-health-good",    text: "text-white" },
-  warning:   { bg: "bg-health-strategy",text: "text-white" },
-  danger:    { bg: "bg-health-critical",text: "text-white" },
+  good:      { bg: "bg-health-good-bg",      text: "text-health-good-text" },
+  warning:   { bg: "bg-health-strategy-bg", text: "text-health-strategy-text" },
+  danger:    { bg: "bg-health-critical-bg", text: "text-health-critical-text" },
 };
 
 export function Badge({ variant = "neutral", className, ...props }: { variant?: Variant } & React.HTMLAttributes<HTMLSpanElement>) {

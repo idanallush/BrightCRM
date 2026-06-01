@@ -76,7 +76,18 @@ const config: Config = {
           "done-text": "#065F46",
         },
         // Health
-        health: { good: "#00C875", strategy: "#FDAB3D", critical: "#E2445C" },
+        health: {
+          good: "#00C875",
+          strategy: "#FDAB3D",
+          critical: "#E2445C",
+          // Light bg + matched dark text (Studio Light treatment)
+          "good-bg": "#ECFDF5",
+          "good-text": "#065F46",
+          "strategy-bg": "#FFF3E0",
+          "strategy-text": "#92400E",
+          "critical-bg": "#FEF2F2",
+          "critical-text": "#991B1B",
+        },
         // Semantic
         overdue: "#E2445C",
         "overdue-bg": "#FEF2F2",
