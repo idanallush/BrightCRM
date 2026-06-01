@@ -61,7 +61,7 @@ export function Sidebar({ userLabel, userAvatarUrl }: { userLabel: string; userA
         </Link>
         <div className="flex items-center gap-1">
           {(!collapsed || isMobile) && <NotificationBell dark />}
-          {!isMobile && <button type="button" onClick={() => setCollapsed((v) => !v)} className="rounded-xl p-1.5 text-white/40 transition-colors duration-150 hover:bg-white/5 hover:text-white/80">
+          {!isMobile && <button type="button" onClick={() => setCollapsed((v) => !v)} aria-label={collapsed ? "הרחב תפריט" : "כווץ תפריט"} className="rounded-xl p-2 text-white/40 transition-colors duration-150 hover:bg-white/5 hover:text-white/80">
             {collapsed ? <ChevronsRight className="h-4 w-4" /> : <ChevronsLeft className="h-4 w-4" />}
           </button>}
           {isMobile && <button type="button" onClick={() => setMobileOpen(false)} className="rounded-xl p-2.5 text-white/40 hover:text-white/80"><X className="h-5 w-5" /></button>}

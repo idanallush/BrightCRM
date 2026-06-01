@@ -550,7 +550,7 @@ export function TasksClient({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>משימה חדשה</DialogTitle>
-            <DialogDescription>מלא את הפרטים ולחץ צור משימה.</DialogDescription>
+            <DialogDescription>שדות חובה: כותרת ולקוח.</DialogDescription>
           </DialogHeader>
           <TaskForm clients={clients} team={team} tags={tags} onDone={() => setCreateOpen(false)} />
         </DialogContent>

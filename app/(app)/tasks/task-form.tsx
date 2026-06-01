@@ -126,6 +126,7 @@ export function TaskForm({
         {compact ? (
           <>
             <div className="flex flex-col gap-1">
+              <span className="text-xs font-medium text-ink-secondary">לקוח</span>
               <Select value={clientId} onValueChange={setClientId}>
                 <SelectTrigger className="h-9 text-sm">
                   <div className="flex items-center gap-2">
@@ -147,6 +148,7 @@ export function TaskForm({
             </div>
 
             <div className="flex flex-col gap-1">
+              <span className="text-xs font-medium text-ink-secondary">סטטוס</span>
               <Select value={status} onValueChange={(v) => setStatus(v as TaskInput["status"])}>
                 <SelectTrigger className="h-9 text-sm">
                   <div className="flex items-center gap-1.5">
@@ -172,20 +174,23 @@ export function TaskForm({
               </Select>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
-              <div className="flex flex-col gap-1">
-                <Input id="due" type="date" className="h-9 text-sm" value={dueDate ?? ""} onChange={(e) => setDueDate(e.target.value)} placeholder="תאריך יעד" />
-              </div>
-              <div className="flex flex-col gap-1">
-                <AssigneeDropdown team={team} selected={assigneeIds} onToggle={toggleAssignee} />
-              </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-medium text-ink-secondary">תאריך יעד</span>
+              <Input id="due" type="date" className="h-9 text-sm" value={dueDate ?? ""} onChange={(e) => setDueDate(e.target.value)} />
             </div>
 
             <div className="flex flex-col gap-1">
+              <span className="text-xs font-medium text-ink-secondary">אחראים</span>
+              <AssigneeDropdown team={team} selected={assigneeIds} onToggle={toggleAssignee} />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-medium text-ink-secondary">במעקב</span>
               <AssigneeDropdown team={team} selected={watcherIds} onToggle={toggleWatcher} noun="במעקב" />
             </div>
 
             <div className="flex flex-col gap-1">
+              <span className="text-xs font-medium text-ink-secondary">תגיות</span>
               <TagSelector tags={availableTags} selected={tagIds} onToggle={toggleTag} onCreateTag={handleCreateTag} onUpdateTag={handleUpdateTag} />
             </div>
 
@@ -297,8 +302,8 @@ export function TaskForm({
       </div>
 
       <div className={cn("flex shrink-0 gap-2 border-t border-border pt-3", compact ? "mt-3 flex-row-reverse" : "mt-3 flex-row-reverse")}>
-        <Button type="submit" disabled={pending}>
-          {pending ? "שומר..." : task ? "שמירה" : "צור משימה"}
+        <Button type="submit" loading={pending}>
+          {task ? "שמירה" : "צור משימה"}
         </Button>
         <Button type="button" variant="ghost" onClick={onDone} disabled={pending}>ביטול</Button>
       </div>
