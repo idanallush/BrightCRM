@@ -1,84 +1,115 @@
-# BrightCRM Design System (Miro-Inspired)
+# BrightCRM Design System — Studio Light
 
-מעודכן: 2026-05-27
+מעודכן: 2026-06-01
 
-Design system בהשראת Miro. כל הטוקנים מוגדרים ב-`tailwind.config.ts`.
-רכיבי UI מבוססים על shadcn/ui עם overrides ב-`components/ui/`.
+**כיוון:** Studio Light. שטחים לבנים נקיים, sidebar כהה, צהוב רק על CTAs.
+הדגשה דרך משקל טקסט. צבע נדיר ומדויק. שקט ואסתטי עם נקודות חדות במקומות הנכונים.
+
+**השראה:** Linear (light), Craft, Notion — כלים שמרגישים חכמים בלי להיות רועשים.
+
+טוקנים מוגדרים ב-`tailwind.config.ts`. רכיבי UI מבוססים על shadcn/ui עם overrides ב-`components/ui/`.
+
+---
+
+## Aesthetic Direction
+
+- **Direction:** Brutally Minimal (light variant) — typography does all the work
+- **Decoration:** Minimal — no gradients, no pastel cards, no colored headers
+- **Mood:** Simple, smart, quiet. Like a tool built by someone who actually uses it
+- **Color approach:** Restrained — yellow is the only accent, everything else is ink/gray/white
 
 ---
 
 ## Colors
 
-### Brand
-- **Primary (Miro blue):** `#4262FF` — links, focus rings, interactive elements
-- **Accent (canary yellow):** `#FFD02F` — primary CTA buttons, logo, active states in sidebar
-
-### Surface
-- **Ink:** `#050038` — primary text color (deep navy, not pure black)
-- **Ink hover:** `#1A1A4E`
-- **Surface:** `#F7F7F8` — page background
-- **Sidebar:** `#1B1B3A` — sidebar background + section headers
-- **Border:** `#E0E0E6`
-- **White:** `#FFFFFF` — card backgrounds
-
-### Status
-- **Success:** `#00C875`
-- **Warning/Incoming:** `#FDAB3D`
-- **Overdue:** `#E2445C`
-- **Done:** `#00C875`
-- **Neutral:** `#C4C4C4`
-
-### Pastel Palette (feature cards, stat cards, avatars)
+### Brand & Accent
 | Token | Hex | Use |
 |---|---|---|
-| `pastel-rose` | `#FFE4E8` | overdue stats, critical clients |
-| `pastel-coral` | `#FFE0D0` | email icon bg, stat card |
-| `pastel-teal` | `#D0F0E8` | success/done states, empty states |
-| `pastel-yellow` | `#FFF4CC` | budget/warning, stat card |
-| `pastel-blue` | `#DCE4FF` | avatars, comment badges, assignees |
-| `pastel-purple` | `#EDE0FF` | manager icon bg, stat card |
+| `accent` | `#FFD02F` | Primary CTA buttons only. The ONE color users remember. |
+| `ink` | `#050038` | Primary text. Deep navy, never pure black. |
+| `ink-hover` | `#1A1A4E` | Hover state for ink elements |
+| `ink-muted` | `#6B7280` | Secondary text, placeholders |
+| `ink-secondary` | `#9CA3AF` | Tertiary text, timestamps, metadata |
+
+### Surfaces
+| Token | Hex | Use |
+|---|---|---|
+| `white` | `#FFFFFF` | Card backgrounds, main content |
+| `surface` | `#F7F7F8` | Page background |
+| `sidebar` | `#1B1B3A` | Sidebar background only (nowhere else) |
+
+### Borders
+| Token | Hex | Use |
+|---|---|---|
+| `border` | `#E0E0E6` | Default card/section borders |
+| `hairline` | `#E8E8F0` | Subtle inner dividers |
+| `hairline-soft` | `#F0F0F5` | Table row separators |
+| `hairline-strong` | `#C0C0D0` | Emphasized dividers |
+
+### Status (functional — used ONLY on status indicators, not decoration)
+| Status | Saturated hex | Light bg | Dark text |
+|---|---|---|---|
+| Waiting | `#FDAB3D` | `#FFF3E0` | `#92400E` |
+| Incoming | `#4262FF` | `#EEF2FF` | `#2B42B0` |
+| Working | `#A25DDC` | `#F5F3FF` | `#5B21B6` |
+| Approval | `#FFCB00` | `#FFFBEB` | `#78350F` |
+| Done | `#00C875` | `#ECFDF5` | `#065F46` |
+| Overdue | `#E2445C` | `#FEF2F2` | `#991B1B` |
+
+**Status badge treatment:** Light bg + matched dark text (soft pills).
+Saturated hex used ONLY for kanban column headers and table group rows (functional, not decorative).
+
+### Removed from system
+- ~~Pastel palette (pastel-rose, pastel-coral, etc.)~~ — replaced by white cards with subtle borders
+- ~~bg-sidebar on card headers~~ — replaced by `border-b border-border`
+- ~~Primary blue (#4262FF) as a UI color~~ — kept only for links and focus rings
 
 ---
 
 ## Typography
 
-### Fonts
-- **Primary:** Almoni (local OTF, weights 400/500/600/700) — RTL-first Hebrew geometric face
-- **Stack:** `"var(--font-almoni)", "system-ui", "-apple-system", "Segoe UI", "Arial", "sans-serif"`
+### Font
+- **Primary:** Almoni (local OTF, weights 400/500/600/700)
+- **Stack:** `var(--font-almoni), system-ui, -apple-system, Segoe UI, Arial, sans-serif`
+- Almoni is a Hebrew geometric face with clean Latin characters. RTL-first.
 
-### Scale (defined in Tailwind)
+### Scale
 | Token | Size | Weight | Use |
 |---|---|---|---|
-| `text-2xl` | 24px | 700 | Page titles |
+| `text-2xl` | 24px | 800 | Page titles (שלום, Idan) |
 | `text-lg` | 18px | 700 | Section headers |
 | `text-base` | 16px | 700 | Card headers |
-| `text-body-md` | 15px | 400 | Body text large |
-| `text-body-sm` | 14px | 400 | Body text default |
+| `text-body-md` | 15px | 400 | Body text |
+| `text-body-sm` | 14px | 400 | Default body |
 | `text-button` | 14px | 600 | Button labels |
-| `text-caption` | 13px | 400 | Captions, secondary text |
+| `text-caption` | 13px | 400 | Timestamps, metadata |
 | `text-sm` | 13px | 500 | Table cells |
+
+### Hierarchy principle
+Weight > size > color. Use font-weight to create hierarchy before reaching for larger sizes or different colors. A 14px/700 label reads as more important than a 16px/400 paragraph.
 
 ---
 
 ## Buttons
 
-All primary CTAs are pill-shaped (canary yellow). Defined in `components/ui/button.tsx`.
+All defined in `components/ui/button.tsx`. Primary CTAs are yellow pills.
 
-| Variant | Classes | Use |
+| Variant | Visual | Use |
 |---|---|---|
-| `primary` | `rounded-full bg-accent text-ink` | Main CTA (yellow pill) |
-| `secondary` | `rounded-full border-2 border-border bg-white text-ink` | Secondary actions |
-| `ghost` | `rounded-xl text-ink hover:bg-surface` | Toolbar/inline actions |
-| `danger` | `rounded-full bg-overdue text-white` | Delete/destructive |
-| `link` | `text-primary hover:underline` | Inline links |
+| `primary` | Yellow pill, ink text, elevation-1 | Main CTA (one per section max) |
+| `secondary` | White pill, 2px border, ink text | Secondary actions (filter, export) |
+| `dark` | Ink pill, white text, elevation-1 | Strong secondary (cancel in modals) |
+| `ghost` | No bg, ink text, hover:bg-surface | Toolbar/inline actions |
+| `danger` | Red pill, white text | Delete/destructive |
+| `link` | Blue text, no bg | Inline links |
 
 ### Sizes
-| Size | Height | Padding |
+| Size | Height | Use |
 |---|---|---|
-| `sm` | 32px | `px-4 text-[13px]` |
-| `md` | 40px | `px-5` |
-| `lg` | 48px | `px-7` |
-| `icon` | 36px | `w-9 rounded-xl` |
+| `sm` | 32px | Compact UI, table actions |
+| `md` | 40px | Default |
+| `lg` | 48px | Hero CTA, form submit |
+| `icon` | 36px | Icon-only buttons |
 
 ---
 
@@ -86,80 +117,80 @@ All primary CTAs are pill-shaped (canary yellow). Defined in `components/ui/butt
 
 | Token | Value | Use |
 |---|---|---|
-| `rounded-full` | 9999px | Primary buttons, badges, pills, FAB |
-| `rounded-2xl` | 16px | Cards, sections, modals |
-| `rounded-xl` | 12px | Inputs, small cards, ghost buttons, dropdowns |
-| `rounded-lg` | 8px | Small interactive elements (mention items, calendar tasks) |
-| `rounded-xxxl` | 28px | Pastel feature cards, large modal cards |
-| `rounded-feature` | 32px | Hero CTA banner cards |
+| `rounded-full` | 9999px | Buttons, badges, pills, FAB, avatars |
+| `rounded-2xl` | 16px | Cards, modals |
+| `rounded-xl` | 12px | Ghost buttons, dropdowns |
+| `rounded-lg` | 8px | Inputs, selects, textareas |
+| `rounded-xxxl` | 28px | Large feature cards (if ever needed) |
 
 ---
 
-## Elevation (Shadows)
+## Elevation
 
-| Token | Value | Use |
-|---|---|---|
-| `shadow-elevation-1` | `0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)` | Cards, stat blocks |
-| `shadow-elevation-2` | `0 4px 12px rgba(0,0,0,0.08)` | FAB, hover cards |
-| `shadow-elevation-3` | `0 8px 24px rgba(0,0,0,0.12)` | Dropdowns, popovers |
-| `shadow-elevation-4` | `0 12px 36px rgba(0,0,0,0.16)` | Sheet panels |
-| `shadow-elevation-5` | `0 20px 48px rgba(0,0,0,0.20)` | Modals, lightbox |
+| Token | Use |
+|---|---|
+| `elevation-1` | Cards, stat blocks — barely visible lift |
+| `elevation-2` | FAB, hover cards |
+| `elevation-3` | Dropdowns, popovers |
+| `elevation-4` | Sheet panels |
+| `elevation-5` | Modals |
 
 ---
 
 ## Components
 
 ### Cards
-- `rounded-2xl border border-border bg-white shadow-elevation-1`
-- Section headers inside cards: `bg-sidebar` (dark) with white text
-- Contact info section: `bg-surface` header bar
+```
+rounded-2xl border border-border bg-white shadow-elevation-1
+```
+- **Card headers:** `border-b border-border` + `text-ink font-bold`. NEVER `bg-sidebar`.
+- Card content: `p-4` or `p-5`
 
 ### Sidebar
-- Background: `bg-sidebar` (`#1B1B3A`)
+- Background: `bg-sidebar` (`#1B1B3A`) — the ONLY place dark bg is used
 - Logo: Bright TASKS PNG wordmark via `components/logo.tsx`
-- Active nav item: `bg-white/10` with yellow right indicator bar
-- User area: `UserAvatar` component (`bg-pastel-blue`, initials)
+- Active nav item: `bg-white/10` with yellow right indicator bar (`bg-accent`)
+- User area: avatar with initials
 
-### Header
-- `bg-white/80 backdrop-blur-md` (glass effect)
-- Sticky top
+### Header / Topbar
+- `bg-white/80 backdrop-blur-md border-b border-border`
+- Sticky top. Glass effect on scroll.
 
 ### Stat Cards (Dashboard)
-- Full pastel backgrounds (not white with colored bar)
-- `bg-pastel-coral`, `bg-pastel-purple`, `bg-pastel-yellow`, `bg-pastel-rose`
-- Icon containers: `bg-white/60 rounded-xl`
+- **White background** with border and subtle elevation. NOT pastel backgrounds.
+- Status indicator: small colored dot (6px) next to the number, not full-card color.
+- Number: `text-2xl font-800 text-ink`. Label: `text-caption text-ink-secondary`.
 
 ### Status Badges
-- All `rounded-full` (pill-shaped)
-- Colors match status: orange (waiting), blue (incoming), yellow (in-progress), green (done), red (overdue)
+- Pill-shaped (`rounded-full`)
+- Light bg + dark text treatment: `bg-st-waiting-bg text-st-waiting-text`
+- Optional thin border for definition: `border border-[status-color]/30`
+- Used in tables, kanban cards, task detail
 
-### Status Light Pairs (for soft badges)
-Each status has a `-bg` and `-text` variant for light background treatment:
-`bg-st-waiting-bg` / `text-st-waiting-text`, `bg-st-incoming-bg` / `text-st-incoming-text`, etc.
+### Inputs & Selects
+- `h-11 rounded-lg border border-border bg-white`
+- Focus: `focus:border-primary focus:ring-2 focus:ring-primary/20`
+- All form elements same treatment for consistency
 
 ### Dialogs & Sheets
-- Dialog overlay: `bg-ink/30 backdrop-blur-[2px]`
-- Dialog content: `rounded-2xl shadow-elevation-5`
-- Sheet: `shadow-elevation-4`, edge radius on open side
-
-### Forms
-- Inputs: `rounded-xl`, `focus:ring-2 focus:ring-primary/20`
-- Selects: same treatment as inputs
-- Textarea: `rounded-xl`
+- Overlay: `bg-ink/30 backdrop-blur-[2px]`
+- Content: `rounded-2xl shadow-elevation-5`
+- Header: text only, no colored bar
 
 ### Quick-Add FAB
 - `rounded-full bg-accent text-ink shadow-elevation-2`
-- Fixed bottom-right position
+- Fixed bottom-left
 
 ---
 
 ## Patterns
 
-### Section Layout
-```
+### Section Layout (NEW — white header)
+```html
 <div class="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
-  <div class="bg-sidebar px-4 py-3">
-    <h2 class="text-base font-bold text-white">Title</h2>
+  <div class="flex items-center justify-between border-b border-border px-5 py-3.5">
+    <h2 class="text-base font-bold text-ink">Title</h2>
+    <Link class="text-caption text-ink-secondary hover:text-ink">Link ←</Link>
   </div>
   <div class="p-4">
     Content
@@ -168,31 +199,42 @@ Each status has a `-bg` and `-text` variant for light background treatment:
 ```
 
 ### Hover States
-- Table rows: `hover:bg-surface`
+- Table rows: `hover:bg-surface transition-colors`
 - Cards: `hover:shadow-elevation-2`
-- Links: `hover:text-primary` or `hover:underline`
+- Links: `hover:text-primary`
+- Buttons: `hover:-translate-y-px hover:shadow-elevation-2`
 
 ### Avatars
-- Background: `bg-pastel-blue`
-- Text: `text-primary`
-- Initials: first letter of each word, uppercase, max 2 chars
+- Gradient background (unique per user)
+- White initials, `rounded-full`
+- Sizes: sm(24px) md(32px) lg(40px)
+
+---
+
+## Color Philosophy
+
+1. **Yellow is sacred.** Only on primary CTA buttons and the sidebar active indicator. Never on backgrounds, cards, or decorative elements.
+2. **Status colors are data.** They exist only on status badges, kanban columns, and progress indicators. Never used for decoration.
+3. **Everything else is ink + white + gray.** Typography weight creates hierarchy. Color is reserved for meaning.
+4. **When in doubt, remove the color.** If an element works without color, it shouldn't have color.
 
 ---
 
 ## Do's and Don'ts
 
 ### Do
-- Use `bg-accent` (canary yellow) for all primary CTAs
-- Use `bg-sidebar` (dark navy) for section headers, not `bg-primary`
-- Use pastel backgrounds for feature/stat cards
-- Use `rounded-2xl` for major cards, `rounded-xl` for inputs/small elements
-- Use `shadow-elevation-N` instead of Tailwind's built-in shadows
-- Keep all text in Hebrew, RTL
+- Use weight (600/700/800) to create hierarchy before reaching for color
+- Use `border-b border-border` for section separation
+- Use white cards with subtle elevation for content grouping
+- Keep status colors ONLY on functional elements (badges, dots, progress)
+- Use `text-ink-secondary` for all secondary/meta text
+- Use `shadow-elevation-N` instead of Tailwind built-in shadows
 
 ### Don't
-- Don't use `bg-primary` (blue) for buttons — blue is for links and focus only
-- Don't use `rounded-md` or `rounded-lg` for cards — use `rounded-2xl`
-- Don't use `shadow-sm` or `shadow-lg` — use elevation tokens
-- Don't use Tailwind gray utilities (`bg-gray-50`, `bg-gray-100`) — use `bg-surface`
-- Don't use hardcoded hex colors (`#F5F6F8`, `#0073EA`, `#323338`) — use tokens
-- Don't use `hover:bg-[#F5F6F8]` — use `hover:bg-surface`
+- Don't use `bg-sidebar` outside the actual sidebar
+- Don't use pastel backgrounds on cards or stat blocks
+- Don't use `bg-primary` blue for buttons — it's for links/focus only
+- Don't apply color to more than 10% of any given surface
+- Don't use Tailwind gray utilities (`bg-gray-*`) — use `bg-surface`, `text-ink-secondary`
+- Don't use hardcoded hex colors — always use design tokens
+- Don't add decoration (gradients, patterns, colored borders) without explicit approval

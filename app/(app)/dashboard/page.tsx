@@ -59,10 +59,10 @@ function getInitials(name: string): string {
 }
 
 const STAT_CARDS = [
-  { key: "waiting", trendKey: "waiting" as const, label: "ממתינות לטיפול", pastel: "bg-pastel-coral", color: "#FDAB3D", Icon: Inbox },
-  { key: "working", trendKey: "working" as const, label: "בעבודה", pastel: "bg-pastel-purple", color: "#A25DDC", Icon: ListChecks },
-  { key: "approval", trendKey: "approval" as const, label: "באישור לקוח", pastel: "bg-pastel-yellow", color: "#FFCB00", Icon: CheckCircle2 },
-  { key: "overdue", trendKey: "overdue" as const, label: "באיחור", pastel: "bg-pastel-rose", color: "#E2445C", Icon: AlertTriangle },
+  { key: "waiting", trendKey: "waiting" as const, label: "ממתינות לטיפול", color: "#FDAB3D", Icon: Inbox },
+  { key: "working", trendKey: "working" as const, label: "בעבודה", color: "#A25DDC", Icon: ListChecks },
+  { key: "approval", trendKey: "approval" as const, label: "באישור לקוח", color: "#FFCB00", Icon: CheckCircle2 },
+  { key: "overdue", trendKey: "overdue" as const, label: "באיחור", color: "#E2445C", Icon: AlertTriangle },
 ] as const;
 
 const HEALTH_COLORS: Record<string, string> = {
@@ -145,7 +145,7 @@ export default async function DashboardPage() {
       </div>
       </AnimatedSection>
 
-      {/* Stat cards — Miro pastel style */}
+      {/* Stat cards — Studio Light */}
       <AnimatedSection>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {STAT_CARDS.map((card) => {

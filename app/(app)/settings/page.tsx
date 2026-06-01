@@ -53,7 +53,7 @@ export default async function SettingsPage() {
         </div>
         <div className="p-4">
           <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-pastel-blue text-base font-semibold text-primary">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-surface text-base font-semibold text-ink">
               {fullName.split(/\s+/).map((w: string) => w[0]).join("").toUpperCase().slice(0, 2)}
             </div>
             <div className="flex flex-col gap-1">
@@ -128,7 +128,7 @@ export default async function SettingsPage() {
         <div className="divide-y divide-border">
           {(allMembers ?? []).map((m: any) => (
             <div key={m.id} className="flex items-center gap-3 px-4 py-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-pastel-blue text-[11px] font-semibold text-primary">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-surface text-[11px] font-semibold text-ink">
                 {m.full_name.split(/\s+/).map((w: string) => w[0]).join("").toUpperCase().slice(0, 2)}
               </div>
               <div className="min-w-0 flex-1">
@@ -159,7 +159,7 @@ function Step({ num, icon, title, desc }: {
 }) {
   return (
     <div className="flex items-start gap-3">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-pastel-blue text-caption font-semibold text-primary">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface text-caption font-semibold text-ink">
         {num}
       </div>
       <div className="flex-1">
