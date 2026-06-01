@@ -14,7 +14,7 @@ const almoni = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "BrightCRM",
+  title: "Bright Tasks",
   description: "ניהול לקוחות ומשימות פנימי לסוכנות Bright",
 };
 

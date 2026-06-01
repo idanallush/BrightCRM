@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserAvatar } from "@/components/user-avatar";
+import { Logo, LogoMark } from "@/components/logo";
 
 const NAV_MAIN = [
   { href: "/dashboard", label: "דשבורד", Icon: LayoutDashboard },
@@ -56,8 +57,7 @@ export function Sidebar({ userLabel, userAvatarUrl }: { userLabel: string; userA
     <div className="flex h-full flex-col">
       <div className="flex h-16 shrink-0 items-center justify-between px-4">
         <Link href="/dashboard" className="flex items-center gap-2.5">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-accent text-body-sm font-bold text-ink">B</span>
-          {(!collapsed || isMobile) && <span className="text-body-sm font-semibold text-white">Bright<span className="text-accent">.</span>CRM</span>}
+          {collapsed && !isMobile ? <LogoMark /> : <Logo size="md" dark />}
         </Link>
         <div className="flex items-center gap-1">
           {(!collapsed || isMobile) && <NotificationBell dark />}

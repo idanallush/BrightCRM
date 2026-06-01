@@ -5,6 +5,7 @@ import {
   Zap,
   Info,
 } from "lucide-react";
+import { Logo } from "@/components/logo";
 
 export default function AboutPage() {
   return (
@@ -12,12 +13,7 @@ export default function AboutPage() {
       {/* Hero */}
       <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
         <div className="bg-sidebar px-6 py-4">
-          <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent text-base font-bold text-ink">
-              B
-            </span>
-            <h1 className="text-2xl font-bold text-white">Bright<span className="text-accent">.</span>CRM</h1>
-          </div>
+          <Logo size="lg" dark />
         </div>
         <div className="p-6">
           <p className="max-w-lg text-body-md text-ink-secondary">
