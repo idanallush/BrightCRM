@@ -17,10 +17,10 @@ function LoginInner() {
     });
   }
   return (
-    <main className="flex min-h-screen items-center justify-center bg-sidebar px-6">
+    <main className="flex min-h-screen items-center justify-center bg-surface px-6">
       <div className="w-full max-w-sm rounded-2xl border border-border bg-white p-8 text-center shadow-elevation-3">
         <div className="mb-2 flex items-center justify-center">
-          <Logo size="lg" />
+          <Logo size="lg" dark={false} />
         </div>
         <p className="mb-8 text-body-sm text-ink-secondary">התחברות עם חשבון Google של Bright</p>
         <button type="button" onClick={signIn} className="w-full rounded-full bg-accent py-3 text-button text-ink transition-colors hover:bg-accent/85 active:scale-[0.97]">

@@ -48,8 +48,8 @@ export default async function SettingsPage() {
       {/* Account */}
       <StaggerItem>
       <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
-        <div className="bg-sidebar px-4 py-3">
-          <h2 className="text-base font-bold text-white">חשבון</h2>
+        <div className="border-b border-border px-4 py-3">
+          <h2 className="text-base font-bold text-ink">חשבון</h2>
         </div>
         <div className="p-4">
           <div className="flex items-start gap-4">
@@ -81,8 +81,8 @@ export default async function SettingsPage() {
       {/* WhatsApp Guide */}
       <StaggerItem>
       <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
-        <div className="bg-sidebar px-4 py-3">
-          <h2 className="text-base font-bold text-white">מדריך חיבור WhatsApp</h2>
+        <div className="border-b border-border px-4 py-3">
+          <h2 className="text-base font-bold text-ink">מדריך חיבור WhatsApp</h2>
         </div>
         <div className="p-4">
           <div className="flex flex-col gap-4">
@@ -121,9 +121,9 @@ export default async function SettingsPage() {
       {/* Team */}
       <StaggerItem>
       <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
-        <div className="flex items-center gap-2 bg-sidebar px-4 py-3">
-          <Users className="h-4 w-4 text-white/60" />
-          <h2 className="text-base font-bold text-white">צוות</h2>
+        <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+          <Users className="h-4 w-4 text-ink-secondary" />
+          <h2 className="text-base font-bold text-ink">צוות</h2>
         </div>
         <div className="divide-y divide-border">
           {(allMembers ?? []).map((m: any) => (

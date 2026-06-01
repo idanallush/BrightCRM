@@ -327,31 +327,31 @@ export function TasksClient({
     >
       {/* Board header */}
       <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
-        <div className="flex flex-wrap items-center justify-between gap-3 bg-sidebar px-5 py-3.5">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3.5">
           <div className="flex items-center gap-3">
-            <h1 className="text-base font-bold text-white">משימות</h1>
+            <h1 className="text-base font-bold text-ink">משימות</h1>
             {activeFilterCount > 0 && (
               <button type="button" onClick={clearFilters}
-                className="rounded-full bg-white/15 px-3 py-1 text-[11px] font-medium text-white transition-colors hover:bg-white/25">
+                className="rounded-full bg-surface px-3 py-1 text-[11px] font-medium text-ink-secondary transition-colors hover:bg-border">
                 {activeFilterCount === 1 ? "פילטר 1" : `${activeFilterCount} פילטרים`} · נקה
               </button>
             )}
           </div>
           <div className="flex items-center gap-2">
-            <div className="inline-flex rounded-full border border-white/15 bg-white/10 p-0.5">
+            <div className="inline-flex rounded-full border border-border bg-surface p-0.5">
               <button type="button" onClick={() => changeView("table")}
                 className={cn("flex items-center gap-1.5 rounded-full px-3 py-1.5 text-caption transition-colors duration-200",
-                  view === "table" ? "bg-white font-medium text-ink shadow-sm" : "text-white/70 hover:text-white")}>
+                  view === "table" ? "bg-white font-medium text-ink shadow-sm" : "text-ink-secondary hover:text-ink")}>
                 <Rows3 className="h-4 w-4" /><span className="hidden sm:inline">טבלה</span>
               </button>
               <button type="button" onClick={() => changeView("kanban")}
                 className={cn("flex items-center gap-1.5 rounded-full px-3 py-1.5 text-caption transition-colors duration-200",
-                  view === "kanban" ? "bg-white font-medium text-ink shadow-sm" : "text-white/70 hover:text-white")}>
+                  view === "kanban" ? "bg-white font-medium text-ink shadow-sm" : "text-ink-secondary hover:text-ink")}>
                 <LayoutGrid className="h-4 w-4" /><span className="hidden sm:inline">קנבן</span>
               </button>
               <button type="button" onClick={() => changeView("calendar")}
                 className={cn("flex items-center gap-1.5 rounded-full px-3 py-1.5 text-caption transition-colors duration-200",
-                  view === "calendar" ? "bg-white font-medium text-ink shadow-sm" : "text-white/70 hover:text-white")}>
+                  view === "calendar" ? "bg-white font-medium text-ink shadow-sm" : "text-ink-secondary hover:text-ink")}>
                 <CalendarDays className="h-4 w-4" /><span className="hidden sm:inline">לוח שנה</span>
               </button>
             </div>

@@ -12,8 +12,8 @@ export default function AboutPage() {
     <div className="flex flex-col gap-8">
       {/* Hero */}
       <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
-        <div className="bg-sidebar px-6 py-4">
-          <Logo size="lg" dark />
+        <div className="border-b border-border px-6 py-4">
+          <Logo size="lg" />
         </div>
         <div className="p-6">
           <p className="max-w-lg text-body-md text-ink-secondary">
@@ -24,8 +24,8 @@ export default function AboutPage() {
 
       {/* Story */}
       <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
-        <div className="bg-sidebar px-4 py-3">
-          <h2 className="text-base font-bold text-white">הסיפור</h2>
+        <div className="border-b border-border px-4 py-3">
+          <h2 className="text-base font-bold text-ink">הסיפור</h2>
         </div>
         <div className="p-5">
           <p className="text-body-sm leading-relaxed text-ink-secondary">
