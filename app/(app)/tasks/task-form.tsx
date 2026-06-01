@@ -244,7 +244,7 @@ export function TaskForm({
                       )}>
                       <span className={cn(
                         "flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-semibold",
-                        active ? "bg-white/20 text-white" : "bg-pastel-blue text-primary",
+                        active ? "bg-white/20 text-white" : "bg-surface text-ink",
                       )}>
                         {getInitials(m.full_name)}
                       </span>
@@ -303,7 +303,7 @@ function ClientLogo({ client }: { client?: Client }) {
     return <img src={client.logo_url} alt="" className="h-5 w-5 shrink-0 rounded object-cover" />;
   }
   return (
-    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-pastel-blue text-[9px] font-semibold text-primary">
+    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-surface text-[9px] font-semibold text-ink">
       {getInitials(client.name)}
     </span>
   );

@@ -167,7 +167,7 @@ function TaskDetailPanel({
         {/* Delete */}
         <div className="px-5 py-3 md:px-6">
           {confirmingDelete ? (
-            <div className="flex flex-col gap-2 rounded-xl bg-pastel-rose p-3 text-right">
+            <div className="flex flex-col gap-2 rounded-xl bg-overdue-bg p-3 text-right">
               <p className="text-sm text-overdue">למחוק את המשימה לצמיתות?</p>
               <div className="flex flex-row-reverse gap-2">
                 <Button variant="danger" size="sm" onClick={onDelete}>מחק</Button>
@@ -403,7 +403,7 @@ export function TasksClient({
 
             <button type="button" onClick={() => updateFilter("overdue", !filters.overdue)}
               className={cn("flex h-9 items-center gap-1.5 rounded-full border px-3 text-caption transition-colors duration-200",
-                filters.overdue ? "border-overdue bg-pastel-rose text-overdue" : "border-border bg-white text-ink-secondary hover:bg-surface")}>
+                filters.overdue ? "border-overdue bg-overdue-bg text-overdue-text" : "border-border bg-white text-ink-secondary hover:bg-surface")}>
               <AlertTriangle className="h-3.5 w-3.5" />עבר דדליין
             </button>
 
@@ -440,7 +440,7 @@ export function TasksClient({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
-            className="flex flex-wrap items-center gap-3 rounded-2xl border border-primary/20 bg-pastel-blue px-4 py-2.5 shadow-elevation-1"
+            className="flex flex-wrap items-center gap-3 rounded-2xl border border-ink/10 bg-surface px-4 py-2.5 shadow-elevation-1"
           >
             <span className="text-body-sm font-semibold text-ink">
               {selectedIds.size} {selectedIds.size === 1 ? "משימה נבחרה" : "משימות נבחרו"}
@@ -493,7 +493,7 @@ export function TasksClient({
               </div>
             ) : (
               <Button variant="ghost" size="sm" onClick={() => setConfirmBulkDelete(true)} disabled={bulkLoading}
-                className="text-overdue hover:bg-pastel-rose hover:text-overdue">
+                className="text-overdue hover:bg-overdue-bg hover:text-overdue">
                 <Trash2 className="h-3.5 w-3.5" /> מחיקה
               </Button>
             )}

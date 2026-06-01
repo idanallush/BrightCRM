@@ -218,7 +218,7 @@ export function TaskTable({
       <tr
         key={t.id}
         onClick={() => onRowClick(t)}
-        className={cn("group cursor-pointer border-b border-border transition-colors duration-150 hover:bg-surface", selectedIds.has(t.id) && "bg-pastel-blue/40")}
+        className={cn("group cursor-pointer border-b border-border transition-colors duration-150 hover:bg-surface", selectedIds.has(t.id) && "bg-surface")}
       >
         {/* Checkbox */}
         <td className="w-8 px-2 pe-0 align-middle">
@@ -249,7 +249,7 @@ export function TaskTable({
           <div className="flex items-center gap-2">
             <span className="font-medium text-ink">{t.title}</span>
             {cc > 0 && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-pastel-blue px-2 py-0.5 text-xs font-medium text-primary">
+              <span className="inline-flex items-center gap-1 rounded-full bg-surface px-2 py-0.5 text-xs font-medium text-ink">
                 <MessageCircle className="h-3 w-3" />{cc}
               </span>
             )}

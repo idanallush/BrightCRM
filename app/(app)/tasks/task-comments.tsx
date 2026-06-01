@@ -71,7 +71,7 @@ function renderContentWithMentions(content: string, names: string[]): React.Reac
       nodes.push(
         <span
           key={`m${i}`}
-          className="rounded-full bg-pastel-blue px-1.5 font-medium text-primary"
+          className="rounded-full bg-surface px-1.5 font-medium text-ink"
         >
           {matches[i]}
         </span>,
@@ -303,7 +303,7 @@ function CommentInput({
               onClick={() => insertMention(m)}
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-ink transition-colors hover:bg-surface"
             >
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-pastel-blue text-[10px] font-semibold text-primary">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-surface text-[10px] font-semibold text-ink">
                 {getInitials(m.full_name)}
               </span>
               {m.full_name}
@@ -391,7 +391,7 @@ function SingleComment({
 
   return (
     <div className="flex gap-3">
-      <div className={`flex shrink-0 items-center justify-center rounded-full bg-pastel-blue text-[11px] font-semibold text-primary ${isReply ? "h-6 w-6 text-[9px]" : "h-8 w-8"}`}>
+      <div className={`flex shrink-0 items-center justify-center rounded-full bg-surface text-[11px] font-semibold text-ink ${isReply ? "h-6 w-6 text-[9px]" : "h-8 w-8"}`}>
         {comment.author_name ? getInitials(comment.author_name) : "?"}
       </div>
       <div className="min-w-0 flex-1">

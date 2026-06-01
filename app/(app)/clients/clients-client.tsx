@@ -96,7 +96,7 @@ export function ClientsClient({
             {c.logo_url ? (
               <img src={c.logo_url} alt={c.name} className="h-7 w-7 shrink-0 rounded-full object-cover bg-surface" />
             ) : (
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-pastel-blue text-xs font-bold text-primary">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface text-xs font-bold text-ink">
                 {c.name.charAt(0)}
               </span>
             )}
@@ -116,7 +116,7 @@ export function ClientsClient({
         <td className="hidden px-4 py-3 sm:table-cell">
           {c.onboarding_status ? (
             <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium",
-              c.onboarding_status === "בתהליך קליטה" ? "bg-pastel-yellow text-ink" : c.onboarding_status === "בהשהייה" ? "bg-surface text-ink-secondary" : "bg-pastel-teal text-ink")}>
+              c.onboarding_status === "בתהליך קליטה" ? "bg-st-approval-bg text-st-approval-text" : c.onboarding_status === "בהשהייה" ? "bg-surface text-ink-secondary" : "bg-st-done-bg text-st-done-text")}>
               {c.onboarding_status === "בתהליך קליטה" ? <Loader2 className="h-3 w-3" /> : c.onboarding_status === "בהשהייה" ? <PauseCircle className="h-3 w-3" /> : <CheckCircle2 className="h-3 w-3" />}
               {c.onboarding_status}
             </span>

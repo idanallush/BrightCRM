@@ -84,8 +84,8 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
         <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 lg:grid-cols-4">
           {client.contact_name && (
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-pastel-blue">
-                <Contact className="h-4 w-4 text-primary" />
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-surface">
+                <Contact className="h-4 w-4 text-ink-secondary" />
               </div>
               <div>
                 <div className="text-[11px] text-ink-muted">איש קשר</div>
@@ -95,8 +95,8 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
           )}
           {manager && (
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-pastel-purple">
-                <User className="h-4 w-4 text-purple-600" />
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-surface">
+                <User className="h-4 w-4 text-ink-secondary" />
               </div>
               <div>
                 <div className="text-[11px] text-ink-muted">מנהל לקוח</div>
@@ -106,8 +106,8 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
           )}
           {client.phone && (
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-pastel-teal">
-                <Phone className="h-4 w-4 text-green-600" />
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-surface">
+                <Phone className="h-4 w-4 text-ink-secondary" />
               </div>
               <div>
                 <div className="text-[11px] text-ink-muted">טלפון</div>
@@ -117,8 +117,8 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
           )}
           {client.email && (
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-pastel-coral">
-                <Mail className="h-4 w-4 text-orange-600" />
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-surface">
+                <Mail className="h-4 w-4 text-ink-secondary" />
               </div>
               <div>
                 <div className="text-[11px] text-ink-muted">אימייל</div>
@@ -128,8 +128,8 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
           )}
           {client.budget_note && (
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-pastel-yellow">
-                <CreditCard className="h-4 w-4 text-yellow-600" />
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-surface">
+                <CreditCard className="h-4 w-4 text-ink-secondary" />
               </div>
               <div>
                 <div className="text-[11px] text-ink-muted">תקציב</div>
@@ -177,7 +177,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
             </div>
             {client.onboarding_status && (
               <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-medium ${
-                client.onboarding_status === "בתהליך קליטה" ? "bg-pastel-yellow text-ink" : client.onboarding_status === "בהשהייה" ? "bg-surface text-ink-secondary" : "bg-pastel-teal text-ink"
+                client.onboarding_status === "בתהליך קליטה" ? "bg-st-approval-bg text-st-approval-text" : client.onboarding_status === "בהשהייה" ? "bg-surface text-ink-secondary" : "bg-st-done-bg text-st-done-text"
               }`}>
                 {client.onboarding_status === "בתהליך קליטה" ? <Loader2 className="h-3 w-3" /> : client.onboarding_status === "בהשהייה" ? <PauseCircle className="h-3 w-3" /> : <CheckCircle2 className="h-3 w-3" />}
                 {client.onboarding_status}
@@ -188,8 +188,8 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {client.onboarding_date && (
                 <div className="flex items-start gap-2.5">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-pastel-blue">
-                    <CalendarDays className="h-4 w-4 text-primary" />
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-surface">
+                    <CalendarDays className="h-4 w-4 text-ink-secondary" />
                   </div>
                   <div>
                     <div className="text-[11px] text-ink-muted">תאריך קליטה</div>
@@ -199,8 +199,8 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
               )}
               {client.competitors && (
                 <div className="flex items-start gap-2.5">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-pastel-coral">
-                    <Crosshair className="h-4 w-4 text-orange-600" />
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-surface">
+                    <Crosshair className="h-4 w-4 text-ink-secondary" />
                   </div>
                   <div>
                     <div className="text-[11px] text-ink-muted">מתחרים</div>
@@ -210,8 +210,8 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
               )}
               {client.core_message && (
                 <div className="flex items-start gap-2.5">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-pastel-purple">
-                    <MessageSquare className="h-4 w-4 text-purple-600" />
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-surface">
+                    <MessageSquare className="h-4 w-4 text-ink-secondary" />
                   </div>
                   <div>
                     <div className="text-[11px] text-ink-muted">מסר מרכזי</div>
@@ -221,8 +221,8 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
               )}
               {client.differentiation && (
                 <div className="flex items-start gap-2.5">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-pastel-yellow">
-                    <Sparkles className="h-4 w-4 text-yellow-600" />
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-surface">
+                    <Sparkles className="h-4 w-4 text-ink-secondary" />
                   </div>
                   <div>
                     <div className="text-[11px] text-ink-muted">בידול</div>
@@ -233,8 +233,8 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
             </div>
             {client.target_audience && (
               <div className="mt-4 flex items-start gap-2.5">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-pastel-teal">
-                  <Target className="h-4 w-4 text-green-600" />
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-surface">
+                  <Target className="h-4 w-4 text-ink-secondary" />
                 </div>
                 <div>
                   <div className="text-[11px] text-ink-muted">קהל יעד</div>
@@ -244,8 +244,8 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
             )}
             {client.campaign_goal && (
               <div className="mt-4 flex items-start gap-2.5">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-pastel-rose">
-                  <Megaphone className="h-4 w-4 text-rose-600" />
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-surface">
+                  <Megaphone className="h-4 w-4 text-ink-secondary" />
                 </div>
                 <div>
                   <div className="text-[11px] text-ink-muted">מטרת הקמפיינים</div>
@@ -261,7 +261,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {client.digital_assets.map((a) => (
-                    <span key={a} className="rounded-full bg-pastel-blue px-2.5 py-0.5 text-[11px] font-medium text-primary">{a}</span>
+                    <span key={a} className="rounded-full bg-surface px-2.5 py-0.5 text-[11px] font-medium text-ink">{a}</span>
                   ))}
                 </div>
               </div>
@@ -274,7 +274,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {client.previous_campaigns.map((p) => (
-                    <span key={p} className="rounded-full bg-pastel-purple px-2.5 py-0.5 text-[11px] font-medium text-purple-700">{p}</span>
+                    <span key={p} className="rounded-full bg-surface px-2.5 py-0.5 text-[11px] font-medium text-ink">{p}</span>
                   ))}
                 </div>
               </div>
