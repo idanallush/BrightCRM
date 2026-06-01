@@ -8,6 +8,17 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      spacing: {
+        xs: "8px",
+        sm: "12px",
+        md: "16px",
+        lg: "20px",
+        xl: "24px",
+        xxl: "32px",
+        "section-sm": "48px",
+        section: "64px",
+        "section-lg": "96px",
+      },
       fontFamily: {
         sans: ["var(--font-almoni)", "system-ui", "-apple-system", "Segoe UI", "Arial", "sans-serif"],
       },
@@ -31,6 +42,9 @@ const config: Config = {
         sidebar: { DEFAULT: "#1B1B3A", hover: "#2A2A55", active: "#141430", border: "#3A3A60" },
         // Borders — softer
         border: "#E0E0E6",
+        hairline: "#E8E8F0",
+        "hairline-soft": "#F0F0F5",
+        "hairline-strong": "#C0C0D0",
         // Pastels (Miro feature cards)
         pastel: {
           rose: "#FFE4E8",
@@ -49,11 +63,24 @@ const config: Config = {
           manager: "#FF642E",
           done: "#00C875",
           cancelled: "#C4C4C4",
+          // Light bg + matched dark text (for soft badge treatment)
+          "waiting-bg": "#FFF3E0",
+          "waiting-text": "#92400E",
+          "incoming-bg": "#EEF2FF",
+          "incoming-text": "#2B42B0",
+          "working-bg": "#F5F3FF",
+          "working-text": "#5B21B6",
+          "approval-bg": "#FFFBEB",
+          "approval-text": "#78350F",
+          "done-bg": "#ECFDF5",
+          "done-text": "#065F46",
         },
         // Health
         health: { good: "#00C875", strategy: "#FDAB3D", critical: "#E2445C" },
         // Semantic
         overdue: "#E2445C",
+        "overdue-bg": "#FEF2F2",
+        "overdue-text": "#991B1B",
         success: "#00C875",
         warning: "#FDAB3D",
       },
@@ -62,6 +89,8 @@ const config: Config = {
         "2xl": "16px",
         "3xl": "20px",
         "4xl": "24px",
+        "xxxl": "28px",
+        "feature": "32px",
       },
       boxShadow: {
         "sm": "0 1px 3px 0 rgba(5,0,56,0.04)",

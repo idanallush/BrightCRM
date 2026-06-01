@@ -43,9 +43,8 @@ Design system בהשראת Miro. כל הטוקנים מוגדרים ב-`tailwind
 ## Typography
 
 ### Fonts
-- **Primary:** DM Sans (Google Fonts) — geometric sans-serif, closest free alternative to Roobert PRO
-- **Hebrew fallback:** Heebo
-- **Stack:** `"DM Sans", "Heebo", ui-sans-serif, system-ui, sans-serif`
+- **Primary:** Almoni (local OTF, weights 400/500/600/700) — RTL-first Hebrew geometric face
+- **Stack:** `"var(--font-almoni)", "system-ui", "-apple-system", "Segoe UI", "Arial", "sans-serif"`
 
 ### Scale (defined in Tailwind)
 | Token | Size | Weight | Use |
@@ -91,6 +90,8 @@ All primary CTAs are pill-shaped (canary yellow). Defined in `components/ui/butt
 | `rounded-2xl` | 16px | Cards, sections, modals |
 | `rounded-xl` | 12px | Inputs, small cards, ghost buttons, dropdowns |
 | `rounded-lg` | 8px | Small interactive elements (mention items, calendar tasks) |
+| `rounded-xxxl` | 28px | Pastel feature cards, large modal cards |
+| `rounded-feature` | 32px | Hero CTA banner cards |
 
 ---
 
@@ -115,9 +116,9 @@ All primary CTAs are pill-shaped (canary yellow). Defined in `components/ui/butt
 
 ### Sidebar
 - Background: `bg-sidebar` (`#1B1B3A`)
-- Logo: `bg-accent text-ink` (yellow B on dark)
-- Active nav item: `bg-accent/15` with yellow left indicator
-- User area: initials in `bg-accent/20 text-accent`
+- Logo: Bright TASKS PNG wordmark via `components/logo.tsx`
+- Active nav item: `bg-white/10` with yellow right indicator bar
+- User area: `UserAvatar` component (`bg-pastel-blue`, initials)
 
 ### Header
 - `bg-white/80 backdrop-blur-md` (glass effect)
@@ -131,6 +132,10 @@ All primary CTAs are pill-shaped (canary yellow). Defined in `components/ui/butt
 ### Status Badges
 - All `rounded-full` (pill-shaped)
 - Colors match status: orange (waiting), blue (incoming), yellow (in-progress), green (done), red (overdue)
+
+### Status Light Pairs (for soft badges)
+Each status has a `-bg` and `-text` variant for light background treatment:
+`bg-st-waiting-bg` / `text-st-waiting-text`, `bg-st-incoming-bg` / `text-st-incoming-text`, etc.
 
 ### Dialogs & Sheets
 - Dialog overlay: `bg-ink/30 backdrop-blur-[2px]`
