@@ -77,8 +77,12 @@ export async function createTask(input: TaskInput) {
   revalidatePath("/tasks");
   revalidatePath("/dashboard");
 
-  // Fire-and-forget email notification to assignees
-  import("@/lib/email/notify").then((m) => m.notifyNewTask(data.id)).catch(() => {});
+  try {
+    const { notifyNewTask } = await import("@/lib/email/notify");
+    await notifyNewTask(data.id);
+  } catch (err) {
+    console.error("[Email] notifyNewTask failed:", err);
+  }
 
   return { ok: true as const };
 }

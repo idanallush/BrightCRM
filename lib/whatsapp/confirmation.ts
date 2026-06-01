@@ -101,12 +101,13 @@ export async function confirmTask(pendingTaskId: string) {
 
   await db.from("whatsapp_pending_tasks").delete().eq("id", pendingTaskId);
 
-  // Fire-and-forget email notification to assignees
-  console.log("[Email] Calling notifyNewTask for task:", task.id);
-  import("@/lib/email/notify")
-    .then((m) => m.notifyNewTask(task.id))
-    .then(() => console.log("[Email] notifyNewTask completed for task:", task.id))
-    .catch((err) => console.error("[Email] notifyNewTask failed:", err));
+  try {
+    const { notifyNewTask } = await import("@/lib/email/notify");
+    await notifyNewTask(task.id);
+    console.log("[Email] notifyNewTask completed for task:", task.id);
+  } catch (err) {
+    console.error("[Email] notifyNewTask failed:", err);
+  }
 
   return task.id;
 }

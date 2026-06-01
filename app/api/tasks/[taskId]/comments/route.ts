@@ -100,10 +100,13 @@ export async function POST(
     await sb.from("notifications").insert(notifs);
   }
 
-  // Fire-and-forget email notifications
-  notifyNewComment(comment.id).catch(() => {});
-  if (mentions.length > 0) {
-    notifyMentions(comment.id).catch(() => {});
+  try {
+    await notifyNewComment(comment.id);
+    if (mentions.length > 0) {
+      await notifyMentions(comment.id);
+    }
+  } catch (err) {
+    console.error("[Email] comment notification failed:", err);
   }
 
   return NextResponse.json({ id: comment.id }, { status: 201 });
