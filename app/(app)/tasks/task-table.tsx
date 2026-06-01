@@ -23,15 +23,19 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const STATUS_BG: Record<string, string> = {
-  "מחכה לטיפול": "bg-st-waiting",
-  "נכנס לעבודה": "bg-st-incoming",
-  "בעבודה": "bg-st-working",
-  "אישור לקוח": "bg-st-approval",
-  "בוצע": "bg-st-done",
+  "מחכה לטיפול": "bg-st-waiting-bg",
+  "נכנס לעבודה": "bg-st-incoming-bg",
+  "בעבודה":      "bg-st-working-bg",
+  "אישור לקוח":  "bg-st-approval-bg",
+  "בוצע":        "bg-st-done-bg",
 };
 
 const STATUS_TEXT: Record<string, string> = {
-  "אישור לקוח": "text-ink",
+  "מחכה לטיפול": "text-st-waiting-text",
+  "נכנס לעבודה": "text-st-incoming-text",
+  "בעבודה":      "text-st-working-text",
+  "אישור לקוח":  "text-st-approval-text",
+  "בוצע":        "text-st-done-text",
 };
 
 function StatusDropdown({ taskId, status, onUpdated }: { taskId: string; status: string; onUpdated: () => void }) {

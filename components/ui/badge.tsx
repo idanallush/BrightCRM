@@ -1,13 +1,13 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
-// Status cell colors — full bg with white text
+// Status cell colors — light bg with matched dark text
 const STATUS_CELL: Record<string, { bg: string; text: string }> = {
-  "מחכה לטיפול": { bg: "bg-st-waiting", text: "text-white" },
-  "נכנס לעבודה": { bg: "bg-st-incoming", text: "text-white" },
-  "בעבודה": { bg: "bg-st-working", text: "text-white" },
-  "אישור לקוח": { bg: "bg-st-approval", text: "text-ink" },
-  "בוצע": { bg: "bg-st-done", text: "text-white" },
+  "מחכה לטיפול": { bg: "bg-st-waiting-bg",  text: "text-st-waiting-text" },
+  "נכנס לעבודה": { bg: "bg-st-incoming-bg", text: "text-st-incoming-text" },
+  "בעבודה":      { bg: "bg-st-working-bg",  text: "text-st-working-text" },
+  "אישור לקוח":  { bg: "bg-st-approval-bg", text: "text-st-approval-text" },
+  "בוצע":        { bg: "bg-st-done-bg",     text: "text-st-done-text" },
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -58,18 +58,18 @@ export const HealthBadge = HealthCell;
 type Variant = "waiting" | "incoming" | "working" | "approval" | "manager" | "done" | "cancelled" | "overdue" | "neutral" | "good" | "warning" | "danger";
 
 const VARIANT_CELL: Record<Variant, { bg: string; text: string }> = {
-  waiting: { bg: "bg-st-waiting", text: "text-white" },
-  incoming: { bg: "bg-st-incoming", text: "text-white" },
-  working: { bg: "bg-st-working", text: "text-white" },
-  approval: { bg: "bg-st-approval", text: "text-ink" },
-  manager: { bg: "bg-st-manager", text: "text-white" },
-  done: { bg: "bg-st-done", text: "text-white" },
-  cancelled: { bg: "bg-st-cancelled", text: "text-white" },
-  overdue: { bg: "bg-overdue", text: "text-white" },
-  neutral: { bg: "bg-st-cancelled", text: "text-white" },
-  good: { bg: "bg-health-good", text: "text-white" },
-  warning: { bg: "bg-health-strategy", text: "text-white" },
-  danger: { bg: "bg-health-critical", text: "text-white" },
+  waiting:   { bg: "bg-st-waiting-bg",  text: "text-st-waiting-text" },
+  incoming:  { bg: "bg-st-incoming-bg", text: "text-st-incoming-text" },
+  working:   { bg: "bg-st-working-bg",  text: "text-st-working-text" },
+  approval:  { bg: "bg-st-approval-bg", text: "text-st-approval-text" },
+  manager:   { bg: "bg-st-manager",     text: "text-white" },
+  done:      { bg: "bg-st-done-bg",     text: "text-st-done-text" },
+  cancelled: { bg: "bg-st-cancelled",   text: "text-white" },
+  overdue:   { bg: "bg-overdue-bg",     text: "text-overdue-text" },
+  neutral:   { bg: "bg-st-cancelled",   text: "text-white" },
+  good:      { bg: "bg-health-good",    text: "text-white" },
+  warning:   { bg: "bg-health-strategy",text: "text-white" },
+  danger:    { bg: "bg-health-critical",text: "text-white" },
 };
 
 export function Badge({ variant = "neutral", className, ...props }: { variant?: Variant } & React.HTMLAttributes<HTMLSpanElement>) {
