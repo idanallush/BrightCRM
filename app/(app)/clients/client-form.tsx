@@ -145,6 +145,7 @@ export function ClientForm({
         </div>
         <Field label="אתר/דף נחיתה">
           <Input
+            dir="ltr"
             value={form.website_url ?? ""}
             onChange={(e) => set("website_url", e.target.value)}
             placeholder="https://..."
@@ -200,6 +201,7 @@ export function ClientForm({
         </Field>
         <Field label="לוגו (URL)">
           <Input
+            dir="ltr"
             value={form.logo_url ?? ""}
             onChange={(e) => set("logo_url", e.target.value)}
             placeholder="https://example.com/logo.png"
@@ -210,30 +212,35 @@ export function ClientForm({
       <Section title="קישורים">
         <Field label="Drive">
           <Input
+            dir="ltr"
             value={form.drive_url ?? ""}
             onChange={(e) => set("drive_url", e.target.value)}
           />
         </Field>
         <Field label="Facebook Ads">
           <Input
+            dir="ltr"
             value={form.facebook_ads_url ?? ""}
             onChange={(e) => set("facebook_ads_url", e.target.value)}
           />
         </Field>
         <Field label="Google Ads">
           <Input
+            dir="ltr"
             value={form.google_ads_url ?? ""}
             onChange={(e) => set("google_ads_url", e.target.value)}
           />
         </Field>
         <Field label="CMS">
           <Input
+            dir="ltr"
             value={form.cms_url ?? ""}
             onChange={(e) => set("cms_url", e.target.value)}
           />
         </Field>
         <Field label="Google Analytics">
           <Input
+            dir="ltr"
             value={form.analytics_url ?? ""}
             onChange={(e) => set("analytics_url", e.target.value)}
           />
