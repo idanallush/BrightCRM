@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, LayoutGrid, Rows3, CalendarDays, AlertTriangle, Search, Tag as TagIcon } from "lucide-react";
+import { Plus, LayoutGrid, Rows3, CalendarDays, AlertTriangle, Search, Tag as TagIcon, X, Trash2, ArrowRightLeft } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,7 +26,7 @@ import { TaskCalendar } from "./task-calendar";
 import { TaskForm } from "./task-form";
 import { TaskAttachments } from "./task-attachments";
 import { TaskComments } from "./task-comments";
-import { deleteTask, updateTask, type TaskInput } from "./actions";
+import { deleteTask, updateTask, bulkUpdateStatus, bulkUpdateAssignees, bulkDeleteTasks, type TaskInput } from "./actions";
 import type { Client, Tag, TaskWithRelations, TeamMember } from "@/lib/data";
 
 const STATUS_PILLS = [
@@ -203,6 +203,12 @@ export function TasksClient({
   const [filters, setFilters] = React.useState(initialFilters);
   const [tagFilter, setTagFilter] = React.useState<string>("__all__");
   const [searchText, setSearchText] = React.useState("");
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
+  const [bulkLoading, setBulkLoading] = React.useState(false);
+  const [confirmBulkDelete, setConfirmBulkDelete] = React.useState(false);
+
+  // Clear selection when filters/view change
+  React.useEffect(() => { setSelectedIds(new Set()); }, [filters, tagFilter, searchText, view]);
 
   React.useEffect(() => {
     const saved = localStorage.getItem(VIEW_KEY);
@@ -278,6 +284,37 @@ export function TasksClient({
     if ("error" in res) { toast.error(res.error); return; }
     toast.success("המשימה נמחקה");
     closeSheet();
+    router.refresh();
+  }
+
+  async function onBulkStatus(status: string) {
+    setBulkLoading(true);
+    const res = await bulkUpdateStatus([...selectedIds], status);
+    setBulkLoading(false);
+    if ("error" in res) { toast.error(res.error); return; }
+    toast.success(`${res.count} משימות עודכנו`);
+    setSelectedIds(new Set());
+    router.refresh();
+  }
+
+  async function onBulkAssignee(assigneeId: string) {
+    setBulkLoading(true);
+    const res = await bulkUpdateAssignees([...selectedIds], [assigneeId]);
+    setBulkLoading(false);
+    if ("error" in res) { toast.error(res.error); return; }
+    toast.success(`${res.count} משימות עודכנו`);
+    setSelectedIds(new Set());
+    router.refresh();
+  }
+
+  async function onBulkDelete() {
+    setBulkLoading(true);
+    const res = await bulkDeleteTasks([...selectedIds]);
+    setBulkLoading(false);
+    if ("error" in res) { toast.error(res.error); return; }
+    toast.success(`${res.count} משימות נמחקו`);
+    setSelectedIds(new Set());
+    setConfirmBulkDelete(false);
     router.refresh();
   }
 
@@ -395,6 +432,83 @@ export function TasksClient({
         </div>
       </div>
 
+      {/* Bulk action bar */}
+      <AnimatePresence>
+        {selectedIds.size > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="flex flex-wrap items-center gap-3 rounded-2xl border border-primary/20 bg-pastel-blue px-4 py-2.5 shadow-elevation-1"
+          >
+            <span className="text-body-sm font-semibold text-ink">
+              {selectedIds.size} {selectedIds.size === 1 ? "משימה נבחרה" : "משימות נבחרו"}
+            </span>
+
+            <div className="h-4 w-px bg-primary/20" />
+
+            {/* Status change */}
+            <Select onValueChange={onBulkStatus} disabled={bulkLoading}>
+              <SelectTrigger className="h-8 w-auto min-w-[120px] gap-1.5 border-primary/20 bg-white text-caption">
+                <ArrowRightLeft className="h-3.5 w-3.5 text-ink-muted" />
+                <SelectValue placeholder="שנה סטטוס" />
+              </SelectTrigger>
+              <SelectContent>
+                {STATUS_PILLS.filter((p) => p.key !== "__all__").map((pill) => (
+                  <SelectItem key={pill.key} value={pill.key}>
+                    <div className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full" style={{ backgroundColor: pill.color }} />
+                      {pill.label}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Assignee change */}
+            <Select onValueChange={onBulkAssignee} disabled={bulkLoading}>
+              <SelectTrigger className="h-8 w-auto min-w-[120px] gap-1.5 border-primary/20 bg-white text-caption">
+                <SelectValue placeholder="שנה אחראי" />
+              </SelectTrigger>
+              <SelectContent>
+                {team.map((m) => (
+                  <SelectItem key={m.id} value={m.id}>{m.full_name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <div className="h-4 w-px bg-primary/20" />
+
+            {/* Delete */}
+            {confirmBulkDelete ? (
+              <div className="flex items-center gap-2">
+                <span className="text-caption text-overdue">למחוק {selectedIds.size} משימות?</span>
+                <Button variant="danger" size="sm" onClick={onBulkDelete} disabled={bulkLoading}>
+                  מחק
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => setConfirmBulkDelete(false)}>
+                  ביטול
+                </Button>
+              </div>
+            ) : (
+              <Button variant="ghost" size="sm" onClick={() => setConfirmBulkDelete(true)} disabled={bulkLoading}
+                className="text-overdue hover:bg-pastel-rose hover:text-overdue">
+                <Trash2 className="h-3.5 w-3.5" /> מחיקה
+              </Button>
+            )}
+
+            <div className="flex-1" />
+
+            {/* Clear selection */}
+            <button type="button" onClick={() => setSelectedIds(new Set())}
+              className="rounded-full p-1.5 text-ink-muted transition-colors hover:bg-white hover:text-ink">
+              <X className="h-4 w-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Content */}
       <AnimatePresence mode="wait">
       {filteredTasks.length === 0 ? (
@@ -409,7 +523,7 @@ export function TasksClient({
         </motion.div>
       ) : view === "table" ? (
         <motion.div key="table" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-          <TaskTable tasks={filteredTasks} commentCounts={commentCounts} onRowClick={setEditing} />
+          <TaskTable tasks={filteredTasks} commentCounts={commentCounts} onRowClick={setEditing} selectedIds={selectedIds} onSelectionChange={setSelectedIds} />
         </motion.div>
       ) : view === "kanban" ? (
         <motion.div key="kanban" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>

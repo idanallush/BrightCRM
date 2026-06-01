@@ -148,6 +148,42 @@ export async function updateTaskStatus(id: string, status: string) {
   return { ok: true as const };
 }
 
+export async function bulkUpdateStatus(ids: string[], status: string) {
+  if (ids.length === 0) return { error: "לא נבחרו משימות" };
+  const sb = createClient();
+  const { error } = await sb.from("tasks").update({ status }).in("id", ids);
+  if (error) return { error: error.message };
+  revalidatePath("/tasks");
+  revalidatePath("/dashboard");
+  return { ok: true as const, count: ids.length };
+}
+
+export async function bulkUpdateAssignees(ids: string[], assigneeIds: string[]) {
+  if (ids.length === 0) return { error: "לא נבחרו משימות" };
+  const sb = createClient();
+  // Delete existing assignees for all tasks, then insert new ones
+  const { error: dErr } = await sb.from("task_assignees").delete().in("task_id", ids);
+  if (dErr) return { error: dErr.message };
+  if (assigneeIds.length > 0) {
+    const rows = ids.flatMap((taskId) => assigneeIds.map((memberId) => ({ task_id: taskId, member_id: memberId })));
+    const { error: iErr } = await sb.from("task_assignees").insert(rows);
+    if (iErr) return { error: iErr.message };
+  }
+  revalidatePath("/tasks");
+  revalidatePath("/dashboard");
+  return { ok: true as const, count: ids.length };
+}
+
+export async function bulkDeleteTasks(ids: string[]) {
+  if (ids.length === 0) return { error: "לא נבחרו משימות" };
+  const sb = createClient();
+  const { error } = await sb.from("tasks").delete().in("id", ids);
+  if (error) return { error: error.message };
+  revalidatePath("/tasks");
+  revalidatePath("/dashboard");
+  return { ok: true as const, count: ids.length };
+}
+
 export async function quickParseTask(text: string) {
   const sb = createClient();
   const { data: { user } } = await sb.auth.getUser();

@@ -6,6 +6,7 @@ import { UserChip } from "@/components/user-hover-card";
 import { AvatarStack } from "@/components/user-avatar";
 import { Hint } from "@/components/ui/tooltip";
 import { STATUS_COLORS } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { updateTaskStatus } from "./actions";
 import { toast } from "@/components/ui/toaster";
 import { useRouter } from "next/navigation";
@@ -144,10 +145,14 @@ export function TaskTable({
   tasks,
   commentCounts,
   onRowClick,
+  selectedIds,
+  onSelectionChange,
 }: {
   tasks: TaskWithRelations[];
   commentCounts: Record<string, number>;
   onRowClick: (t: TaskWithRelations) => void;
+  selectedIds: Set<string>;
+  onSelectionChange: (ids: Set<string>) => void;
 }) {
   const router = useRouter();
   const today = new Date().toISOString().slice(0, 10);
@@ -175,6 +180,24 @@ export function TaskTable({
       }),
   })).filter((g) => g.tasks.length > 0);
 
+  const allVisibleIds = activeTasks.map((t) => t.id);
+  const allSelected = allVisibleIds.length > 0 && allVisibleIds.every((id) => selectedIds.has(id));
+  const someSelected = allVisibleIds.some((id) => selectedIds.has(id));
+
+  function toggleAll() {
+    if (allSelected) {
+      onSelectionChange(new Set());
+    } else {
+      onSelectionChange(new Set(allVisibleIds));
+    }
+  }
+
+  function toggleOne(id: string) {
+    const next = new Set(selectedIds);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    onSelectionChange(next);
+  }
+
   function toggleGroup(status: string) {
     setCollapsedGroups((prev) => {
       const next = new Set(prev);
@@ -191,9 +214,20 @@ export function TaskTable({
       <tr
         key={t.id}
         onClick={() => onRowClick(t)}
-        className="group cursor-pointer border-b border-border transition-colors duration-150 hover:bg-surface"
+        className={cn("group cursor-pointer border-b border-border transition-colors duration-150 hover:bg-surface", selectedIds.has(t.id) && "bg-pastel-blue/40")}
       >
-        {/* Open arrow — start of row (RTL: right side) */}
+        {/* Checkbox */}
+        <td className="w-8 px-2 pe-0 align-middle">
+          <input
+            type="checkbox"
+            checked={selectedIds.has(t.id)}
+            onChange={(e) => { e.stopPropagation(); toggleOne(t.id); }}
+            onClick={(e) => e.stopPropagation()}
+            className="h-4 w-4 cursor-pointer rounded border-border accent-primary"
+            aria-label={`בחר ${t.title}`}
+          />
+        </td>
+        {/* Open arrow */}
         <td className="w-8 px-2 pe-0 align-middle">
           <Hint label="פתח משימה" side="bottom">
             <button
@@ -260,7 +294,7 @@ export function TaskTable({
     );
   }
 
-  const COL_COUNT = 6;
+  const COL_COUNT = 7;
 
   return (
     <div className="flex flex-col gap-4">
@@ -268,6 +302,16 @@ export function TaskTable({
         <table className="w-full text-right text-body-sm">
           <thead>
             <tr className="bg-surface text-caption text-ink-secondary">
+              <th className="w-8 px-2 pe-0">
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  ref={(el) => { if (el) el.indeterminate = someSelected && !allSelected; }}
+                  onChange={toggleAll}
+                  className="h-4 w-4 cursor-pointer rounded border-border accent-primary"
+                  aria-label="בחר הכל"
+                />
+              </th>
               <th className="w-8 px-2 pe-0" />
               <th className="px-4 py-2.5 text-right font-medium">משימה</th>
               <th className="hidden px-4 py-2.5 text-right font-medium md:table-cell">לקוח</th>
@@ -336,6 +380,7 @@ export function TaskTable({
             <table className="w-full text-right text-body-sm">
               <thead>
                 <tr className="bg-surface text-caption text-ink-secondary">
+                  <th className="w-8 px-2 pe-0" />
                   <th className="w-8 px-2 pe-0" />
                   <th className="px-4 py-2.5 text-right font-medium">משימה</th>
                   <th className="hidden px-4 py-2.5 text-right font-medium md:table-cell">לקוח</th>
