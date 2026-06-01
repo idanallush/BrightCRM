@@ -5,7 +5,7 @@ import { ArrowUpLeft, ChevronDown, ChevronUp, AlertTriangle, MessageCircle, EyeO
 import { UserChip } from "@/components/user-hover-card";
 import { AvatarStack } from "@/components/user-avatar";
 import { Hint } from "@/components/ui/tooltip";
-import { STATUS_COLORS } from "@/components/ui/badge";
+import { STATUS_COLORS, STATUS_LIGHT } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { updateTaskStatus } from "./actions";
 import { toast } from "@/components/ui/toaster";
@@ -331,19 +331,25 @@ export function TaskTable({
                 <React.Fragment key={group.status}>
                   <tr>
                     <td colSpan={COL_COUNT}>
-                      <button
-                        type="button"
-                        onClick={() => toggleGroup(group.status)}
-                        className="flex w-full items-center gap-2 rounded-none px-4 py-2 text-right transition-colors hover:opacity-90"
-                        style={{ backgroundColor: group.color }}
-                      >
-                        {isCollapsed
-                          ? <ChevronDown className="h-4 w-4 -rotate-90 text-white" />
-                          : <ChevronDown className="h-4 w-4 text-white" />}
-                        <span className="text-sm font-semibold text-white">
-                          {group.label} ({group.tasks.length})
-                        </span>
-                      </button>
+                      {(() => {
+                        const light = STATUS_LIGHT[group.status] ?? { bg: "#F7F7F8", text: "#050038", dot: "#C4C4C4" };
+                        return (
+                          <button
+                            type="button"
+                            onClick={() => toggleGroup(group.status)}
+                            className="flex w-full items-center gap-2 rounded-none px-4 py-2 text-right transition-colors hover:opacity-90"
+                            style={{ backgroundColor: light.bg }}
+                          >
+                            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: light.dot }} />
+                            {isCollapsed
+                              ? <ChevronDown className="h-4 w-4 -rotate-90" style={{ color: light.text }} />
+                              : <ChevronDown className="h-4 w-4" style={{ color: light.text }} />}
+                            <span className="text-sm font-semibold" style={{ color: light.text }}>
+                              {group.label} ({group.tasks.length})
+                            </span>
+                          </button>
+                        );
+                      })()}
                     </td>
                   </tr>
                   {!isCollapsed && group.tasks.map(renderRow)}

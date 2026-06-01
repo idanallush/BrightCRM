@@ -13,14 +13,15 @@ import { toast } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { createTask, updateTask, createTag, updateTag, type TaskInput } from "./actions";
 import { Hint } from "@/components/ui/tooltip";
+import { STATUS_LIGHT } from "@/components/ui/badge";
 import type { Client, Tag, TaskWithRelations, TeamMember } from "@/lib/data";
 
-const STATUS_OPTIONS: { value: TaskInput["status"]; label: string; color: string; textColor: string }[] = [
-  { value: "מחכה לטיפול", label: "ממתין", color: "#FDAB3D", textColor: "#fff" },
-  { value: "נכנס לעבודה", label: "נכנס לעבודה", color: "#4262FF", textColor: "#fff" },
-  { value: "בעבודה", label: "בעבודה", color: "#A25DDC", textColor: "#fff" },
-  { value: "אישור לקוח", label: "אישור לקוח", color: "#FFCB00", textColor: "#050038" },
-  { value: "בוצע", label: "בוצע", color: "#00C875", textColor: "#fff" },
+const STATUS_OPTIONS: { value: TaskInput["status"]; label: string }[] = [
+  { value: "מחכה לטיפול", label: "ממתין" },
+  { value: "נכנס לעבודה", label: "נכנס לעבודה" },
+  { value: "בעבודה", label: "בעבודה" },
+  { value: "אישור לקוח", label: "אישור לקוח" },
+  { value: "בוצע", label: "בוצע" },
 ];
 
 const NONE = "__none__";
@@ -150,20 +151,23 @@ export function TaskForm({
                 <SelectTrigger className="h-9 text-sm">
                   <div className="flex items-center gap-1.5">
                     {selectedStatus && (
-                      <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: selectedStatus.color }} />
+                      <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: STATUS_LIGHT[selectedStatus.value]?.dot ?? "#C4C4C4" }} />
                     )}
                     <SelectValue />
                   </div>
                 </SelectTrigger>
                 <SelectContent>
-                  {STATUS_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      <div className="flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: opt.color }} />
-                        {opt.label}
-                      </div>
-                    </SelectItem>
-                  ))}
+                  {STATUS_OPTIONS.map((opt) => {
+                    const light = STATUS_LIGHT[opt.value];
+                    return (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        <div className="flex items-center gap-2">
+                          <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: light?.dot ?? "#C4C4C4" }} />
+                          {opt.label}
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </div>
@@ -209,20 +213,25 @@ export function TaskForm({
             <div className="flex flex-col gap-1.5">
               <Label>סטטוס</Label>
               <div className="flex flex-wrap gap-1.5">
-                {STATUS_OPTIONS.map((opt) => (
-                  <button key={opt.value} type="button" onClick={() => setStatus(opt.value)}
-                    className={cn(
-                      "rounded-full px-3 py-1.5 text-caption font-medium transition-[color,background-color,opacity,box-shadow] duration-200",
-                      status === opt.value ? "shadow-sm ring-2 ring-offset-1" : "opacity-60 hover:opacity-100",
-                    )}
-                    style={{
-                      backgroundColor: opt.color,
-                      color: opt.textColor,
-                      ...(status === opt.value ? { ringColor: opt.color } : {}),
-                    }}>
-                    {opt.label}
-                  </button>
-                ))}
+                {STATUS_OPTIONS.map((opt) => {
+                  const light = STATUS_LIGHT[opt.value] ?? { bg: "#F7F7F8", text: "#050038", dot: "#C4C4C4" };
+                  const isActive = status === opt.value;
+                  return (
+                    <button key={opt.value} type="button" onClick={() => setStatus(opt.value)}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-caption font-medium transition-all duration-200",
+                        isActive ? "shadow-sm ring-2 ring-offset-1" : "opacity-60 hover:opacity-100",
+                      )}
+                      style={{
+                        backgroundColor: light.bg,
+                        color: light.text,
+                        ...(isActive ? { ringColor: light.dot } : {}),
+                      }}>
+                      <span className="h-2 w-2 rounded-full" style={{ backgroundColor: light.dot }} />
+                      {opt.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

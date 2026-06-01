@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { AlertTriangle } from "lucide-react";
-import { STATUS_COLORS } from "@/components/ui/badge";
+import { STATUS_LIGHT } from "@/components/ui/badge";
 import type { TaskWithRelations } from "@/lib/data";
 import { AvatarStack } from "@/components/user-avatar";
 
@@ -37,16 +37,17 @@ export function TaskKanban({
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
       {COLUMNS.map((col) => {
         const colTasks = byStatus(col.key);
-        const color = STATUS_COLORS[col.key] ?? "#C4C4C4";
+        const light = STATUS_LIGHT[col.key] ?? { bg: "#F7F7F8", text: "#050038", dot: "#C4C4C4" };
         return (
           <div key={col.key} className="min-h-[50vh] rounded-2xl bg-white border border-border shadow-elevation-1">
-            {/* Colored header */}
+            {/* Light header with colored dot */}
             <div
-              className="flex items-center gap-2 rounded-t-2xl px-3 py-2.5"
-              style={{ backgroundColor: color }}
+              className="flex items-center gap-2 rounded-t-2xl border-b border-border px-3 py-2.5"
+              style={{ backgroundColor: light.bg }}
             >
-              <h3 className="text-sm font-semibold text-white">{col.label}</h3>
-              <span className="rounded-full bg-white/20 px-2 py-0.5 text-caption font-medium text-white">{colTasks.length}</span>
+              <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: light.dot }} />
+              <h3 className="text-sm font-semibold" style={{ color: light.text }}>{col.label}</h3>
+              <span className="rounded-full px-2 py-0.5 text-caption font-medium" style={{ backgroundColor: light.dot + "20", color: light.text }}>{colTasks.length}</span>
             </div>
             <div className="flex flex-col gap-2 p-2">
               {colTasks.map((t) => (

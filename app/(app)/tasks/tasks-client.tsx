@@ -27,15 +27,16 @@ import { TaskForm } from "./task-form";
 import { TaskAttachments } from "./task-attachments";
 import { TaskComments } from "./task-comments";
 import { deleteTask, updateTask, bulkUpdateStatus, bulkUpdateAssignees, bulkDeleteTasks, type TaskInput } from "./actions";
+import { STATUS_LIGHT } from "@/components/ui/badge";
 import type { Client, Tag, TaskWithRelations, TeamMember } from "@/lib/data";
 
 const STATUS_PILLS = [
-  { key: "__all__", label: "הכל", color: "" },
-  { key: "מחכה לטיפול", label: "ממתין", color: "#FDAB3D" },
-  { key: "נכנס לעבודה", label: "נכנס", color: "#4262FF" },
-  { key: "בעבודה", label: "בעבודה", color: "#A25DDC" },
-  { key: "אישור לקוח", label: "אישור", color: "#FFCB00" },
-  { key: "בוצע", label: "בוצע", color: "#00C875" },
+  { key: "__all__", label: "הכל" },
+  { key: "מחכה לטיפול", label: "ממתין" },
+  { key: "נכנס לעבודה", label: "נכנס" },
+  { key: "בעבודה", label: "בעבודה" },
+  { key: "אישור לקוח", label: "אישור" },
+  { key: "בוצע", label: "בוצע" },
 ] as const;
 const VIEW_KEY = "brightcrm:tasks-view";
 
@@ -364,18 +365,23 @@ export function TasksClient({
         {/* Filter row */}
         <div className="flex flex-col gap-3 border-t border-border px-4 py-3 sm:flex-row sm:items-center">
           <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-none sm:overflow-x-visible sm:pb-0">
-            {STATUS_PILLS.map((pill) => (
-              <button key={pill.key} type="button" onClick={() => updateFilter("status", pill.key)}
-                className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-caption transition-colors duration-200",
-                  filters.status === pill.key
-                    ? "font-medium text-white"
-                    : "text-ink-secondary hover:bg-surface")}
-                style={filters.status === pill.key
-                  ? { backgroundColor: pill.color || "#050038" }
-                  : undefined}>
-                {pill.label}
-              </button>
-            ))}
+            {STATUS_PILLS.map((pill) => {
+              const isActive = filters.status === pill.key;
+              const light = STATUS_LIGHT[pill.key];
+              return (
+                <button key={pill.key} type="button" onClick={() => updateFilter("status", pill.key)}
+                  className={cn("inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-caption transition-colors duration-200",
+                    isActive
+                      ? light ? "font-medium" : "bg-ink font-medium text-white"
+                      : "text-ink-secondary hover:bg-surface")}
+                  style={isActive && light
+                    ? { backgroundColor: light.bg, color: light.text }
+                    : undefined}>
+                  {isActive && light && <span className="h-2 w-2 rounded-full" style={{ backgroundColor: light.dot }} />}
+                  {pill.label}
+                </button>
+              );
+            })}
           </div>
 
           <div className="flex flex-1 flex-wrap items-center gap-2">
@@ -455,14 +461,17 @@ export function TasksClient({
                 <SelectValue placeholder="שנה סטטוס" />
               </SelectTrigger>
               <SelectContent>
-                {STATUS_PILLS.filter((p) => p.key !== "__all__").map((pill) => (
-                  <SelectItem key={pill.key} value={pill.key}>
-                    <div className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full" style={{ backgroundColor: pill.color }} />
-                      {pill.label}
-                    </div>
-                  </SelectItem>
-                ))}
+                {STATUS_PILLS.filter((p) => p.key !== "__all__").map((pill) => {
+                  const light = STATUS_LIGHT[pill.key];
+                  return (
+                    <SelectItem key={pill.key} value={pill.key}>
+                      <div className="flex items-center gap-2">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: light?.dot ?? "#C4C4C4" }} />
+                        {pill.label}
+                      </div>
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
 
