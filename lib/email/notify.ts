@@ -30,66 +30,83 @@ function dedupeRecipients(members: NotifyMember[], keep: (m: NotifyMember) => bo
 
 export async function notifyNewTask(taskId: string) {
   console.log("[Email] notifyNewTask called, looking up task:", taskId);
-  const db = createAdminClient();
-
-  const { data: task } = await db
-    .from("tasks")
-    .select(
-      "id, title, description, due_date, status, created_by_id, clients!inner(name)",
-    )
-    .eq("id", taskId)
-    .single();
-
-  if (!task) return;
-
-  const { data: assigneeRows } = await db
-    .from("task_assignees")
-    .select("member:team_members!inner(id, full_name, email, notify_email)")
-    .eq("task_id", taskId);
-
-  const assignees = ((assigneeRows ?? []) as any[]).map((r) => r.member);
-
-  const { data: watcherRows } = await db
-    .from("task_watchers")
-    .select("member:team_members!inner(id, full_name, email, notify_email)")
-    .eq("task_id", taskId);
-
-  const watchers = ((watcherRows ?? []) as any[]).map((r) => r.member);
-
-  // Nobody to notify if there are neither assignees nor watchers.
-  if (assignees.length === 0 && watchers.length === 0) return;
-
-  let creator = { full_name: "המערכת" };
-  if (task.created_by_id) {
-    const { data: c } = await db
-      .from("team_members")
-      .select("full_name")
-      .eq("id", task.created_by_id)
-      .single();
-    if (c) creator = c;
-  }
-
-  const client = task.clients as unknown as { name: string };
-
-  // Assignees + watchers, minus the creator, minus opt-outs, de-duplicated by email.
-  const recipients = dedupeRecipients(
-    [...assignees, ...watchers],
-    (m) => m.id !== task.created_by_id,
-  );
-
-  if (recipients.length === 0) return;
-
-  const { subject, html } = newTaskEmail(
-    { id: task.id, title: task.title, due_date: task.due_date, status: task.status, description: task.description },
-    client,
-    assignees,
-    creator,
-  );
 
   try {
-    await sendEmail(recipients, subject, html);
-  } catch (err) {
-    console.error("[Notify] newTask email failed:", err);
+    const db = createAdminClient();
+
+    const { data: task, error: taskErr } = await db
+      .from("tasks")
+      .select(
+        "id, title, description, due_date, status, created_by_id, clients!inner(name)",
+      )
+      .eq("id", taskId)
+      .single();
+
+    console.log("[Email] Task query result:", task?.id, task?.title, "error:", taskErr?.message ?? "none");
+
+    if (!task) {
+      console.log("[Email] Task not found, skipping notification");
+      return;
+    }
+
+    const { data: assigneeRows, error: assigneeErr } = await db
+      .from("task_assignees")
+      .select("member:team_members!inner(id, full_name, email, notify_email)")
+      .eq("task_id", taskId);
+
+    const assignees = ((assigneeRows ?? []) as any[]).map((r) => r.member);
+    console.log("[Email] Assignees found:", assignees.length, JSON.stringify(assignees), "error:", assigneeErr?.message ?? "none");
+
+    const { data: watcherRows } = await db
+      .from("task_watchers")
+      .select("member:team_members!inner(id, full_name, email, notify_email)")
+      .eq("task_id", taskId);
+
+    const watchers = ((watcherRows ?? []) as any[]).map((r) => r.member);
+    console.log("[Email] Watchers found:", watchers.length);
+
+    if (assignees.length === 0 && watchers.length === 0) {
+      console.log("[Email] No assignees or watchers, skipping notification");
+      return;
+    }
+
+    let creator = { full_name: "המערכת" };
+    if (task.created_by_id) {
+      const { data: c } = await db
+        .from("team_members")
+        .select("full_name")
+        .eq("id", task.created_by_id)
+        .single();
+      if (c) creator = c;
+    }
+    console.log("[Email] Creator:", creator.full_name, "created_by_id:", task.created_by_id);
+
+    const client = task.clients as unknown as { name: string };
+
+    const recipients = dedupeRecipients(
+      [...assignees, ...watchers],
+      (m) => m.id !== task.created_by_id,
+    );
+
+    console.log("[Email] Recipients after filtering creator:", recipients);
+
+    if (recipients.length === 0) {
+      console.log("[Email] No recipients after filtering, skipping notification");
+      return;
+    }
+
+    const { subject, html } = newTaskEmail(
+      { id: task.id, title: task.title, due_date: task.due_date, status: task.status, description: task.description },
+      client,
+      assignees,
+      creator,
+    );
+
+    console.log("[Email] Sending email to:", recipients, "subject:", subject);
+    const result = await sendEmail(recipients, subject, html);
+    console.log("[Email] Resend result:", JSON.stringify(result));
+  } catch (err: any) {
+    console.error("[Email] Error in notifyNewTask:", err?.message, err?.stack);
   }
 }
 

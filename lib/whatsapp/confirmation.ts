@@ -93,10 +93,11 @@ export async function confirmTask(pendingTaskId: string) {
     throw new Error(`Failed to create task: ${taskErr?.message}`);
   }
 
-  await db.from("task_assignees").insert({
+  const { error: assigneeErr } = await db.from("task_assignees").insert({
     task_id: task.id,
     member_id: parsed.assignee_id,
   });
+  console.log("[WhatsApp] task_assignees insert:", assigneeErr ? `ERROR: ${assigneeErr.message}` : "OK", "task:", task.id, "member:", parsed.assignee_id);
 
   await db.from("whatsapp_pending_tasks").delete().eq("id", pendingTaskId);
 
