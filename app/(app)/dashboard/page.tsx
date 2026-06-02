@@ -1,13 +1,14 @@
 import Link from "next/link";
 import {
   Plus, Phone, TrendingUp, TrendingDown, Clock, AlertTriangle,
-  CheckCircle2, ArrowLeft, Users, Inbox, ListChecks, Eye,
+  CheckCircle2, ArrowLeft, Users, Inbox, ListChecks, Eye, MessageSquare,
 } from "lucide-react";
 import { StatusCell } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   getDashboardCounts, getDashboardTrends, getMyTasks,
   getRecentTasksDetailed, getClientsWithOpenTaskCounts, getCriticalClients,
+  getCommentCountsByTask,
 } from "@/lib/data";
 import { createClient } from "@/lib/supabase/server";
 import { MarkDoneButton } from "@/components/dashboard/mark-done-button";
@@ -59,19 +60,12 @@ function getInitials(name: string): string {
 }
 
 const STAT_CARDS = [
-  { key: "waiting", trendKey: "waiting" as const, label: "ממתינות לטיפול", color: "#FDAB3D", Icon: Inbox },
-  { key: "working", trendKey: "working" as const, label: "בעבודה", color: "#A25DDC", Icon: ListChecks },
-  { key: "approval", trendKey: "approval" as const, label: "באישור לקוח", color: "#FFCB00", Icon: CheckCircle2 },
-  { key: "overdue", trendKey: "overdue" as const, label: "באיחור", color: "#E2445C", Icon: AlertTriangle },
+  { key: "waiting", trendKey: "waiting" as const, label: "ממתינות לטיפול", color: "#FDAB3D", Icon: Inbox, href: "/tasks?status=מחכה לטיפול" },
+  { key: "working", trendKey: "working" as const, label: "בעבודה", color: "#A25DDC", Icon: ListChecks, href: "/tasks?status=בעבודה" },
+  { key: "approval", trendKey: "approval" as const, label: "באישור לקוח", color: "#FFCB00", Icon: CheckCircle2, href: "/tasks?status=אישור לקוח" },
+  { key: "overdue", trendKey: "overdue" as const, label: "באיחור", color: "#E2445C", Icon: AlertTriangle, href: "/tasks?overdue=true" },
 ] as const;
 
-const HEALTH_COLORS: Record<string, string> = {
-  "בריא": "#00C875",
-  "אסטרטגיה צריכה": "#FDAB3D",
-  "קריטי": "#E2445C",
-};
-
-const AVATAR_COLORS = ["#4262FF", "#A25DDC", "#00C875", "#FDAB3D", "#E2445C", "#FF642E"];
 
 export default async function DashboardPage() {
   const sb = createClient();
@@ -91,13 +85,14 @@ export default async function DashboardPage() {
     currentMemberId = memberRow?.id ?? undefined;
   }
 
-  const [counts, trends, myTasks, recent, clientsOpen, criticalClients] = await Promise.all([
+  const [counts, trends, myTasks, recent, clientsOpen, criticalClients, commentCounts] = await Promise.all([
     getDashboardCounts(currentMemberId),
     getDashboardTrends(),
     getMyTasks(userEmail),
     getRecentTasksDetailed(5),
     getClientsWithOpenTaskCounts(),
     getCriticalClients(),
+    getCommentCountsByTask(),
   ]);
 
   const statValues: Record<string, number> = {
@@ -157,7 +152,7 @@ export default async function DashboardPage() {
           const periodLabel = trend.period === "day" ? "מאתמול" : "השבוע";
           return (
             <AnimatedStatCard key={card.key}>
-            <div className="overflow-hidden rounded-2xl bg-white border border-border p-5 shadow-elevation-1 transition-shadow hover:shadow-elevation-2" role="status" aria-label={`${card.label}: ${value}`}>
+            <Link href={card.href} className="block cursor-pointer overflow-hidden rounded-2xl bg-white border border-border p-5 shadow-elevation-1 transition-shadow hover:shadow-elevation-2" role="status" aria-label={`${card.label}: ${value}`}>
               <div className="flex items-center justify-between">
                 <span className="text-caption font-medium text-ink/70">{card.label}</span>
                 <div className="flex h-8 w-8 items-center justify-center rounded-full" style={{ backgroundColor: card.color + "15" }}>
@@ -174,7 +169,7 @@ export default async function DashboardPage() {
               {trend.delta === 0 && (
                 <div className="mt-1 text-caption text-ink/40">ללא שינוי</div>
               )}
-            </div>
+            </Link>
             </AnimatedStatCard>
           );
         })}
@@ -237,6 +232,11 @@ export default async function DashboardPage() {
                       <tr key={t.id} className="border-b border-border transition-colors hover:bg-surface">
                         <td className="px-4 py-3">
                           <Link href={`/tasks?task=${t.id}`} className="font-medium text-ink hover:text-primary">{t.title}</Link>
+                          {(commentCounts[t.id] ?? 0) > 0 && (
+                            <span className="inline-flex items-center gap-0.5 text-xs text-ink-muted ms-2">
+                              <MessageSquare className="h-3 w-3" />{commentCounts[t.id]}
+                            </span>
+                          )}
                         </td>
                         <td className="hidden px-4 py-3 text-ink-secondary sm:table-cell">{t.client_name ?? ""}</td>
                         <td className="px-4 py-3 text-center"><StatusCell status={t.status} /></td>
@@ -269,7 +269,7 @@ export default async function DashboardPage() {
                   <Link key={c.id} href={`/clients/${c.id}`}
                     className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-surface">
                     <div className="flex items-center gap-2.5">
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-overdue-bg text-xs font-semibold text-overdue">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface text-xs font-semibold text-ink">
                         {getInitials(c.name)}
                       </span>
                       <div>
@@ -277,7 +277,7 @@ export default async function DashboardPage() {
                         {c.manager && <span className="me-2 text-caption text-ink-muted">{c.manager.full_name}</span>}
                       </div>
                     </div>
-                    <span className="rounded-full px-2.5 py-0.5 text-caption font-medium text-white" style={{ backgroundColor: "#E2445C" }}>
+                    <span className="rounded-full bg-surface px-2.5 py-0.5 text-caption font-medium text-ink-secondary">
                       {c.health}
                     </span>
                   </Link>
@@ -302,12 +302,10 @@ export default async function DashboardPage() {
                   const who = task.source === "import" ? "ייבוא" : (task.created_by ?? "משתמש");
                   const initials = task.source === "import" ? "AT" :
                     (task.created_by ? getInitials(task.created_by) : "??");
-                  const colorIdx = task.id.charCodeAt(0) % AVATAR_COLORS.length;
                   return (
                     <Link key={task.id} href={`/tasks?task=${task.id}`}
                       className="flex items-center gap-2.5 border-b border-border px-4 py-3 transition-colors hover:bg-surface last:border-b-0">
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white"
-                        style={{ backgroundColor: AVATAR_COLORS[colorIdx] }}>
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface text-[11px] font-semibold text-ink">
                         {initials}
                       </span>
                       <span className="min-w-0 flex-1 truncate text-body-sm">
@@ -342,22 +340,22 @@ export default async function DashboardPage() {
             </Link>
           </div>
           <div className="grid grid-cols-2 gap-px bg-border sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-            {clientsOpen.map((c) => {
-              const healthColor = c.health ? HEALTH_COLORS[c.health] : undefined;
-              return (
+            {clientsOpen.map((c) => (
                 <Link key={c.id} href={`/clients/${c.id}`}
                   className="flex flex-col items-center gap-1.5 bg-white px-3 py-4 transition-colors hover:bg-surface">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface text-sm font-semibold text-ink">
-                    {getInitials(c.name)}
-                  </span>
+                  {c.logo_url ? (
+                    <img src={c.logo_url} alt={c.name} className="h-10 w-10 shrink-0 rounded-full object-cover" />
+                  ) : (
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface text-sm font-semibold text-ink">
+                      {getInitials(c.name)}
+                    </span>
+                  )}
                   <span className="max-w-full truncate text-center text-sm font-medium text-ink">{c.name}</span>
-                  <span className="rounded-full px-2.5 py-0.5 text-caption font-semibold text-white"
-                    style={{ backgroundColor: healthColor ?? "#4262FF" }}>
+                  <span className="rounded-full bg-surface px-2.5 py-0.5 text-caption font-semibold text-ink-secondary">
                     {c.open_count} משימות
                   </span>
                 </Link>
-              );
-            })}
+            ))}
           </div>
         </div>
         </AnimatedSection>

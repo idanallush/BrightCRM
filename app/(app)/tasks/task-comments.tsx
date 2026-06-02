@@ -53,11 +53,31 @@ function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+// Turn plain text into React nodes, wrapping URLs in clickable links.
+const URL_PATTERN = /https?:\/\/[^\s<>"']+/;
+const URL_SPLIT = /(https?:\/\/[^\s<>"']+)/g;
+
+function renderTextWithLinks(text: string): React.ReactNode {
+  const parts = text.split(URL_SPLIT);
+  if (parts.length === 1) return text;
+  return parts.map((part, i) => {
+    if (URL_PATTERN.test(part)) {
+      return (
+        <a key={i} href={part} target="_blank" rel="noopener noreferrer"
+          className="text-primary underline hover:text-primary/80 break-all" dir="ltr">
+          {part}
+        </a>
+      );
+    }
+    return part;
+  });
+}
+
 // Render comment content, turning known @mentions into inline blue chips.
 // `names` are the full names that were mentioned (resolved from stored mention IDs).
-// Line breaks are preserved.
+// Line breaks are preserved. URLs are rendered as clickable links.
 function renderContentWithMentions(content: string, names: string[]): React.ReactNode {
-  if (names.length === 0) return content;
+  if (names.length === 0) return renderTextWithLinks(content);
   // Longest names first so e.g. "@דני לוי" wins over "@דני".
   const sorted = [...names].sort((a, b) => b.length - a.length);
   const pattern = new RegExp(`@(?:${sorted.map(escapeRegExp).join("|")})`, "g");
@@ -66,7 +86,7 @@ function renderContentWithMentions(content: string, names: string[]): React.Reac
 
   const nodes: React.ReactNode[] = [];
   parts.forEach((part, i) => {
-    if (part) nodes.push(<React.Fragment key={`t${i}`}>{part}</React.Fragment>);
+    if (part) nodes.push(<React.Fragment key={`t${i}`}>{renderTextWithLinks(part)}</React.Fragment>);
     if (i < matches.length) {
       nodes.push(
         <span

@@ -129,10 +129,7 @@ export function TaskForm({
               <span className="text-xs font-medium text-ink-secondary">לקוח</span>
               <Select value={clientId} onValueChange={setClientId}>
                 <SelectTrigger className="h-9 text-sm">
-                  <div className="flex items-center gap-2">
-                    <ClientLogo client={selectedClient} />
-                    <SelectValue placeholder="בחר לקוח" />
-                  </div>
+                  <SelectValue placeholder="בחר לקוח" />
                 </SelectTrigger>
                 <SelectContent>
                   {clients.map((c) => (
@@ -151,12 +148,7 @@ export function TaskForm({
               <span className="text-xs font-medium text-ink-secondary">סטטוס</span>
               <Select value={status} onValueChange={(v) => setStatus(v as TaskInput["status"])}>
                 <SelectTrigger className="h-9 text-sm">
-                  <div className="flex items-center gap-1.5">
-                    {selectedStatus && (
-                      <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: STATUS_LIGHT[selectedStatus.value]?.dot ?? "#C4C4C4" }} />
-                    )}
-                    <SelectValue />
-                  </div>
+                  <SelectValue placeholder="סטטוס" />
                 </SelectTrigger>
                 <SelectContent>
                   {STATUS_OPTIONS.map((opt) => {
