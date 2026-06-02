@@ -27,7 +27,7 @@ import { TaskForm } from "./task-form";
 import { TaskAttachments } from "./task-attachments";
 import { TaskComments } from "./task-comments";
 import { deleteTask, updateTask, bulkUpdateStatus, bulkUpdateAssignees, bulkDeleteTasks, type TaskInput } from "./actions";
-import { STATUS_LIGHT } from "@/components/ui/badge";
+import { STATUS_LIGHT, StatusCell } from "@/components/ui/badge";
 import type { Client, Tag, TaskWithRelations, TeamMember } from "@/lib/data";
 
 const STATUS_PILLS = [
@@ -184,14 +184,23 @@ function TaskDetailPanel({
   );
 }
 
+type WatchedTask = {
+  id: string;
+  title: string;
+  status: string;
+  due_date: string | null;
+  client_name: string | null;
+};
+
 export function TasksClient({
-  tasks, clients, team, tags, commentCounts, initialFilters, initialOpenTaskId,
+  tasks, clients, team, tags, commentCounts, watchedTasks = [], initialFilters, initialOpenTaskId,
 }: {
   tasks: TaskWithRelations[];
   clients: Client[];
   team: TeamMember[];
   tags: Tag[];
   commentCounts: Record<string, number>;
+  watchedTasks?: WatchedTask[];
   initialFilters: { status: string; clientId: string; assigneeId: string; overdue: boolean };
   initialOpenTaskId: string | null;
 }) {
@@ -517,6 +526,40 @@ export function TasksClient({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Watched tasks */}
+      {watchedTasks.length > 0 && (
+        <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
+          <div className="flex items-center gap-2 border-b border-border px-5 py-3">
+            <Eye className="h-4 w-4 text-ink-secondary" />
+            <h2 className="text-sm font-bold text-ink">משימות במעקב</h2>
+            <span className="rounded-full bg-surface px-2 py-0.5 text-caption font-medium text-ink-secondary">{watchedTasks.length}</span>
+          </div>
+          <div className="divide-y divide-border">
+            {watchedTasks.map((wt) => (
+              <button
+                key={wt.id}
+                type="button"
+                onClick={() => {
+                  const found = tasks.find((t) => t.id === wt.id);
+                  if (found) setEditing(found);
+                  else {
+                    const params = new URLSearchParams();
+                    params.set("task", wt.id);
+                    params.set("assignee", "__all__");
+                    router.push(`/tasks?${params}`);
+                  }
+                }}
+                className="flex w-full items-center gap-3 px-5 py-2.5 text-right transition-colors hover:bg-surface"
+              >
+                <span className="min-w-0 flex-1 truncate text-sm font-medium text-ink">{wt.title}</span>
+                {wt.client_name && <span className="shrink-0 text-caption text-ink-muted">{wt.client_name}</span>}
+                <StatusCell status={wt.status} />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Content */}
       <AnimatePresence mode="wait">

@@ -152,82 +152,50 @@ export async function notifyNewComment(commentId: string) {
   const watchers = ((watcherRows ?? []) as any[]).map((r) => r.member);
   const client = task.clients as unknown as { name: string };
 
-  // Assignees + watchers, minus the comment author, minus opt-outs, de-duplicated.
-  const recipients = dedupeRecipients(
-    [...assignees, ...watchers],
-    (m) => m.id !== comment.author_id,
-  );
+  const mentionIds = new Set<string>(comment.mentions ?? []);
 
-  if (recipients.length === 0) return;
+  // Mentioned users get the "mention" template; everyone else gets the "comment" template.
+  // Each person gets exactly one email, never two.
+  const allMembers = [...assignees, ...watchers];
 
-  const { subject, html } = newCommentEmail(
-    { id: task.id, title: task.title, due_date: task.due_date, status: task.status },
-    client,
-    { content: comment.content },
-    author,
-  );
+  // Also include mentioned users who aren't assignees/watchers.
+  if (mentionIds.size > 0) {
+    const { data: mentionedRows } = await db
+      .from("team_members")
+      .select("id, full_name, email, notify_email")
+      .in("id", [...mentionIds]);
+    for (const m of mentionedRows ?? []) {
+      if (!allMembers.some((x) => x.id === m.id)) allMembers.push(m);
+    }
+  }
 
-  try {
-    await sendEmail(recipients, subject, html);
-  } catch (err) {
-    console.error("[Notify] newComment email failed:", err);
+  const seen = new Set<string>();
+  const taskInfo = { id: task.id, title: task.title, due_date: task.due_date, status: task.status };
+
+  for (const m of allMembers) {
+    if (!m || !m.email) continue;
+    if (m.notify_email === false) continue;
+    if (m.id === comment.author_id) continue;
+    if (seen.has(m.email)) continue;
+    seen.add(m.email);
+
+    const isMentioned = mentionIds.has(m.id);
+
+    const { subject, html } = isMentioned
+      ? mentionEmail(taskInfo, client, { content: comment.content }, author, m)
+      : newCommentEmail(taskInfo, client, { content: comment.content }, author);
+
+    try {
+      await sendEmail([m.email], subject, html);
+    } catch (err) {
+      console.error(`[Notify] comment email to ${m.email} failed:`, err);
+    }
   }
 }
 
-export async function notifyMentions(commentId: string) {
-  const db = createAdminClient();
-
-  const { data: comment } = await db
-    .from("task_comments")
-    .select("id, task_id, author_id, content, mentions")
-    .eq("id", commentId)
-    .single();
-
-  if (!comment || !comment.mentions || comment.mentions.length === 0) return;
-
-  const { data: task } = await db
-    .from("tasks")
-    .select("id, title, due_date, status, clients!inner(name)")
-    .eq("id", comment.task_id)
-    .single();
-
-  if (!task) return;
-
-  const { data: author } = await db
-    .from("team_members")
-    .select("id, full_name")
-    .eq("id", comment.author_id)
-    .single();
-
-  if (!author) return;
-
-  const { data: mentionedUsers } = await db
-    .from("team_members")
-    .select("id, full_name, email")
-    .in("id", comment.mentions);
-
-  if (!mentionedUsers || mentionedUsers.length === 0) return;
-
-  const client = task.clients as unknown as { name: string };
-
-  for (const user of mentionedUsers) {
-    if (user.id === comment.author_id) continue;
-    if (!user.email) continue;
-
-    const { subject, html } = mentionEmail(
-      { id: task.id, title: task.title, due_date: task.due_date, status: task.status },
-      client,
-      { content: comment.content },
-      author,
-      user,
-    );
-
-    try {
-      await sendEmail([user.email], subject, html);
-    } catch (err) {
-      console.error(`[Notify] mention email to ${user.email} failed:`, err);
-    }
-  }
+// Kept for backwards compatibility but no longer called from addComment.
+export async function notifyMentions(_commentId: string) {
+  // Mentions are now handled inside notifyNewComment to avoid duplicate emails.
 }
 
 export async function notifyOverdueByEmail() {

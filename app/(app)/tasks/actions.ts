@@ -274,10 +274,9 @@ export async function addComment(
 
   revalidatePath("/tasks");
 
-  // Fire-and-forget email notifications for comment + mentions
+  // Fire-and-forget email notification (handles both regular + mention recipients)
   import("@/lib/email/notify").then(async (m) => {
     await m.notifyNewComment(data.id);
-    if (mentions.length > 0) await m.notifyMentions(data.id);
   }).catch(() => {});
 
   return { ok: true as const, commentId: data.id as string };

@@ -1,7 +1,7 @@
 const BASE_URL = "https://bright-crm-three.vercel.app";
 
 function taskUrl(taskId: string) {
-  return `${BASE_URL}/tasks?task=${taskId}`;
+  return `${BASE_URL}/tasks?task=${taskId}&assignee=__all__`;
 }
 
 function wrap(body: string) {
