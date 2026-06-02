@@ -237,7 +237,7 @@ export function TaskTable({
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onRowClick(t); }}
-              className="flex items-center justify-center rounded-lg p-1 text-ink-muted opacity-40 transition-all duration-150 group-hover:opacity-100 group-hover:text-primary hover:bg-surface-soft focus-visible:outline-none"
+              className="flex items-center justify-center rounded-lg p-1 text-ink-muted opacity-40 transition-[color,background-color,opacity] duration-150 group-hover:opacity-100 group-hover:text-primary hover:bg-surface-soft focus-visible:outline-none"
               aria-label="פתח משימה"
             >
               <ArrowUpLeft className="h-4 w-4" />

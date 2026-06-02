@@ -15,9 +15,9 @@ export function FadeIn({
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: "easeOut", delay }}
+      transition={{ duration: 0.28, ease: [0.23, 1, 0.32, 1], delay }}
       className={className}
     >
       {children}
@@ -61,8 +61,8 @@ export function StaggerItem({
   return (
     <motion.div
       variants={{
-        hidden: { opacity: 0, y: 16 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" } },
+        hidden: { opacity: 0, y: 12 },
+        visible: { opacity: 1, y: 0, transition: { duration: 0.28, ease: [0.23, 1, 0.32, 1] } },
       }}
       className={className}
     >
@@ -103,12 +103,12 @@ export function SlideIn({
   className?: string;
   from?: "left" | "right";
 }) {
-  const x = from === "right" ? 40 : -40;
+  const x = from === "right" ? 30 : -30;
   return (
     <motion.div
       initial={{ opacity: 0, x }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
+      transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
       className={className}
     >
       {children}
@@ -122,9 +122,9 @@ export function AnimatedNumber({ value }: { value: number }) {
   return (
     <motion.span
       key={value}
-      initial={{ opacity: 0, y: -10 }}
+      initial={{ opacity: 0, y: -6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
+      transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
     >
       {value}
     </motion.span>

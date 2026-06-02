@@ -23,7 +23,7 @@ function LoginInner() {
           <Logo size="lg" dark={false} />
         </div>
         <p className="mb-8 text-body-sm text-ink-secondary">התחברות עם חשבון Google של Bright</p>
-        <button type="button" onClick={signIn} className="w-full rounded-full bg-accent py-3 text-button text-ink transition-colors hover:bg-accent/85 active:scale-[0.97]">
+        <button type="button" onClick={signIn} className="w-full rounded-full bg-accent py-3 text-button text-ink transition-[color,background-color,transform] duration-150 hover:bg-accent/85 active:scale-[0.97]">
           התחברות עם Google
         </button>
         {error === "domain" && <p className="mt-6 text-body-sm text-overdue">התחברות מותרת רק לחשבונות {`@${BRIGHT_DOMAIN}`}</p>}

@@ -9,12 +9,12 @@ const stagger: Variants = {
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 18 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" as const } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.23, 1, 0.32, 1] as const } },
 };
 
 const scalePop: Variants = {
   hidden: { opacity: 0, scale: 0.92 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.35, ease: [0.175, 0.885, 0.32, 1.275] } },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.28, ease: [0.175, 0.885, 0.32, 1.275] } },
 };
 
 export function AnimatedDashboard({ children }: { children: React.ReactNode }) {
@@ -49,9 +49,9 @@ export function AnimatedStatCard({ children, className }: { children: React.Reac
 export function AnimatedNumber({ value }: { value: number }) {
   return (
     <motion.span
-      initial={{ opacity: 0, scale: 0.5 }}
+      initial={{ opacity: 0, scale: 0.92 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.5, ease: [0.175, 0.885, 0.32, 1.275], delay: 0.2 }}
+      transition={{ duration: 0.3, ease: [0.175, 0.885, 0.32, 1.275], delay: 0.15 }}
     >
       {value}
     </motion.span>

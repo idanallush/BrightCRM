@@ -15,6 +15,14 @@
   :focus-visible { outline: 2px solid theme("colors.primary.DEFAULT"); outline-offset: 2px; }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 @layer utilities {
   .skeleton {
     background: linear-gradient(90deg, theme("colors.surface.soft") 25%, theme("colors.border") 50%, theme("colors.surface.soft") 75%);

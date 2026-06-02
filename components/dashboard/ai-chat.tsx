@@ -273,7 +273,7 @@ export function AiChat({ userEmail, fullPage = false }: { userEmail: string; ful
                         >
                           <Link
                             href={`/tasks?task=${t.id}`}
-                            className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.05] p-3 backdrop-blur-md transition-all duration-200 hover:border-primary/40 hover:bg-white/[0.1]"
+                            className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.05] p-3 backdrop-blur-md transition-[color,background-color,border-color] duration-200 hover:border-primary/40 hover:bg-white/[0.1]"
                           >
                             <StatusCell status={t.status} className="shrink-0" />
                             <div className="min-w-0 flex-1">
@@ -304,7 +304,7 @@ export function AiChat({ userEmail, fullPage = false }: { userEmail: string; ful
                       >
                         <Link
                           href={`/clients/${c.id}`}
-                          className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-sm backdrop-blur-md transition-all duration-200 hover:border-primary/40 hover:bg-white/[0.1]"
+                          className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-sm backdrop-blur-md transition-[color,background-color,border-color] duration-200 hover:border-primary/40 hover:bg-white/[0.1]"
                         >
                           <span
                             className={`h-2 w-2 rounded-full ${
@@ -338,7 +338,7 @@ export function AiChat({ userEmail, fullPage = false }: { userEmail: string; ful
                   type="button"
                   onClick={() => ask({ action: qa.action })}
                   disabled={loading}
-                  className="whitespace-nowrap rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-2 text-caption text-white/75 backdrop-blur-md transition-all duration-200 hover:border-primary/50 hover:bg-primary/20 hover:text-white disabled:opacity-40"
+                  className="whitespace-nowrap rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-2 text-caption text-white/75 backdrop-blur-md transition-[color,background-color,border-color] duration-200 hover:border-primary/50 hover:bg-primary/20 hover:text-white disabled:opacity-40"
                 >
                   {qa.label}
                 </button>
@@ -369,7 +369,7 @@ export function AiChat({ userEmail, fullPage = false }: { userEmail: string; ful
                   disabled={!question.trim() || loading}
                   aria-label="שלח"
                   whileTap={{ scale: 0.9 }}
-                  className="absolute start-1.5 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-xl bg-gradient-to-br from-primary to-st-working text-white shadow-[0_0_18px_rgba(66,98,255,0.5)] transition-all duration-200 hover:shadow-[0_0_26px_rgba(66,98,255,0.75)] disabled:opacity-40 disabled:shadow-none"
+                  className="absolute start-1.5 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-xl bg-gradient-to-br from-primary to-st-working text-white shadow-[0_0_18px_rgba(66,98,255,0.5)] transition-[box-shadow,opacity] duration-200 hover:shadow-[0_0_26px_rgba(66,98,255,0.75)] disabled:opacity-40 disabled:shadow-none"
                 >
                   <AnimatePresence mode="wait" initial={false}>
                     {question.trim() ? (
