@@ -100,6 +100,7 @@ export async function notifyNewTask(taskId: string) {
       client,
       assignees,
       creator,
+      watchers,
     );
 
     console.log("[Email] Sending email to:", recipients, "subject:", subject);

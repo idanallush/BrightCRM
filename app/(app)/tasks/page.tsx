@@ -33,8 +33,8 @@ export default async function TasksPage({
     currentMemberId = member?.id ?? undefined;
   }
 
-  // Default to current user's tasks if no assignee filter specified
-  const effectiveAssigneeId = assigneeId ?? currentMemberId;
+  // "__all__" means show everyone's tasks (used by email links and watched task clicks)
+  const effectiveAssigneeId = assigneeId === "__all__" ? undefined : (assigneeId ?? currentMemberId);
 
   const [tasks, clients, team, commentCounts, tags, watchedTasks] = await Promise.all([
     getTasks({ status, clientId, assigneeId: effectiveAssigneeId, overdue }),

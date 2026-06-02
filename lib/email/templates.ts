@@ -56,9 +56,11 @@ export function newTaskEmail(
   client: ClientInfo,
   assignees: PersonInfo[],
   createdBy: PersonInfo,
+  watchers?: PersonInfo[],
 ) {
   const dueText = task.due_date || "לא צוין";
-  const assigneeNames = assignees.map((a) => a.full_name).join(", ");
+  const assigneeNames = assignees.map((a) => a.full_name).join(", ") || "לא הוקצו";
+  const watcherNames = (watchers ?? []).map((w) => w.full_name).join(", ");
 
   const body = `
 <h2 style="color:#050038;margin:0 0 16px;">משימה חדשה</h2>
@@ -66,8 +68,10 @@ export function newTaskEmail(
   <tr><td style="padding:8px 0;color:#666;width:100px;">משימה:</td><td style="padding:8px 0;font-weight:600;">${task.title}</td></tr>
   <tr><td style="padding:8px 0;color:#666;">לקוח:</td><td style="padding:8px 0;">${client.name}</td></tr>
   <tr><td style="padding:8px 0;color:#666;">נפתחה ע"י:</td><td style="padding:8px 0;">${createdBy.full_name}</td></tr>
-  <tr><td style="padding:8px 0;color:#666;">אחראים:</td><td style="padding:8px 0;">${assigneeNames}</td></tr>
+  <tr><td style="padding:8px 0;color:#666;">אחראים:</td><td style="padding:8px 0;font-weight:600;">${assigneeNames}</td></tr>
+  ${watcherNames ? `<tr><td style="padding:8px 0;color:#666;">במעקב:</td><td style="padding:8px 0;">${watcherNames}</td></tr>` : ""}
   <tr><td style="padding:8px 0;color:#666;">דדליין:</td><td style="padding:8px 0;">${dueText}</td></tr>
+  <tr><td style="padding:8px 0;color:#666;">סטטוס:</td><td style="padding:8px 0;">${statusBadge(task.status)}</td></tr>
   ${task.description ? `<tr><td style="padding:8px 0;color:#666;">תיאור:</td><td style="padding:8px 0;">${task.description}</td></tr>` : ""}
 </table>
 <div style="margin-top:20px;">
@@ -163,6 +167,7 @@ type DigestTask = {
   client_name: string;
   due_date: string | null;
   status: string;
+  assignee_names?: string;
 };
 
 export function morningDigestEmail(
@@ -184,6 +189,7 @@ export function morningDigestEmail(
     return `<tr>
       <td style="padding:6px 8px;border-bottom:1px solid #f0f0f0;"><a href="${taskUrl(t.id)}" style="color:#4262FF;text-decoration:none;">${t.title}</a></td>
       <td style="padding:6px 8px;border-bottom:1px solid #f0f0f0;">${t.client_name}</td>
+      <td style="padding:6px 8px;border-bottom:1px solid #f0f0f0;">${t.assignee_names || "-"}</td>
       <td style="padding:6px 8px;border-bottom:1px solid #f0f0f0;${dueStyle}">${dueText}</td>
       <td style="padding:6px 8px;border-bottom:1px solid #f0f0f0;">${statusBadge(t.status)}</td>
     </tr>`;
@@ -195,7 +201,7 @@ export function morningDigestEmail(
     sections += `
 <h3 style="color:#D32F2F;margin:20px 0 8px;">עברו דדליין (${overdueTasks.length})</h3>
 <table style="width:100%;border-collapse:collapse;font-size:13px;">
-  <tr style="background:#f7f7f8;"><th style="padding:8px;text-align:right;">משימה</th><th style="padding:8px;text-align:right;">לקוח</th><th style="padding:8px;text-align:right;">דדליין</th><th style="padding:8px;text-align:right;">סטטוס</th></tr>
+  <tr style="background:#f7f7f8;"><th style="padding:8px;text-align:right;">משימה</th><th style="padding:8px;text-align:right;">לקוח</th><th style="padding:8px;text-align:right;">אחראים</th><th style="padding:8px;text-align:right;">דדליין</th><th style="padding:8px;text-align:right;">סטטוס</th></tr>
   ${overdueTasks.map(taskRow).join("")}
 </table>`;
   }
@@ -204,7 +210,7 @@ export function morningDigestEmail(
     sections += `
 <h3 style="color:#050038;margin:20px 0 8px;">דדליין היום (${todayTasks.length})</h3>
 <table style="width:100%;border-collapse:collapse;font-size:13px;">
-  <tr style="background:#f7f7f8;"><th style="padding:8px;text-align:right;">משימה</th><th style="padding:8px;text-align:right;">לקוח</th><th style="padding:8px;text-align:right;">דדליין</th><th style="padding:8px;text-align:right;">סטטוס</th></tr>
+  <tr style="background:#f7f7f8;"><th style="padding:8px;text-align:right;">משימה</th><th style="padding:8px;text-align:right;">לקוח</th><th style="padding:8px;text-align:right;">אחראים</th><th style="padding:8px;text-align:right;">דדליין</th><th style="padding:8px;text-align:right;">סטטוס</th></tr>
   ${todayTasks.map(taskRow).join("")}
 </table>`;
   }
@@ -213,7 +219,7 @@ export function morningDigestEmail(
     sections += `
 <h3 style="color:#050038;margin:20px 0 8px;">משימות פתוחות (${openTasks.length})</h3>
 <table style="width:100%;border-collapse:collapse;font-size:13px;">
-  <tr style="background:#f7f7f8;"><th style="padding:8px;text-align:right;">משימה</th><th style="padding:8px;text-align:right;">לקוח</th><th style="padding:8px;text-align:right;">דדליין</th><th style="padding:8px;text-align:right;">סטטוס</th></tr>
+  <tr style="background:#f7f7f8;"><th style="padding:8px;text-align:right;">משימה</th><th style="padding:8px;text-align:right;">לקוח</th><th style="padding:8px;text-align:right;">אחראים</th><th style="padding:8px;text-align:right;">דדליין</th><th style="padding:8px;text-align:right;">סטטוס</th></tr>
   ${openTasks.map(taskRow).join("")}
 </table>`;
   }

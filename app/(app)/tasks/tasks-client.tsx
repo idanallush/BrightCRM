@@ -113,25 +113,35 @@ function TaskDetailPanel({
             {task.title}
           </h2>
         )}
-        {isCreatorDifferent && (
-          <p className="mt-1 text-sm text-ink-secondary">
-            נפתח ע&quot;י {creatorName}
-            {creatorRole && <span className="text-xs text-ink-muted"> — {creatorRole}</span>}
-          </p>
-        )}
-        {task.watchers.length > 0 && (
-          <div className="mt-2 flex items-center gap-2">
-            <span className="inline-flex items-center gap-1 text-caption text-ink-secondary">
-              <Eye className="h-3.5 w-3.5 text-ink-muted" />
-              במעקב
-            </span>
-            <div className="flex flex-wrap items-center gap-1.5">
-              {task.watchers.map((w) => (
-                <UserChip key={w.id} member={w} size="xs" />
-              ))}
+        <div className="mt-3 flex flex-col gap-1.5">
+          {creatorName && (
+            <div className="flex items-center gap-2 text-sm">
+              <span className="w-16 shrink-0 text-caption font-medium text-ink-muted">נפתח ע״י</span>
+              <span className="text-ink">{creatorName}</span>
+              {creatorRole && <span className="text-caption text-ink-muted">— {creatorRole}</span>}
             </div>
-          </div>
-        )}
+          )}
+          {task.assignees.length > 0 && (
+            <div className="flex items-center gap-2 text-sm">
+              <span className="w-16 shrink-0 text-caption font-medium text-ink-muted">אחראים</span>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {task.assignees.map((a) => (
+                  <UserChip key={a.id} member={a} size="xs" />
+                ))}
+              </div>
+            </div>
+          )}
+          {task.watchers.length > 0 && (
+            <div className="flex items-center gap-2 text-sm">
+              <span className="w-16 shrink-0 text-caption font-medium text-ink-muted">במעקב</span>
+              <div className="flex flex-wrap items-center gap-1.5">
+                {task.watchers.map((w) => (
+                  <UserChip key={w.id} member={w} size="xs" />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">

@@ -55,7 +55,7 @@ async function sendMorningDigests() {
     const { data: assignedRows } = await db
       .from("task_assignees")
       .select(
-        "task:tasks!inner(id, title, due_date, status, client:clients!inner(name))",
+        "task:tasks!inner(id, title, due_date, status, client:clients!inner(name), assignees:task_assignees(member:team_members!inner(full_name)))",
       )
       .eq("member_id", member.id);
 
@@ -77,6 +77,10 @@ async function sendMorningDigests() {
       client_name: (t.client?.name as string) ?? "",
       due_date: t.due_date as string | null,
       status: t.status as string,
+      assignee_names: ((t.assignees ?? []) as any[])
+        .map((a: any) => a.member?.full_name)
+        .filter(Boolean)
+        .join(", "),
     });
 
     const openTasks = tasks.map(toDigestTask);
