@@ -1,8 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import { getTeam } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
 import {
-  User,
   Phone,
   MessageCircle,
   Mic,
@@ -11,6 +9,7 @@ import {
   Settings,
 } from "lucide-react";
 import { StaggerContainer, StaggerItem } from "@/components/motion";
+import { TeamManager } from "./settings-client";
 
 export const dynamic = "force-dynamic";
 
@@ -26,12 +25,9 @@ export default async function SettingsPage() {
     .eq("email", email)
     .maybeSingle();
 
-  const team = await getTeam();
-
   const { data: allMembers } = await sb
     .from("team_members")
-    .select("id, full_name, role, email, whatsapp_phone, active")
-    .eq("active", true)
+    .select("id, full_name, role, email, whatsapp_phone, active, notify_email, notify_whatsapp")
     .order("full_name");
 
   const whatsappConnected = !!member?.whatsapp_phone;
@@ -123,31 +119,9 @@ export default async function SettingsPage() {
       <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
         <div className="flex items-center gap-2 border-b border-border px-4 py-3">
           <Users className="h-4 w-4 text-ink-secondary" />
-          <h2 className="text-base font-bold text-ink">צוות</h2>
+          <h2 className="text-base font-bold text-ink">ניהול צוות</h2>
         </div>
-        <div className="divide-y divide-border">
-          {(allMembers ?? []).map((m: any) => (
-            <div key={m.id} className="flex items-center gap-3 px-4 py-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-surface text-[11px] font-semibold text-ink">
-                {m.full_name.split(/\s+/).map((w: string) => w[0]).join("").toUpperCase().slice(0, 2)}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-ink">{m.full_name}</span>
-                  {m.role && <span className="text-caption text-ink-muted">{m.role}</span>}
-                </div>
-                <span className="text-caption text-ink-secondary">{m.email}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                {m.whatsapp_phone ? (
-                  <Badge variant="done">WhatsApp</Badge>
-                ) : (
-                  <Badge variant="neutral">ללא WhatsApp</Badge>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+        <TeamManager members={(allMembers ?? []) as any} />
       </div>
       </StaggerItem>
     </StaggerContainer>
