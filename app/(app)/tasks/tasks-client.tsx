@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, LayoutGrid, Rows3, CalendarDays, AlertTriangle, Search, Tag as TagIcon, X, Trash2, ArrowRightLeft } from "lucide-react";
+import { Plus, LayoutGrid, Rows3, CalendarDays, AlertTriangle, Search, Tag as TagIcon, X, Trash2, ArrowRightLeft, ClipboardList, MessageCircle, Paperclip } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -88,106 +88,150 @@ function TaskDetailPanel({
     router.refresh();
   }
 
+  const creator = task.creator ?? (creatorName ? { full_name: creatorName, avatar_url: null } : null);
+  const firstAssignee = task.assignees[0] ?? null;
+  const firstWatcher = task.watchers[0] ?? null;
+
   return (
     <>
-      <div className="shrink-0 border-b border-border px-5 pb-3 pt-5 md:px-6 md:pt-6">
-        {editingTitle ? (
-          <Input
-            autoFocus
-            value={titleDraft}
-            disabled={savingTitle}
-            onChange={(e) => setTitleDraft(e.target.value)}
-            onBlur={saveTitle}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") { e.preventDefault(); saveTitle(); }
-              if (e.key === "Escape") { setTitleDraft(task.title); setEditingTitle(false); }
-            }}
-            className="text-xl font-semibold text-ink"
-          />
-        ) : (
-          <h2
-            onClick={() => { setTitleDraft(task.title); setEditingTitle(true); }}
-            title="לחץ לעריכה"
-            className="-mx-1.5 cursor-text rounded-lg px-1.5 py-0.5 text-xl font-semibold leading-snug text-ink transition-colors hover:bg-surface"
-          >
-            {task.title}
-          </h2>
-        )}
-        <div className="mt-3 flex flex-col gap-1.5">
-          {creatorName && (
-            <div className="flex items-center gap-2 text-sm">
-              <span className="w-16 shrink-0 text-caption font-medium text-ink-muted">נפתח ע״י</span>
-              <span className="text-ink">{creatorName}</span>
-              {creatorRole && <span className="text-caption text-ink-muted">— {creatorRole}</span>}
+      {/* ── Header: title + roles bar ── */}
+      <div className="shrink-0 border-b border-border px-5 pb-4 pt-5 md:px-6 md:pt-6">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <ClipboardList className="h-5 w-5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            {editingTitle ? (
+              <Input
+                autoFocus
+                value={titleDraft}
+                disabled={savingTitle}
+                onChange={(e) => setTitleDraft(e.target.value)}
+                onBlur={saveTitle}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") { e.preventDefault(); saveTitle(); }
+                  if (e.key === "Escape") { setTitleDraft(task.title); setEditingTitle(false); }
+                }}
+                className="text-xl font-bold text-ink"
+              />
+            ) : (
+              <h2
+                onClick={() => { setTitleDraft(task.title); setEditingTitle(true); }}
+                title="לחץ לעריכה"
+                className="-mx-1.5 cursor-text rounded-lg px-1.5 py-0.5 text-xl font-bold leading-snug text-ink transition-colors hover:bg-surface"
+              >
+                {task.title}
+              </h2>
+            )}
+          </div>
+        </div>
+
+        {/* Roles bar */}
+        <div className="mt-4 flex items-center gap-6 border-t border-border pt-4">
+          {creator && (
+            <div className="flex items-center gap-2.5">
+              <div className="flex flex-col items-end">
+                <span className="text-[11px] text-ink-muted">נפתח ע״י</span>
+                <span className="text-sm font-medium text-ink">{creator.full_name}</span>
+              </div>
+              <UserChip member={creator as any} size="sm" />
             </div>
           )}
-          {task.assignees.length > 0 && (
-            <div className="flex items-center gap-2 text-sm">
-              <span className="w-16 shrink-0 text-caption font-medium text-ink-muted">אחראים</span>
-              <div className="flex flex-wrap items-center gap-1.5">
-                {task.assignees.map((a) => (
-                  <UserChip key={a.id} member={a} size="xs" />
-                ))}
+          {firstAssignee && (
+            <>
+              <div className="h-8 w-px bg-border" />
+              <div className="flex items-center gap-2.5">
+                <div className="flex flex-col items-end">
+                  <span className="text-[11px] text-ink-muted">אחראי</span>
+                  <span className="text-sm font-medium text-ink">
+                    {task.assignees.map(a => a.full_name).join(", ")}
+                  </span>
+                </div>
+                <div className="flex -space-x-1.5 space-x-reverse">
+                  {task.assignees.map((a) => (
+                    <UserChip key={a.id} member={a} size="sm" />
+                  ))}
+                </div>
               </div>
-            </div>
+            </>
           )}
-          {task.watchers.length > 0 && (
-            <div className="flex items-center gap-2 text-sm">
-              <span className="w-16 shrink-0 text-caption font-medium text-ink-muted">במעקב</span>
-              <div className="flex flex-wrap items-center gap-1.5">
-                {task.watchers.map((w) => (
-                  <UserChip key={w.id} member={w} size="xs" />
-                ))}
+          {firstWatcher && (
+            <>
+              <div className="h-8 w-px bg-border" />
+              <div className="flex items-center gap-2.5">
+                <div className="flex flex-col items-end">
+                  <span className="text-[11px] text-ink-muted">במעקב</span>
+                  <span className="text-sm font-medium text-ink">
+                    {task.watchers.map(w => w.full_name).join(", ")}
+                  </span>
+                </div>
+                <div className="flex -space-x-1.5 space-x-reverse">
+                  {task.watchers.map((w) => (
+                    <UserChip key={w.id} member={w} size="sm" />
+                  ))}
+                </div>
               </div>
-            </div>
+            </>
           )}
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-        {/* 1. Task details */}
-        <details open className="border-b border-border">
-          <summary className="cursor-pointer px-5 py-3 text-base font-semibold text-ink hover:bg-surface md:px-6">
-            פרטי משימה
-          </summary>
-          <div className="px-5 pb-4 md:px-6">
+      {/* ── Body: two-column layout ── */}
+      <div className="flex min-h-0 flex-1 overflow-hidden">
+        {/* Left column — form */}
+        <div className="flex w-1/2 flex-col border-e border-border">
+          <div className="flex items-center gap-2 px-5 py-3 md:px-6">
+            <ClipboardList className="h-4 w-4 text-ink-muted" />
+            <h3 className="text-base font-semibold text-ink">פרטי משימה</h3>
+          </div>
+          <div className="flex-1 overflow-y-auto px-5 pb-4 md:px-6">
             <TaskForm key={task.id} task={task} clients={clients} team={team} tags={tags} onDone={onClose} compact />
           </div>
-        </details>
+        </div>
 
-        {/* 2. Updates */}
-        <details open className="border-b border-border">
-          <summary className="cursor-pointer px-5 py-3 text-base font-semibold text-ink hover:bg-surface md:px-6">
-            עדכונים
-          </summary>
-          <div className="px-5 pb-4 md:px-6">
-            <TaskComments taskId={task.id} team={team} />
-          </div>
-        </details>
-
-        {/* 3. Files */}
-        <details open={filesOpen} className="border-b border-border">
-          <summary className="cursor-pointer px-5 py-3 text-base font-semibold text-ink hover:bg-surface md:px-6">
-            קבצים{fileCount !== null ? ` (${fileCount})` : ""}
-          </summary>
-          <div className="px-5 pb-4 md:px-6">
-            <TaskAttachments taskId={task.id} onCountChange={setFileCount} />
-          </div>
-        </details>
-
-        {/* Delete */}
-        <div className="px-5 py-3 md:px-6">
-          {confirmingDelete ? (
-            <div className="flex flex-col gap-2 rounded-xl bg-overdue-bg p-3 text-right">
-              <p className="text-sm text-overdue">למחוק את המשימה לצמיתות?</p>
-              <div className="flex flex-row-reverse gap-2">
-                <Button variant="danger" size="sm" onClick={onDelete}>מחק</Button>
-                <Button variant="ghost" size="sm" onClick={() => setConfirmingDelete(false)}>ביטול</Button>
-              </div>
+        {/* Right column — comments + files */}
+        <div className="flex w-1/2 flex-col">
+          <div className="flex-1 overflow-y-auto">
+            {/* Comments section */}
+            <div className="px-5 pb-4 pt-3 md:px-6">
+              <TaskComments taskId={task.id} team={team} />
             </div>
-          ) : (
-            <Button variant="ghost" size="sm" onClick={() => setConfirmingDelete(true)} className="text-overdue">מחיקה</Button>
-          )}
+
+            {/* Files section */}
+            <div className="border-t border-border px-5 pb-4 pt-3 md:px-6">
+              <div className="mb-3 flex items-center gap-2">
+                <Paperclip className="h-4 w-4 text-ink-muted" />
+                <h3 className="text-base font-semibold text-ink">
+                  קבצים{fileCount !== null ? ` (${fileCount})` : ""}
+                </h3>
+              </div>
+              <TaskAttachments taskId={task.id} onCountChange={setFileCount} />
+            </div>
+          </div>
+
+          {/* Delete — bottom of right column */}
+          <div className="border-t border-border px-5 py-3 md:px-6">
+            {confirmingDelete ? (
+              <div className="flex flex-col gap-2 rounded-xl bg-overdue-bg p-3 text-right">
+                <p className="text-sm text-overdue">למחוק את המשימה לצמיתות?</p>
+                <div className="flex flex-row-reverse gap-2">
+                  <Button variant="danger" size="sm" onClick={onDelete}>מחק</Button>
+                  <Button variant="ghost" size="sm" onClick={() => setConfirmingDelete(false)}>ביטול</Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex justify-start">
+                <button
+                  type="button"
+                  onClick={() => setConfirmingDelete(true)}
+                  className="flex items-center gap-1.5 text-sm text-overdue transition-colors hover:text-overdue/80"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  מחיקה
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </>
@@ -611,7 +655,7 @@ export function TasksClient({
 
       {/* Task detail panel */}
       <Sheet open={!!editing} onOpenChange={(open) => !open && closeSheet()}>
-        <SheetContent side="left" className="flex flex-col gap-0 p-0 sm:max-w-[720px]">
+        <SheetContent side="left" className="flex flex-col gap-0 p-0 sm:max-w-[960px]">
           <SheetTitle className="sr-only">{editing?.title ?? "פרטי משימה"}</SheetTitle>
           {editing && <TaskDetailPanel key={editing.id} task={editing} clients={clients} team={team} tags={tags} onClose={closeSheet} onDelete={onDelete} confirmingDelete={confirmingDelete} setConfirmingDelete={setConfirmingDelete} onTitleSaved={(t) => setEditing((prev) => prev ? { ...prev, title: t } : prev)} />}
         </SheetContent>
