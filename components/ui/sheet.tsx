@@ -10,7 +10,7 @@ export const SheetTrigger = DialogPrimitive.Trigger;
 export const SheetClose = DialogPrimitive.Close;
 
 const SheetOverlay = React.forwardRef<React.ElementRef<typeof DialogPrimitive.Overlay>, React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>>(
-  ({ className, ...props }, ref) => <DialogPrimitive.Overlay ref={ref} className={cn("fixed inset-0 z-50 bg-ink/25 backdrop-blur-[2px] data-[state=open]:animate-in data-[state=open]:fade-in", className)} {...props} />,
+  ({ className, ...props }, ref) => <DialogPrimitive.Overlay ref={ref} className={cn("fixed inset-0 z-50 bg-ink/25 backdrop-blur-[2px] data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=closed]:animate-out data-[state=closed]:fade-out-0", className)} {...props} />,
 );
 SheetOverlay.displayName = "SheetOverlay";
 
@@ -21,11 +21,14 @@ export const SheetContent = React.forwardRef<
   <DialogPrimitive.Portal>
     <SheetOverlay />
     <DialogPrimitive.Content ref={ref} dir="rtl" className={cn(
-      "fixed top-0 z-50 flex h-full w-full max-w-md flex-col gap-4 bg-white p-6 shadow-elevation-4",
-      side === "left" ? "left-0 rounded-e-2xl" : "right-0 rounded-s-2xl", className,
+      "fixed top-0 z-50 flex h-full w-full max-w-md flex-col gap-4 bg-white p-6 shadow-elevation-4 duration-300 data-[state=open]:animate-in data-[state=closed]:animate-out",
+      side === "left"
+        ? "left-0 rounded-e-2xl data-[state=open]:slide-in-from-left data-[state=closed]:slide-out-to-left"
+        : "right-0 rounded-s-2xl data-[state=open]:slide-in-from-right data-[state=closed]:slide-out-to-right",
+      className,
     )} {...props}>
       {children}
-      <DialogPrimitive.Close className="absolute end-4 top-4 rounded-xl p-1.5 text-ink-muted transition-colors hover:bg-surface hover:text-ink focus:outline-none"><X className="h-4 w-4" /></DialogPrimitive.Close>
+      <DialogPrimitive.Close className="absolute start-4 top-4 z-10 rounded-xl p-1.5 text-ink-muted transition-colors hover:bg-surface hover:text-ink focus:outline-none"><X className="h-4 w-4" /></DialogPrimitive.Close>
     </DialogPrimitive.Content>
   </DialogPrimitive.Portal>
 ));

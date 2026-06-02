@@ -95,7 +95,10 @@ export async function getTasks(filters?: {
     )
     .order("due_date", { ascending: true, nullsFirst: false });
 
-  if (filters?.status) q = q.eq("status", filters.status);
+  if (filters?.status) {
+    const statuses = filters.status.split(",");
+    q = statuses.length > 1 ? q.in("status", statuses) : q.eq("status", filters.status);
+  }
   if (filters?.clientId) q = q.eq("client_id", filters.clientId);
   if (filters?.overdue) {
     const today = new Date().toISOString().slice(0, 10);
