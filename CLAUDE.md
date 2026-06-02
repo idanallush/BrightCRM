@@ -114,6 +114,43 @@ Example: `tasks/page.tsx` (server, fetches) → `tasks/tasks-client.tsx` (client
 - Header: `backdrop-blur-md` glass effect
 - FAB: yellow circle bottom-right
 
+### Badge / pill pattern — Studio Light
+
+Status and health badges use **light bg + dark text** (not saturated solid color). Tokens in `tailwind.config.ts`:
+
+- Status: `bg-st-{status}-bg` + `text-st-{status}-text` (e.g. `bg-st-waiting-bg text-st-waiting-text`)
+- Health: `bg-health-{level}-bg` + `text-health-{level}-text` (e.g. `bg-health-good-bg text-health-good-text`)
+- For small colored dots use the saturated token: `bg-st-waiting` / `bg-health-good`
+- Source of truth: `components/ui/badge.tsx` — `STATUS_LIGHT` export for inline style use, `StatusCell`/`HealthCell` for rendered pills.
+
+### TaskForm — compact vs. full mode
+
+`components/tasks/task-form.tsx` renders differently based on the `compact` prop:
+
+- `compact=false` (default): full dialog layout, title field visible, all fields scrollable inside `DialogContent`
+- `compact=true`: side-panel edit mode (no title field, dropdown-based assignees, collapsible description)
+
+Both modes expose all fields (כותרת, לקוח, תיאור, סטטוס, תאריך יעד, אחראים, במעקב, תגיות). In the dialog the lower fields are below the fold — the inner `overflow-y-auto` div handles scrolling, not the dialog itself.
+
+### Button `asChild` + Slot constraint
+
+`components/ui/button.tsx` uses Radix `Slot` when `asChild=true`. **Slot requires exactly one React child.** Never pass a conditional element alongside `children`:
+
+```tsx
+// ❌ crashes — Slot receives [false, element] = 2 children
+<Comp>{loading && <Spinner />}{children}</Comp>
+
+// ✅ correct — compute content before rendering
+const content = asChild ? children : <>{loading && <Spinner />}{children}</>;
+<Comp>{content}</Comp>
+```
+
+### RTL gotchas
+
+- URL inputs must have `dir="ltr"` — without it the URL renders reversed in RTL context.
+- All `<input type="url">`, `<input type="email">`, phone numbers, and external link fields need `dir="ltr"`.
+- Dialogs/Sheets that contain meaningful content require an accessible title: use `<SheetTitle className="sr-only">` if no visible header exists.
+
 ## כללי עבודה
 
 - **כל טקסט בממשק בעברית, RTL.** Code, variable names, comments stay in English.
