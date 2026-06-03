@@ -37,7 +37,7 @@ export async function notifyNewTask(taskId: string) {
     const { data: task, error: taskErr } = await db
       .from("tasks")
       .select(
-        "id, title, description, due_date, status, created_by_id, clients!inner(name)",
+        "id, title, description, due_date, status, created_by_id, clients(name)",
       )
       .eq("id", taskId)
       .single();
@@ -81,7 +81,7 @@ export async function notifyNewTask(taskId: string) {
     }
     console.log("[Email] Creator:", creator.full_name, "created_by_id:", task.created_by_id);
 
-    const client = task.clients as unknown as { name: string };
+    const client = (task.clients as unknown as { name: string } | null) ?? { name: "כללי" };
 
     const recipients = dedupeRecipients(
       [...assignees, ...watchers],
@@ -124,7 +124,7 @@ export async function notifyNewComment(commentId: string) {
 
   const { data: task } = await db
     .from("tasks")
-    .select("id, title, due_date, status, clients!inner(name)")
+    .select("id, title, due_date, status, clients(name)")
     .eq("id", comment.task_id)
     .single();
 
@@ -151,7 +151,7 @@ export async function notifyNewComment(commentId: string) {
     .eq("task_id", comment.task_id);
 
   const watchers = ((watcherRows ?? []) as any[]).map((r) => r.member);
-  const client = task.clients as unknown as { name: string };
+  const client = (task.clients as unknown as { name: string } | null) ?? { name: "כללי" };
 
   const mentionIds = new Set<string>(comment.mentions ?? []);
 
@@ -207,7 +207,7 @@ export async function notifyOverdueByEmail() {
     .from("tasks")
     .select(
       `id, title, due_date, status,
-       clients!inner(name),
+       clients(name),
        task_assignees!inner(member:team_members!inner(id, full_name, email))`,
     )
     .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה"])
@@ -218,7 +218,7 @@ export async function notifyOverdueByEmail() {
   let sent = 0;
 
   for (const row of rows) {
-    const client = row.clients as unknown as { name: string };
+    const client = (row.clients as unknown as { name: string } | null) ?? { name: "כללי" };
     const assignees = (row.task_assignees as any[]).map((a) => a.member);
 
     for (const assignee of assignees) {

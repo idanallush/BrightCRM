@@ -25,7 +25,7 @@ export async function checkAndNotifyOverdue() {
       id,
       title,
       due_date,
-      clients!inner ( name ),
+      clients ( name ),
       task_assignees!inner (
         team_members!inner ( full_name, whatsapp_phone, notify_whatsapp )
       )
@@ -50,7 +50,7 @@ export async function checkAndNotifyOverdue() {
     const daysOverdue = Math.floor(
       (Date.now() - dueDate.getTime()) / (1000 * 60 * 60 * 24),
     );
-    const clientName = (row.clients as unknown as { name: string }).name;
+    const clientName = (row.clients as unknown as { name: string } | null)?.name ?? "כללי";
 
     const assignees = row.task_assignees as unknown as {
       team_members: { full_name: string; whatsapp_phone: string | null; notify_whatsapp: boolean | null };
