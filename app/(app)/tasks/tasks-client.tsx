@@ -41,7 +41,7 @@ const VIEW_KEY = "brightcrm:tasks-view";
 
 
 function TaskDetailPanel({
-  task, clients, team, tags, onClose, onDelete, confirmingDelete, setConfirmingDelete, onTitleSaved,
+  task, clients, team, tags, onClose, onDelete, confirmingDelete, setConfirmingDelete, onTitleSaved, taskViews, teamSize,
 }: {
   task: TaskWithRelations;
   clients: Client[];
@@ -52,6 +52,8 @@ function TaskDetailPanel({
   confirmingDelete: boolean;
   setConfirmingDelete: (v: boolean) => void;
   onTitleSaved: (title: string) => void;
+  taskViews: TaskViewRecord[];
+  teamSize: number;
 }) {
   const router = useRouter();
   const [fileCount, setFileCount] = React.useState<number | null>(null);
@@ -172,6 +174,28 @@ function TaskDetailPanel({
               </div>
             </>
           )}
+          {/* Seen-by indicator */}
+          {(() => {
+            const seenAfterUpdate = taskViews.filter((v) => v.last_seen_at >= (task.updated_at ?? task.created_at));
+            if (seenAfterUpdate.length === 0) return null;
+            const allSeen = seenAfterUpdate.length >= teamSize;
+            return (
+              <>
+                <div className="h-8 w-px bg-border" />
+                <div className="flex items-center gap-2.5" title={`נצפה ע״י: ${seenAfterUpdate.map(v => v.full_name).join(", ")}`}>
+                  <div className="flex flex-col items-end">
+                    <span className="text-[11px] text-ink-muted">נצפה</span>
+                    <span className={cn("text-sm font-medium", allSeen ? "text-st-done-text" : "text-ink")}>
+                      {seenAfterUpdate.length}/{teamSize}
+                    </span>
+                  </div>
+                  <div className={cn("flex h-8 w-8 items-center justify-center rounded-full", allSeen ? "bg-st-done-bg" : "bg-surface")}>
+                    <Eye className={cn("h-4 w-4", allSeen ? "text-st-done-text" : "text-ink-muted")} />
+                  </div>
+                </div>
+              </>
+            );
+          })()}
         </div>
       </div>
 
@@ -680,7 +704,7 @@ export function TasksClient({
       <Sheet open={sheetOpen} onOpenChange={(open) => !open && closeSheet()}>
         <SheetContent side="left" className="flex flex-col gap-0 p-0 sm:max-w-[960px]">
           <SheetTitle className="sr-only">{editing?.title ?? "פרטי משימה"}</SheetTitle>
-          {editing && <TaskDetailPanel key={editing.id} task={editing} clients={clients} team={team} tags={tags} onClose={closeSheet} onDelete={onDelete} confirmingDelete={confirmingDelete} setConfirmingDelete={setConfirmingDelete} onTitleSaved={(t) => setEditing((prev) => prev ? { ...prev, title: t } : prev)} />}
+          {editing && <TaskDetailPanel key={editing.id} task={editing} clients={clients} team={team} tags={tags} onClose={closeSheet} onDelete={onDelete} confirmingDelete={confirmingDelete} setConfirmingDelete={setConfirmingDelete} onTitleSaved={(t) => setEditing((prev) => prev ? { ...prev, title: t } : prev)} taskViews={taskViews[editing.id] ?? []} teamSize={team.length} />}
         </SheetContent>
       </Sheet>
     </motion.div>

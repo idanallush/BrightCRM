@@ -94,12 +94,17 @@ export function ClientsClient({
         <td className="px-4 py-3 font-medium text-ink">
           <div className="flex items-center gap-2.5">
             {c.logo_url ? (
-              <img src={c.logo_url} alt={c.name} className="h-7 w-7 shrink-0 rounded-full object-cover bg-surface" />
-            ) : (
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface text-xs font-bold text-ink">
-                {c.name.charAt(0)}
-              </span>
-            )}
+              <img
+                src={c.logo_url}
+                alt={c.name}
+                className="h-7 w-7 shrink-0 rounded-full object-cover bg-surface"
+                referrerPolicy="no-referrer"
+                onError={(e) => { e.currentTarget.style.display = "none"; e.currentTarget.nextElementSibling?.classList.remove("hidden"); }}
+              />
+            ) : null}
+            <span className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface text-xs font-bold text-ink", c.logo_url && "hidden")}>
+              {c.name.charAt(0)}
+            </span>
             {c.name}
           </div>
         </td>

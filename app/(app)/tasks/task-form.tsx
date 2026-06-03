@@ -321,7 +321,10 @@ export function TaskForm({
 function ClientLogo({ client }: { client?: Client }) {
   if (!client) return null;
   if (client.logo_url) {
-    return <img src={client.logo_url} alt="" className="h-5 w-5 shrink-0 rounded object-cover" />;
+    return (
+      <img src={client.logo_url} alt="" className="h-5 w-5 shrink-0 rounded object-cover" referrerPolicy="no-referrer"
+        onError={(e) => { (e.currentTarget as HTMLImageElement).replaceWith(Object.assign(document.createElement("span"), { className: "flex h-5 w-5 shrink-0 items-center justify-center rounded bg-surface text-[9px] font-semibold text-ink", textContent: getInitials(client.name) })); }} />
+    );
   }
   return (
     <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-surface text-[9px] font-semibold text-ink">
