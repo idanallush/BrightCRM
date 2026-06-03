@@ -57,12 +57,12 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
               <ArrowRight className="h-4 w-4" /> חזרה
             </Link>
             {client.logo_url ? (
-              <img src={client.logo_url} alt={client.name} className="h-8 w-8 rounded-full object-cover bg-white" referrerPolicy="no-referrer"
-                onError={(e) => { e.currentTarget.style.display = "none"; e.currentTarget.nextElementSibling?.classList.remove("hidden"); }} />
-            ) : null}
-            <span className={`flex h-8 w-8 items-center justify-center rounded-full bg-surface text-sm font-bold text-ink${client.logo_url ? " hidden" : ""}`}>
-              {client.name.charAt(0)}
-            </span>
+              <img src={client.logo_url} alt={client.name} className="h-8 w-8 rounded-full object-cover bg-white" referrerPolicy="no-referrer" />
+            ) : (
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface text-sm font-bold text-ink">
+                {client.name.charAt(0)}
+              </span>
+            )}
             <h1 className="text-base font-bold text-ink">{client.name}</h1>
             {healthV && client.health && <Badge variant={healthV}>{client.health}</Badge>}
             {manager && <UserChip member={manager} size="xs" />}

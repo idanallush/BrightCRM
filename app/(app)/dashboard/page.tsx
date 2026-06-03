@@ -344,12 +344,12 @@ export default async function DashboardPage() {
                 <Link key={c.id} href={`/clients/${c.id}`}
                   className="flex flex-col items-center gap-1.5 bg-white px-3 py-4 transition-colors hover:bg-surface">
                   {c.logo_url ? (
-                    <img src={c.logo_url} alt={c.name} className="h-10 w-10 shrink-0 rounded-full object-cover" referrerPolicy="no-referrer"
-                      onError={(e) => { e.currentTarget.style.display = "none"; e.currentTarget.nextElementSibling?.classList.remove("hidden"); }} />
-                  ) : null}
-                  <span className={`flex h-10 w-10 items-center justify-center rounded-full bg-surface text-sm font-semibold text-ink${c.logo_url ? " hidden" : ""}`}>
-                    {getInitials(c.name)}
-                  </span>
+                    <img src={c.logo_url} alt={c.name} className="h-10 w-10 shrink-0 rounded-full object-cover" referrerPolicy="no-referrer" />
+                  ) : (
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface text-sm font-semibold text-ink">
+                      {getInitials(c.name)}
+                    </span>
+                  )}
                   <span className="max-w-full truncate text-center text-sm font-medium text-ink">{c.name}</span>
                   <span className="rounded-full bg-surface px-2.5 py-0.5 text-caption font-semibold text-ink-secondary">
                     {c.open_count} משימות
