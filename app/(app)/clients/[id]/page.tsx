@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
   GoogleAdsIcon, MetaAdsIcon, GoogleDriveIcon, GoogleAnalyticsIcon, CmsIcon, WebsiteIcon,
 } from "@/components/brand-icons";
+import { ClientLogo } from "@/components/client-logo";
 import {
   getAttachmentsForClient, getClient, getTasksByClient, getTeam,
 } from "@/lib/data";
@@ -56,13 +57,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
             <Link href="/clients" className="inline-flex items-center gap-1.5 text-caption text-ink-secondary transition-colors hover:text-ink">
               <ArrowRight className="h-4 w-4" /> חזרה
             </Link>
-            {client.logo_url ? (
-              <img src={client.logo_url} alt={client.name} className="h-8 w-8 rounded-full object-cover bg-white" referrerPolicy="no-referrer" />
-            ) : (
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface text-sm font-bold text-ink">
-                {client.name.charAt(0)}
-              </span>
-            )}
+            <ClientLogo logoUrl={client.logo_url} name={client.name} size="md" />
             <h1 className="text-base font-bold text-ink">{client.name}</h1>
             {healthV && client.health && <Badge variant={healthV}>{client.health}</Badge>}
             {manager && <UserChip member={manager} size="xs" />}

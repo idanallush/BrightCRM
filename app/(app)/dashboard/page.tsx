@@ -16,6 +16,7 @@ import { DashboardSearch } from "@/components/dashboard/dashboard-search";
 import {
   AnimatedDashboard, AnimatedSection, AnimatedStatCard, AnimatedNumber,
 } from "@/components/dashboard/animated-layout";
+import { ClientLogo } from "@/components/client-logo";
 
 export const dynamic = "force-dynamic";
 
@@ -229,9 +230,9 @@ export default async function DashboardPage() {
                   {myTasks.map((t) => {
                     const { overdue } = relativeDate(t.due_date);
                     return (
-                      <tr key={t.id} className="border-b border-border transition-colors hover:bg-surface">
+                      <tr key={t.id} className="group relative border-b border-border transition-colors hover:bg-surface">
                         <td className="px-4 py-3">
-                          <Link href={`/tasks?task=${t.id}`} className="font-medium text-ink hover:text-primary">{t.title}</Link>
+                          <Link href={`/tasks?task=${t.id}`} className="font-medium text-ink group-hover:text-primary after:absolute after:inset-0 after:content-['']">{t.title}</Link>
                           {(commentCounts[t.id] ?? 0) > 0 && (
                             <span className="inline-flex items-center gap-0.5 text-xs text-ink-muted ms-2">
                               <MessageSquare className="h-3 w-3" />{commentCounts[t.id]}
@@ -241,7 +242,7 @@ export default async function DashboardPage() {
                         <td className="hidden px-4 py-3 text-ink-secondary sm:table-cell">{t.client_name ?? "כללי"}</td>
                         <td className="px-4 py-3 text-center"><StatusCell status={t.status} /></td>
                         <td className={`px-4 py-3 ${overdue ? "font-medium text-overdue" : "text-ink-secondary"}`}>{fmtDate(t.due_date)}</td>
-                        <td className="px-2 py-3 text-center">
+                        <td className="relative z-10 px-2 py-3 text-center">
                           <MarkDoneButton taskId={t.id} />
                         </td>
                       </tr>
@@ -290,7 +291,7 @@ export default async function DashboardPage() {
           <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <h2 className="text-base font-bold text-ink">פעילות אחרונה</h2>
-              <Link href="/tasks" className="flex items-center gap-1 text-caption text-ink-secondary transition-colors hover:text-ink">
+              <Link href="/activity" className="flex items-center gap-1 text-caption text-ink-secondary transition-colors hover:text-ink">
                 הכל <ArrowLeft className="h-3 w-3" />
               </Link>
             </div>
@@ -343,13 +344,7 @@ export default async function DashboardPage() {
             {clientsOpen.map((c) => (
                 <Link key={c.id} href={`/clients/${c.id}`}
                   className="flex flex-col items-center gap-1.5 bg-white px-3 py-4 transition-colors hover:bg-surface">
-                  {c.logo_url ? (
-                    <img src={c.logo_url} alt={c.name} className="h-10 w-10 shrink-0 rounded-full object-cover" referrerPolicy="no-referrer" />
-                  ) : (
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-surface text-sm font-semibold text-ink">
-                      {getInitials(c.name)}
-                    </span>
-                  )}
+                  <ClientLogo logoUrl={c.logo_url} name={c.name} size="lg" />
                   <span className="max-w-full truncate text-center text-sm font-medium text-ink">{c.name}</span>
                   <span className="rounded-full bg-surface px-2.5 py-0.5 text-caption font-semibold text-ink-secondary">
                     {c.open_count} משימות

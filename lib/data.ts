@@ -123,7 +123,8 @@ export async function getTasks(filters?: {
 
   if (filters?.assigneeId) {
     return rows.filter((t) =>
-      t.assignees.some((a) => a.id === filters.assigneeId),
+      t.assignees.some((a) => a.id === filters.assigneeId) ||
+      t.watchers.some((w) => w.id === filters.assigneeId),
     );
   }
   return rows;
@@ -487,6 +488,75 @@ export async function getRecentTasksDetailed(limit = 5) {
   }));
 }
 
+export type ActivityItem =
+  | {
+      type: "task_created";
+      id: string;
+      task_id: string;
+      task_title: string;
+      source: string;
+      created_at: string;
+      user_name: string | null;
+      user_avatar_url: string | null;
+    }
+  | {
+      type: "comment";
+      id: string;
+      task_id: string;
+      task_title: string;
+      content: string;
+      created_at: string;
+      user_name: string | null;
+      user_avatar_url: string | null;
+    };
+
+export async function getRecentActivity(limit = 50): Promise<ActivityItem[]> {
+  const sb = createClient();
+
+  const [tasksRes, commentsRes] = await Promise.all([
+    sb
+      .from("tasks")
+      .select(
+        "id,title,source,created_at,creator:team_members!tasks_created_by_id_fkey(full_name,avatar_url)",
+      )
+      .order("created_at", { ascending: false })
+      .limit(limit),
+    sb
+      .from("task_comments")
+      .select(
+        "id,content,created_at,task_id,author:team_members!task_comments_author_id_fkey(full_name,avatar_url),task:tasks!task_comments_task_id_fkey(id,title)",
+      )
+      .order("created_at", { ascending: false })
+      .limit(limit),
+  ]);
+
+  const taskItems: ActivityItem[] = ((tasksRes.data ?? []) as any[]).map((r) => ({
+    type: "task_created" as const,
+    id: `task-${r.id}`,
+    task_id: r.id as string,
+    task_title: r.title as string,
+    source: r.source as string,
+    created_at: r.created_at as string,
+    user_name: (r.creator?.full_name as string | undefined) ?? null,
+    user_avatar_url: (r.creator?.avatar_url as string | undefined) ?? null,
+  }));
+
+  const commentItems: ActivityItem[] = ((commentsRes.data ?? []) as any[]).map((r) => ({
+    type: "comment" as const,
+    id: `comment-${r.id}`,
+    task_id: (r.task?.id as string | undefined) ?? r.task_id,
+    task_title: (r.task?.title as string | undefined) ?? "משימה",
+    content: r.content as string,
+    created_at: r.created_at as string,
+    user_name: (r.author?.full_name as string | undefined) ?? null,
+    user_avatar_url: (r.author?.avatar_url as string | undefined) ?? null,
+  }));
+
+  return [...taskItems, ...commentItems]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, limit);
+}
+
 export async function getMyTasks(userEmail: string) {
   const sb = createClient();
 
@@ -525,7 +595,7 @@ export async function getTaskComments(taskId: string) {
   const sb = createClient();
   const { data } = await sb
     .from("task_comments")
-    .select("id,content,mentions,created_at,author:team_members!task_comments_author_id_fkey(id,full_name)")
+    .select("id,content,mentions,created_at,author:team_members!task_comments_author_id_fkey(id,full_name,avatar_url)")
     .eq("task_id", taskId)
     .order("created_at", { ascending: true });
   return ((data ?? []) as any[]).map((c) => ({
@@ -535,6 +605,7 @@ export async function getTaskComments(taskId: string) {
     created_at: c.created_at as string,
     author_id: (c.author?.id as string | undefined) ?? null,
     author_name: (c.author?.full_name as string | undefined) ?? null,
+    author_avatar_url: (c.author?.avatar_url as string | undefined) ?? null,
   }));
 }
 

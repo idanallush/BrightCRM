@@ -1,4 +1,4 @@
-import { getClients, getCommentCountsByTask, getTags, getTasks, getTeam, getWatchedTasks } from "@/lib/data";
+import { getClients, getCommentCountsByTask, getTags, getTasks, getTeam } from "@/lib/data";
 import { createClient } from "@/lib/supabase/server";
 import { TasksClient } from "./tasks-client";
 
@@ -36,13 +36,12 @@ export default async function TasksPage({
   // "__all__" means show everyone's tasks (used by email links and watched task clicks)
   const effectiveAssigneeId = assigneeId === "__all__" ? undefined : (assigneeId ?? currentMemberId);
 
-  const [tasks, clients, team, commentCounts, tags, watchedTasks] = await Promise.all([
+  const [tasks, clients, team, commentCounts, tags] = await Promise.all([
     getTasks({ status, clientId: clientId ?? undefined, assigneeId: effectiveAssigneeId, overdue }),
     getClients(),
     getTeam(),
     getCommentCountsByTask(),
     getTags(),
-    currentMemberId ? getWatchedTasks(currentMemberId) : Promise.resolve([]),
   ]);
 
   return (
@@ -52,7 +51,6 @@ export default async function TasksPage({
       team={team}
       tags={tags}
       commentCounts={commentCounts}
-      watchedTasks={watchedTasks}
       currentMemberId={currentMemberId ?? null}
       initialFilters={{
         status: status ?? "__all__",

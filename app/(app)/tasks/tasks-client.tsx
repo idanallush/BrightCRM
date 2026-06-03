@@ -27,7 +27,7 @@ import { TaskForm } from "./task-form";
 import { TaskAttachments } from "./task-attachments";
 import { TaskComments } from "./task-comments";
 import { deleteTask, updateTask, bulkUpdateStatus, bulkUpdateAssignees, bulkDeleteTasks, recordTaskView, getTaskViewsBulk, type TaskInput, type TaskViewRecord } from "./actions";
-import { STATUS_LIGHT, StatusCell } from "@/components/ui/badge";
+import { STATUS_LIGHT } from "@/components/ui/badge";
 import type { Client, Tag, TaskWithRelations, TeamMember } from "@/lib/data";
 
 const STATUS_PILLS = [
@@ -261,23 +261,14 @@ function TaskDetailPanel({
   );
 }
 
-type WatchedTask = {
-  id: string;
-  title: string;
-  status: string;
-  due_date: string | null;
-  client_name: string | null;
-};
-
 export function TasksClient({
-  tasks, clients, team, tags, commentCounts, watchedTasks = [], currentMemberId, initialFilters, initialOpenTaskId,
+  tasks, clients, team, tags, commentCounts, currentMemberId, initialFilters, initialOpenTaskId,
 }: {
   tasks: TaskWithRelations[];
   clients: Client[];
   team: TeamMember[];
   tags: Tag[];
   commentCounts: Record<string, number>;
-  watchedTasks?: WatchedTask[];
   currentMemberId: string | null;
   initialFilters: { status: string; clientId: string; assigneeId: string; overdue: boolean };
   initialOpenTaskId: string | null;
@@ -305,6 +296,7 @@ export function TasksClient({
   // Record view when opening a task
   const openTask = React.useCallback((t: TaskWithRelations) => {
     setEditing(t);
+    setSheetOpen(true);
     if (currentMemberId) {
       recordTaskView(t.id, currentMemberId).then(() => {
         getTaskViewsBulk(tasks.map((tt) => tt.id)).then(setTaskViews);
@@ -321,6 +313,7 @@ export function TasksClient({
   }, []);
 
   React.useEffect(() => {
+    if (closingRef.current) return;
     const id = searchParams.get("task");
     if (id && (!editing || editing.id !== id)) {
       const found = tasks.find((t) => t.id === id);
@@ -377,15 +370,19 @@ export function TasksClient({
 
   const [sheetOpen, setSheetOpen] = React.useState(false);
 
-  React.useEffect(() => { setSheetOpen(!!editing); }, [editing]);
+  const closingRef = React.useRef(false);
 
   function closeSheet() {
+    closingRef.current = true;
     setSheetOpen(false);
     setConfirmingDelete(false);
     const params = new URLSearchParams(searchParams.toString());
     params.delete("task");
     router.replace(params.toString() ? `/tasks?${params}` : "/tasks", { scroll: false });
-    setTimeout(() => setEditing(null), 350);
+    setTimeout(() => {
+      setEditing(null);
+      closingRef.current = false;
+    }, 350);
   }
 
   async function onDelete() {
@@ -628,40 +625,6 @@ export function TasksClient({
         )}
       </AnimatePresence>
 
-      {/* Watched tasks */}
-      {watchedTasks.length > 0 && (
-        <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
-          <div className="flex items-center gap-2 border-b border-border px-5 py-3">
-            <Eye className="h-4 w-4 text-ink-secondary" />
-            <h2 className="text-sm font-bold text-ink">משימות במעקב</h2>
-            <span className="rounded-full bg-surface px-2 py-0.5 text-caption font-medium text-ink-secondary">{watchedTasks.length}</span>
-          </div>
-          <div className="divide-y divide-border">
-            {watchedTasks.map((wt) => (
-              <button
-                key={wt.id}
-                type="button"
-                onClick={() => {
-                  const found = tasks.find((t) => t.id === wt.id);
-                  if (found) openTask(found);
-                  else {
-                    const params = new URLSearchParams();
-                    params.set("task", wt.id);
-                    params.set("assignee", "__all__");
-                    router.push(`/tasks?${params}`);
-                  }
-                }}
-                className="flex w-full items-center gap-3 px-5 py-2.5 text-right transition-colors hover:bg-surface"
-              >
-                <span className="min-w-0 flex-1 truncate text-sm font-medium text-ink">{wt.title}</span>
-                <span className="shrink-0 text-caption text-ink-muted">{wt.client_name ?? "כללי"}</span>
-                <StatusCell status={wt.status} />
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Content */}
       <AnimatePresence mode="wait">
       {filteredTasks.length === 0 ? (
@@ -676,7 +639,7 @@ export function TasksClient({
         </motion.div>
       ) : view === "table" ? (
         <motion.div key="table" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-          <TaskTable tasks={filteredTasks} commentCounts={commentCounts} onRowClick={openTask} selectedIds={selectedIds} onSelectionChange={setSelectedIds} taskViews={taskViews} teamSize={team.length} />
+          <TaskTable tasks={filteredTasks} commentCounts={commentCounts} onRowClick={openTask} selectedIds={selectedIds} onSelectionChange={setSelectedIds} taskViews={taskViews} teamSize={team.length} currentMemberId={currentMemberId} />
         </motion.div>
       ) : view === "kanban" ? (
         <motion.div key="kanban" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>

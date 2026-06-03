@@ -25,7 +25,7 @@ export const SelectContent = React.forwardRef<React.ElementRef<typeof SelectPrim
   ({ className, children, position = "popper", ...props }, ref) => (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content ref={ref} dir="rtl" position={position} className={cn(
-        "relative z-50 max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-lg border border-border bg-white shadow-elevation-3",
+        "relative z-[100] max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-lg border border-border bg-white shadow-elevation-3",
         className,
       )} {...props}>
         <SelectPrimitive.Viewport className="p-1.5">{children}</SelectPrimitive.Viewport>

@@ -15,6 +15,7 @@ import { createTask, updateTask, createTag, updateTag, type TaskInput } from "./
 import { Hint } from "@/components/ui/tooltip";
 import { STATUS_LIGHT } from "@/components/ui/badge";
 import type { Client, Tag, TaskWithRelations, TeamMember } from "@/lib/data";
+import { ClientLogo } from "@/components/client-logo";
 
 const STATUS_OPTIONS: { value: TaskInput["status"]; label: string }[] = [
   { value: "מחכה לטיפול", label: "ממתין" },
@@ -149,7 +150,7 @@ export function TaskForm({
                   {clients.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       <div className="flex items-center gap-2">
-                        <ClientLogo client={c} />
+                        <ClientLogoInline client={c} />
                         {c.name}
                       </div>
                     </SelectItem>
@@ -318,19 +319,9 @@ export function TaskForm({
   );
 }
 
-function ClientLogo({ client }: { client?: Client }) {
+function ClientLogoInline({ client }: { client?: Client }) {
   if (!client) return null;
-  if (client.logo_url) {
-    return (
-      <img src={client.logo_url} alt="" className="h-5 w-5 shrink-0 rounded object-cover" referrerPolicy="no-referrer"
-        onError={(e) => { (e.currentTarget as HTMLImageElement).replaceWith(Object.assign(document.createElement("span"), { className: "flex h-5 w-5 shrink-0 items-center justify-center rounded bg-surface text-[9px] font-semibold text-ink", textContent: getInitials(client.name) })); }} />
-    );
-  }
-  return (
-    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-surface text-[9px] font-semibold text-ink">
-      {getInitials(client.name)}
-    </span>
-  );
+  return <ClientLogo logoUrl={client.logo_url} name={client.name} size="sm" />;
 }
 
 // Description input that caps height + shows a fade and "read more" toggle when the text is long.

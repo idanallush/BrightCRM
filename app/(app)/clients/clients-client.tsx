@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { ClientForm } from "./client-form";
 import type { Client, TeamMember } from "@/lib/data";
 import { UserChip } from "@/components/user-hover-card";
+import { ClientLogo } from "@/components/client-logo";
 
 const ALL = "__all__";
 
@@ -93,18 +94,7 @@ export function ClientsClient({
         className="cursor-pointer border-b border-border transition-colors duration-150 hover:bg-surface">
         <td className="px-4 py-3 font-medium text-ink">
           <div className="flex items-center gap-2.5">
-            {c.logo_url ? (
-              <img
-                src={c.logo_url}
-                alt={c.name}
-                className="h-7 w-7 shrink-0 rounded-full object-cover bg-surface"
-                referrerPolicy="no-referrer"
-                onError={(e) => { e.currentTarget.style.display = "none"; e.currentTarget.nextElementSibling?.classList.remove("hidden"); }}
-              />
-            ) : null}
-            <span className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface text-xs font-bold text-ink", c.logo_url && "hidden")}>
-              {c.name.charAt(0)}
-            </span>
+            <ClientLogo logoUrl={c.logo_url} name={c.name} size="md" />
             {c.name}
           </div>
         </td>

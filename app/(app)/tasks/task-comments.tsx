@@ -18,6 +18,7 @@ type Comment = {
   content: string;
   author_name: string | null;
   author_id: string | null;
+  author_avatar_url: string | null;
   parent_id: string | null;
   created_at: string;
   mentions: string[];
@@ -447,9 +448,11 @@ function SingleComment({
 
   return (
     <div className="group/comment flex gap-3">
-      <div className={`flex shrink-0 items-center justify-center rounded-full bg-surface text-[11px] font-semibold text-ink ${isReply ? "h-6 w-6 text-[9px]" : "h-8 w-8"}`}>
-        {comment.author_name ? getInitials(comment.author_name) : "?"}
-      </div>
+      <UserAvatar
+        name={comment.author_name}
+        avatarUrl={comment.author_avatar_url}
+        size={isReply ? "xs" : "sm"}
+      />
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline justify-between gap-2">
           <span className={`font-semibold text-ink ${isReply ? "text-xs" : "text-base"}`}>
@@ -573,7 +576,7 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
     const sb = createClient();
     const { data } = await sb
       .from("task_comments")
-      .select("id,content,created_at,parent_id,mentions,author:team_members!task_comments_author_id_fkey(id,full_name)")
+      .select("id,content,created_at,parent_id,mentions,author:team_members!task_comments_author_id_fkey(id,full_name,avatar_url)")
       .eq("task_id", taskId)
       .order("created_at", { ascending: true });
     if (data) {
@@ -582,6 +585,7 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
         content: c.content,
         author_name: c.author?.full_name ?? null,
         author_id: c.author?.id ?? null,
+        author_avatar_url: c.author?.avatar_url ?? null,
         parent_id: c.parent_id ?? null,
         created_at: c.created_at,
         mentions: Array.isArray(c.mentions) ? c.mentions : [],

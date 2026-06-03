@@ -149,6 +149,7 @@ export function TaskTable({
   onSelectionChange,
   taskViews,
   teamSize,
+  currentMemberId,
 }: {
   tasks: TaskWithRelations[];
   commentCounts: Record<string, number>;
@@ -157,6 +158,7 @@ export function TaskTable({
   onSelectionChange: (ids: Set<string>) => void;
   taskViews: Record<string, TaskViewRecord[]>;
   teamSize: number;
+  currentMemberId: string | null;
 }) {
   const router = useRouter();
   const today = new Date().toISOString().slice(0, 10);
@@ -172,10 +174,22 @@ export function TaskTable({
     .filter((t) => DONE_STATUSES.includes(t.status))
     .sort((a, b) => (b.updated_at ?? b.created_at).localeCompare(a.updated_at ?? a.created_at));
 
-  const groups = STATUS_ORDER.map((status) => ({
+  const watchedTasks = currentMemberId
+    ? activeTasks
+        .filter((t) => t.watchers?.some((w) => w.id === currentMemberId))
+        .sort((a, b) => {
+          if (a.due_date && b.due_date) return a.due_date.localeCompare(b.due_date);
+          if (a.due_date) return -1;
+          if (b.due_date) return 1;
+          return 0;
+        })
+    : [];
+
+  const statusGroups = STATUS_ORDER.map((status) => ({
     status,
     label: STATUS_GROUP_LABELS[status],
     color: STATUS_COLORS[status] ?? "#C4C4C4",
+    isWatched: false,
     tasks: activeTasks
       .filter((t) => t.status === status || (status === "נכנס לעבודה" && t.status === "בעבודה"))
       .sort((a, b) => {
@@ -185,6 +199,13 @@ export function TaskTable({
         return 0;
       }),
   })).filter((g) => g.tasks.length > 0);
+
+  const groups = [
+    ...(watchedTasks.length > 0
+      ? [{ status: "__watched__", label: "במעקב", color: "#4262FF", isWatched: true, tasks: watchedTasks }]
+      : []),
+    ...statusGroups,
+  ];
 
   const allVisibleIds = activeTasks.map((t) => t.id);
   const allSelected = allVisibleIds.length > 0 && allVisibleIds.every((id) => selectedIds.has(id));
@@ -364,7 +385,9 @@ export function TaskTable({
                   <tr>
                     <td colSpan={COL_COUNT}>
                       {(() => {
-                        const light = STATUS_LIGHT[group.status] ?? { bg: "#F7F7F8", text: "#050038", dot: "#C4C4C4" };
+                        const light = group.isWatched
+                          ? { bg: "rgba(66,98,255,0.10)", text: "#4262FF", dot: "#4262FF" }
+                          : (STATUS_LIGHT[group.status] ?? { bg: "#F7F7F8", text: "#050038", dot: "#C4C4C4" });
                         return (
                           <button
                             type="button"
@@ -372,7 +395,9 @@ export function TaskTable({
                             className="flex w-full items-center gap-2 rounded-none px-4 py-2 text-right transition-colors hover:opacity-90"
                             style={{ backgroundColor: light.bg }}
                           >
-                            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: light.dot }} />
+                            {group.isWatched
+                              ? <Eye className="h-3.5 w-3.5" style={{ color: light.dot }} />
+                              : <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: light.dot }} />}
                             {isCollapsed
                               ? <ChevronDown className="h-4 w-4 -rotate-90" style={{ color: light.text }} />
                               : <ChevronDown className="h-4 w-4" style={{ color: light.text }} />}

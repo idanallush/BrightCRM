@@ -237,9 +237,14 @@ export function TeamManager({ members }: { members: Member[] }) {
     router.refresh();
   }
 
+  const [showInactive, setShowInactive] = React.useState(false);
+  const activeMembers = members.filter((m) => m.active);
+  const inactiveMembers = members.filter((m) => !m.active);
+  const visibleMembers = showInactive ? members : activeMembers;
+
   return (
     <div className="divide-y divide-border">
-      {members.map((m) => (
+      {visibleMembers.map((m) => (
         <div key={m.id}>
           {editingId === m.id ? (
             <div className="p-4">
@@ -315,6 +320,20 @@ export function TeamManager({ members }: { members: Member[] }) {
           )}
         </div>
       ))}
+
+      {/* Show/hide inactive members */}
+      {inactiveMembers.length > 0 && (
+        <div className="px-4 py-2">
+          <button
+            type="button"
+            onClick={() => setShowInactive((v) => !v)}
+            className="flex items-center gap-1.5 text-caption text-ink-muted transition-colors hover:text-ink"
+          >
+            {showInactive ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+            {showInactive ? "הסתר לא פעילים" : `הצג ${inactiveMembers.length} לא פעילים`}
+          </button>
+        </div>
+      )}
 
       {/* Add new member */}
       {addingNew ? (
