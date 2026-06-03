@@ -524,18 +524,13 @@ function SingleComment({
               </span>
             ) : null}
             {seenBy && seenBy.length > 0 && (
-              <>
-                <span className="h-3 w-px bg-border" />
-                <span className="inline-flex items-center gap-1 text-ink-muted" title={`נצפה ע״י: ${seenBy.map(s => s.full_name).join(", ")}`}>
-                  <Eye className="h-3 w-3" />
-                  <span className="flex -space-x-1 space-x-reverse">
-                    {seenBy.slice(0, 3).map((s, i) => (
-                      <UserAvatar key={i} name={s.full_name} avatarUrl={s.avatar_url} size="xs" ring />
-                    ))}
-                  </span>
-                  {seenBy.length > 3 && <span className="text-[10px]">+{seenBy.length - 3}</span>}
-                </span>
-              </>
+              <span
+                className="inline-flex items-center gap-1 text-[11px] text-ink-muted cursor-default"
+                title={`נצפה ע״י: ${seenBy.map(s => s.full_name).join(", ")}`}
+              >
+                <Eye className="h-3 w-3" />
+                {seenBy.length}
+              </span>
             )}
           </div>
         )}

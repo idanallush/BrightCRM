@@ -178,19 +178,23 @@ function TaskDetailPanel({
           {(() => {
             const seenAfterUpdate = taskViews.filter((v) => v.last_seen_at >= (task.updated_at ?? task.created_at));
             if (seenAfterUpdate.length === 0) return null;
-            const allSeen = seenAfterUpdate.length >= teamSize;
             return (
               <>
                 <div className="h-8 w-px bg-border" />
                 <div className="flex items-center gap-2.5" title={`נצפה ע״י: ${seenAfterUpdate.map(v => v.full_name).join(", ")}`}>
                   <div className="flex flex-col items-end">
                     <span className="text-[11px] text-ink-muted">נצפה</span>
-                    <span className={cn("text-sm font-medium", allSeen ? "text-st-done-text" : "text-ink")}>
-                      {seenAfterUpdate.length}/{teamSize}
-                    </span>
                   </div>
-                  <div className={cn("flex h-8 w-8 items-center justify-center rounded-full", allSeen ? "bg-st-done-bg" : "bg-surface")}>
-                    <Eye className={cn("h-4 w-4", allSeen ? "text-st-done-text" : "text-ink-muted")} />
+                  <div className="flex items-center gap-1.5">
+                    <div className="flex -space-x-1.5 space-x-reverse">
+                      {seenAfterUpdate.slice(0, 3).map((v) => (
+                        <UserChip key={v.member_id} member={{ full_name: v.full_name, avatar_url: v.avatar_url } as any} size="xs" />
+                      ))}
+                    </div>
+                    {seenAfterUpdate.length > 3 && (
+                      <span className="text-xs font-medium text-ink-muted">+{seenAfterUpdate.length - 3}</span>
+                    )}
+                    <Eye className="h-3.5 w-3.5 text-ink-muted" />
                   </div>
                 </div>
               </>
