@@ -2,6 +2,17 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { isBrightEmail } from "@/lib/utils";
+
+/** Verify the caller is an authenticated Bright domain member. Returns email or throws. */
+async function requireAuth() {
+  const sb = createClient();
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user?.email || !isBrightEmail(user.email)) {
+    throw new Error("UNAUTHORIZED");
+  }
+  return user.email;
+}
 
 export type TaskStatus =
   | "מחכה לטיפול"
@@ -22,6 +33,7 @@ export type TaskInput = {
 };
 
 export async function createTask(input: TaskInput) {
+  try { await requireAuth(); } catch { return { error: "לא מאומת" }; }
   const sb = createClient();
 
   // Resolve current user's team_member id for created_by_id
@@ -87,6 +99,7 @@ export async function createTask(input: TaskInput) {
 }
 
 export async function updateTask(id: string, input: TaskInput) {
+  try { await requireAuth(); } catch { return { error: "לא מאומת" }; }
   const sb = createClient();
   const { error } = await sb
     .from("tasks")
@@ -134,6 +147,7 @@ export async function updateTask(id: string, input: TaskInput) {
 }
 
 export async function deleteTask(id: string) {
+  try { await requireAuth(); } catch { return { error: "לא מאומת" }; }
   const sb = createClient();
   const { error } = await sb.from("tasks").delete().eq("id", id);
   if (error) return { error: error.message };
@@ -143,6 +157,7 @@ export async function deleteTask(id: string) {
 }
 
 export async function updateTaskStatus(id: string, status: string) {
+  try { await requireAuth(); } catch { return { error: "לא מאומת" }; }
   const sb = createClient();
   const { error } = await sb.from("tasks").update({ status }).eq("id", id);
   if (error) return { error: error.message };
@@ -152,6 +167,7 @@ export async function updateTaskStatus(id: string, status: string) {
 }
 
 export async function bulkUpdateStatus(ids: string[], status: string) {
+  try { await requireAuth(); } catch { return { error: "לא מאומת" }; }
   if (ids.length === 0) return { error: "לא נבחרו משימות" };
   const sb = createClient();
   const { error } = await sb.from("tasks").update({ status }).in("id", ids);
@@ -162,6 +178,7 @@ export async function bulkUpdateStatus(ids: string[], status: string) {
 }
 
 export async function bulkUpdateAssignees(ids: string[], assigneeIds: string[]) {
+  try { await requireAuth(); } catch { return { error: "לא מאומת" }; }
   if (ids.length === 0) return { error: "לא נבחרו משימות" };
   const sb = createClient();
   // Delete existing assignees for all tasks, then insert new ones
@@ -178,6 +195,7 @@ export async function bulkUpdateAssignees(ids: string[], assigneeIds: string[]) 
 }
 
 export async function bulkDeleteTasks(ids: string[]) {
+  try { await requireAuth(); } catch { return { error: "לא מאומת" }; }
   if (ids.length === 0) return { error: "לא נבחרו משימות" };
   const sb = createClient();
   const { error } = await sb.from("tasks").delete().in("id", ids);
@@ -239,12 +257,24 @@ export async function updateTag(tagId: string, fields: { name?: string; color?: 
 
 export async function addComment(
   taskId: string,
-  authorId: string,
+  _authorId: string, // DEPRECATED: ignored, derived from session for security
   content: string,
   mentions: string[] = [],
   parentId: string | null = null,
 ) {
   const sb = createClient();
+
+  // Derive author from authenticated session — never trust caller-provided ID
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user?.email) return { error: "לא מאומת" };
+  const { data: authMember } = await sb
+    .from("team_members")
+    .select("id")
+    .eq("email", user.email)
+    .maybeSingle();
+  if (!authMember) return { error: "משתמש לא נמצא" };
+  const authorId = authMember.id;
+
   const { data, error } = await sb.from("task_comments").insert({
     task_id: taskId,
     author_id: authorId,
@@ -386,6 +416,25 @@ export async function getCommentAttachments(commentIds: string[]) {
 
 export async function updateComment(commentId: string, content: string) {
   const sb = createClient();
+
+  // Verify the current user owns this comment
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user?.email) return { error: "לא מאומת" };
+  const { data: member } = await sb
+    .from("team_members")
+    .select("id")
+    .eq("email", user.email)
+    .maybeSingle();
+  if (!member) return { error: "משתמש לא נמצא" };
+
+  const { data: comment } = await sb
+    .from("task_comments")
+    .select("author_id")
+    .eq("id", commentId)
+    .single();
+  if (!comment) return { error: "תגובה לא נמצאה" };
+  if (comment.author_id !== member.id) return { error: "אין הרשאה לערוך תגובה של משתמש אחר" };
+
   const { error } = await sb
     .from("task_comments")
     .update({ content })
@@ -397,6 +446,25 @@ export async function updateComment(commentId: string, content: string) {
 
 export async function deleteComment(commentId: string) {
   const sb = createClient();
+
+  // Verify the current user owns this comment
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user?.email) return { error: "לא מאומת" };
+  const { data: member } = await sb
+    .from("team_members")
+    .select("id")
+    .eq("email", user.email)
+    .maybeSingle();
+  if (!member) return { error: "משתמש לא נמצא" };
+
+  const { data: comment } = await sb
+    .from("task_comments")
+    .select("author_id")
+    .eq("id", commentId)
+    .single();
+  if (!comment) return { error: "תגובה לא נמצאה" };
+  if (comment.author_id !== member.id) return { error: "אין הרשאה למחוק תגובה של משתמש אחר" };
+
   // Delete attachments from storage first
   const { data: attachments } = await sb
     .from("comment_attachments")

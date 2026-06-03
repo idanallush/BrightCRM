@@ -6,12 +6,11 @@ import { morningDigestEmail } from "@/lib/email/templates";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
+  // Verify Vercel Cron secret — fail closed if not configured
   const cronSecret = process.env.CRON_SECRET;
-  if (cronSecret) {
-    const auth = request.headers.get("authorization");
-    if (auth !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  const auth = request.headers.get("authorization");
+  if (!cronSecret || auth !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   // Skip Shabbat — Saturday is day 6.

@@ -41,9 +41,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const rawBody = await request.text();
 
-  // Verify HMAC signature
+  // Verify HMAC signature — reject missing or invalid signatures
   const signature = request.headers.get("x-hub-signature-256") ?? "";
-  if (signature && !verifySignature(rawBody, signature)) {
+  if (!signature || !verifySignature(rawBody, signature)) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 

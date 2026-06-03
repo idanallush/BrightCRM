@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
+import { isBrightEmail } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -118,16 +120,19 @@ async function handleQuickAction(action: string, memberId: string) {
 }
 
 export async function POST(request: NextRequest) {
+  // Verify session from cookies — never trust body email
+  const sb = createClient();
+  const { data: { user }, error: authError } = await sb.auth.getUser();
+  if (authError || !user?.email || !isBrightEmail(user.email)) {
+    return NextResponse.json({ error: "לא מאומת" }, { status: 401 });
+  }
+  const userEmail = user.email;
+
   const body = await request.json();
-  const { question, action, userEmail } = body as {
+  const { question, action } = body as {
     question?: string;
     action?: string;
-    userEmail: string;
   };
-
-  if (!userEmail) {
-    return NextResponse.json({ error: "חסר מייל משתמש" }, { status: 400 });
-  }
 
   if (!checkRateLimit(userEmail)) {
     return NextResponse.json({ error: "הגעת למגבלת השאלות. נסה שוב בעוד שעה." }, { status: 429 });
