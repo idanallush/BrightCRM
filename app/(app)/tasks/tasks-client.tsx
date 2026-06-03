@@ -26,7 +26,7 @@ import { TaskCalendar } from "./task-calendar";
 import { TaskForm } from "./task-form";
 import { TaskAttachments } from "./task-attachments";
 import { TaskComments } from "./task-comments";
-import { deleteTask, updateTask, bulkUpdateStatus, bulkUpdateAssignees, bulkDeleteTasks, type TaskInput } from "./actions";
+import { deleteTask, updateTask, bulkUpdateStatus, bulkUpdateAssignees, bulkDeleteTasks, toggleWatchTask, type TaskInput } from "./actions";
 import { STATUS_LIGHT, StatusCell } from "@/components/ui/badge";
 import type { Client, Tag, TaskWithRelations, TeamMember } from "@/lib/data";
 
@@ -246,7 +246,7 @@ type WatchedTask = {
 };
 
 export function TasksClient({
-  tasks, clients, team, tags, commentCounts, watchedTasks = [], initialFilters, initialOpenTaskId,
+  tasks, clients, team, tags, commentCounts, watchedTasks = [], currentMemberId, initialFilters, initialOpenTaskId,
 }: {
   tasks: TaskWithRelations[];
   clients: Client[];
@@ -254,6 +254,7 @@ export function TasksClient({
   tags: Tag[];
   commentCounts: Record<string, number>;
   watchedTasks?: WatchedTask[];
+  currentMemberId: string | null;
   initialFilters: { status: string; clientId: string; assigneeId: string; overdue: boolean };
   initialOpenTaskId: string | null;
 }) {
@@ -634,7 +635,7 @@ export function TasksClient({
         </motion.div>
       ) : view === "table" ? (
         <motion.div key="table" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-          <TaskTable tasks={filteredTasks} commentCounts={commentCounts} onRowClick={setEditing} selectedIds={selectedIds} onSelectionChange={setSelectedIds} />
+          <TaskTable tasks={filteredTasks} commentCounts={commentCounts} onRowClick={setEditing} selectedIds={selectedIds} onSelectionChange={setSelectedIds} currentMemberId={currentMemberId} watchedTaskIds={new Set(watchedTasks.map(w => w.id))} />
         </motion.div>
       ) : view === "kanban" ? (
         <motion.div key="kanban" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>

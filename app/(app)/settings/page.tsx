@@ -7,9 +7,10 @@ import {
   CheckCircle,
   Users,
   Settings,
+  Mail,
 } from "lucide-react";
 import { StaggerContainer, StaggerItem } from "@/components/motion";
-import { TeamManager } from "./settings-client";
+import { TeamManager, EmailLog } from "./settings-client";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,12 @@ export default async function SettingsPage() {
     .from("team_members")
     .select("id, full_name, role, email, whatsapp_phone, active, notify_email, notify_whatsapp")
     .order("full_name");
+
+  const { data: emailLogs } = await sb
+    .from("email_log")
+    .select("id, recipients, subject, email_type, status, error_message, created_at")
+    .order("created_at", { ascending: false })
+    .limit(100);
 
   const whatsappConnected = !!member?.whatsapp_phone;
 
@@ -122,6 +129,20 @@ export default async function SettingsPage() {
           <h2 className="text-base font-bold text-ink">ניהול צוות</h2>
         </div>
         <TeamManager members={(allMembers ?? []) as any} />
+      </div>
+      </StaggerItem>
+
+      {/* Email Log */}
+      <StaggerItem>
+      <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
+        <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+          <Mail className="h-4 w-4 text-ink-secondary" />
+          <h2 className="text-base font-bold text-ink">לוג מיילים</h2>
+          <span className="rounded-full bg-surface px-2 py-0.5 text-caption font-medium text-ink-secondary">
+            {(emailLogs ?? []).length}
+          </span>
+        </div>
+        <EmailLog logs={(emailLogs ?? []) as any} />
       </div>
       </StaggerItem>
     </StaggerContainer>

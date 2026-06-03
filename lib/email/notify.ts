@@ -104,7 +104,7 @@ export async function notifyNewTask(taskId: string) {
     );
 
     console.log("[Email] Sending email to:", recipients, "subject:", subject);
-    const result = await sendEmail(recipients, subject, html);
+    const result = await sendEmail(recipients, subject, html, { type: "new_task", referenceId: taskId });
     console.log("[Email] Resend result:", JSON.stringify(result));
   } catch (err: any) {
     console.error("[Email] Error in notifyNewTask:", err?.message, err?.stack);
@@ -187,7 +187,7 @@ export async function notifyNewComment(commentId: string) {
       : newCommentEmail(taskInfo, client, { content: comment.content }, author);
 
     try {
-      await sendEmail([m.email], subject, html);
+      await sendEmail([m.email], subject, html, { type: isMentioned ? "mention" : "comment", referenceId: comment.task_id });
     } catch (err) {
       console.error(`[Notify] comment email to ${m.email} failed:`, err);
     }
@@ -243,7 +243,7 @@ export async function notifyOverdueByEmail() {
       );
 
       try {
-        await sendEmail([assignee.email], subject, html);
+        await sendEmail([assignee.email], subject, html, { type: "overdue", referenceId: row.id });
         await db.from("notification_log").insert({
           type: "overdue",
           recipient_email: assignee.email,

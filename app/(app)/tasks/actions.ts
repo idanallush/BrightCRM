@@ -414,3 +414,25 @@ export async function deleteComment(commentId: string) {
   revalidatePath("/tasks");
   return { ok: true as const };
 }
+
+export async function toggleWatchTask(taskId: string, memberId: string) {
+  const sb = createClient();
+  const { data: existing } = await sb
+    .from("task_watchers")
+    .select("id")
+    .eq("task_id", taskId)
+    .eq("member_id", memberId)
+    .maybeSingle();
+
+  if (existing) {
+    const { error } = await sb.from("task_watchers").delete().eq("id", existing.id);
+    if (error) return { error: error.message };
+    revalidatePath("/tasks");
+    return { ok: true as const, watching: false };
+  }
+
+  const { error } = await sb.from("task_watchers").insert({ task_id: taskId, member_id: memberId });
+  if (error) return { error: error.message };
+  revalidatePath("/tasks");
+  return { ok: true as const, watching: true };
+}

@@ -53,6 +53,7 @@ export default async function TasksPage({
       tags={tags}
       commentCounts={commentCounts}
       watchedTasks={watchedTasks}
+      currentMemberId={currentMemberId ?? null}
       initialFilters={{
         status: status ?? "__all__",
         clientId: clientId ?? "__all__",

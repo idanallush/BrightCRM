@@ -1,13 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { ArrowUpLeft, ChevronDown, ChevronUp, AlertTriangle, MessageCircle, EyeOff, Eye } from "lucide-react";
+import { ArrowUpLeft, ChevronDown, ChevronUp, AlertTriangle, MessageCircle, EyeOff, Eye, Loader2 } from "lucide-react";
 import { UserChip } from "@/components/user-hover-card";
 import { AvatarStack } from "@/components/user-avatar";
 import { Hint } from "@/components/ui/tooltip";
 import { STATUS_COLORS, STATUS_LIGHT } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { updateTaskStatus } from "./actions";
+import { updateTaskStatus, toggleWatchTask } from "./actions";
 import { toast } from "@/components/ui/toaster";
 import { useRouter } from "next/navigation";
 import type { TaskWithRelations } from "@/lib/data";
@@ -146,18 +146,43 @@ export function TaskTable({
   onRowClick,
   selectedIds,
   onSelectionChange,
+  currentMemberId,
+  watchedTaskIds,
 }: {
   tasks: TaskWithRelations[];
   commentCounts: Record<string, number>;
   onRowClick: (t: TaskWithRelations) => void;
   selectedIds: Set<string>;
   onSelectionChange: (ids: Set<string>) => void;
+  currentMemberId: string | null;
+  watchedTaskIds: Set<string>;
 }) {
   const router = useRouter();
   const today = new Date().toISOString().slice(0, 10);
   const [showCompleted, setShowCompleted] = React.useState(false);
   const [hideStale, setHideStale] = React.useState(true);
   const [collapsedGroups, setCollapsedGroups] = React.useState<Set<string>>(new Set());
+  const [localWatched, setLocalWatched] = React.useState<Set<string>>(watchedTaskIds);
+  const [watchLoading, setWatchLoading] = React.useState<string | null>(null);
+
+  React.useEffect(() => { setLocalWatched(watchedTaskIds); }, [watchedTaskIds]);
+
+  async function handleToggleWatch(e: React.MouseEvent, taskId: string) {
+    e.stopPropagation();
+    if (!currentMemberId || watchLoading) return;
+    setWatchLoading(taskId);
+    const next = new Set(localWatched);
+    if (next.has(taskId)) next.delete(taskId); else next.add(taskId);
+    setLocalWatched(next);
+    const res = await toggleWatchTask(taskId, currentMemberId);
+    setWatchLoading(null);
+    if ("error" in res) {
+      toast.error("שגיאה בעדכון מעקב");
+      setLocalWatched(watchedTaskIds);
+      return;
+    }
+    router.refresh();
+  }
 
   const staleCutoff = getStaleCutoff();
   const allActive = tasks.filter((t) => !DONE_STATUSES.includes(t.status));
@@ -241,6 +266,29 @@ export function TaskTable({
             </button>
           </Hint>
         </td>
+        {/* Watch toggle */}
+        <td className="w-8 px-1 align-middle">
+          {currentMemberId && (
+            <Hint label={localWatched.has(t.id) ? "הסר מעקב" : "צפה במשימה"} side="bottom">
+              <button
+                type="button"
+                onClick={(e) => handleToggleWatch(e, t.id)}
+                disabled={watchLoading === t.id}
+                className={cn(
+                  "flex items-center justify-center rounded-lg p-1 transition-[color,background-color,opacity] duration-150 focus-visible:outline-none",
+                  localWatched.has(t.id)
+                    ? "text-primary opacity-100"
+                    : "text-ink-muted opacity-0 group-hover:opacity-60 hover:!opacity-100 hover:text-primary",
+                )}
+                aria-label={localWatched.has(t.id) ? "הסר מעקב" : "צפה במשימה"}
+              >
+                {watchLoading === t.id
+                  ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  : <Eye className="h-3.5 w-3.5" />}
+              </button>
+            </Hint>
+          )}
+        </td>
         {/* Task title + comment badge + tags */}
         <td className="max-w-xs px-4 py-2.5 align-middle">
           <div className="flex items-center gap-2">
@@ -302,7 +350,7 @@ export function TaskTable({
     );
   }
 
-  const COL_COUNT = 7;
+  const COL_COUNT = 8;
 
   return (
     <div className="flex flex-col gap-4">
@@ -321,6 +369,7 @@ export function TaskTable({
                 />
               </th>
               <th className="w-8 px-2 pe-0" />
+              <th className="w-8 px-1" />
               <th className="px-4 py-2.5 text-right font-medium">משימה</th>
               <th className="hidden px-4 py-2.5 text-right font-medium md:table-cell">לקוח</th>
               <th className="hidden px-4 py-2.5 text-right font-medium lg:table-cell">אחראי</th>
@@ -396,6 +445,7 @@ export function TaskTable({
                 <tr className="bg-surface text-caption text-ink-secondary">
                   <th className="w-8 px-2 pe-0" />
                   <th className="w-8 px-2 pe-0" />
+                  <th className="w-8 px-1" />
                   <th className="px-4 py-2.5 text-right font-medium">משימה</th>
                   <th className="hidden px-4 py-2.5 text-right font-medium md:table-cell">לקוח</th>
                   <th className="hidden px-4 py-2.5 text-right font-medium lg:table-cell">אחראי</th>

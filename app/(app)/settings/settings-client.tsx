@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Pencil, Plus, X, Check, Mail, Phone, MessageCircle, UserPlus } from "lucide-react";
+import { Pencil, Plus, X, Check, Mail, Phone, MessageCircle, UserPlus, ChevronDown, ChevronUp, AlertTriangle, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -348,6 +348,92 @@ export function TeamManager({ members }: { members: Member[] }) {
             הוסף משתמש
           </Button>
         </div>
+      )}
+    </div>
+  );
+}
+
+// ---- Email Log ----
+
+type EmailLogEntry = {
+  id: string;
+  recipients: string[];
+  subject: string;
+  email_type: string | null;
+  status: string;
+  error_message: string | null;
+  created_at: string;
+};
+
+const TYPE_LABELS: Record<string, string> = {
+  new_task: "משימה חדשה",
+  comment: "תגובה",
+  mention: "אזכור",
+  overdue: "איחור",
+  digest: "סיכום בוקר",
+};
+
+function formatDate(iso: string): string {
+  const d = new Date(iso);
+  const day = d.toLocaleDateString("he-IL", { day: "numeric", month: "short" });
+  const time = d.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
+  return `${day}, ${time}`;
+}
+
+export function EmailLog({ logs }: { logs: EmailLogEntry[] }) {
+  const [showAll, setShowAll] = React.useState(false);
+  const displayed = showAll ? logs : logs.slice(0, 10);
+
+  if (logs.length === 0) {
+    return (
+      <div className="px-4 py-8 text-center text-sm text-ink-muted">
+        אין מיילים שנשלחו עדיין
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="divide-y divide-border">
+        {displayed.map((log) => (
+          <div key={log.id} className="flex items-center gap-3 px-4 py-2.5">
+            <div className={cn(
+              "flex h-7 w-7 shrink-0 items-center justify-center rounded-full",
+              log.status === "sent" ? "bg-st-done-bg text-st-done-text" : "bg-overdue-bg text-overdue",
+            )}>
+              {log.status === "sent"
+                ? <CheckCircle className="h-3.5 w-3.5" />
+                : <AlertTriangle className="h-3.5 w-3.5" />}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <span className="truncate text-sm font-medium text-ink">{log.subject}</span>
+                {log.email_type && (
+                  <Badge variant="neutral">
+                    {TYPE_LABELS[log.email_type] ?? log.email_type}
+                  </Badge>
+                )}
+              </div>
+              <div className="mt-0.5 flex items-center gap-2 text-caption text-ink-secondary">
+                <span dir="ltr" className="truncate">{log.recipients.join(", ")}</span>
+              </div>
+              {log.error_message && (
+                <div className="mt-0.5 text-caption text-overdue">{log.error_message}</div>
+              )}
+            </div>
+            <span className="shrink-0 text-caption text-ink-muted">{formatDate(log.created_at)}</span>
+          </div>
+        ))}
+      </div>
+      {logs.length > 10 && (
+        <button
+          type="button"
+          onClick={() => setShowAll((v) => !v)}
+          className="flex w-full items-center justify-center gap-1.5 border-t border-border px-4 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-surface"
+        >
+          {showAll ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          {showAll ? "הצג פחות" : `הצג עוד ${logs.length - 10} מיילים`}
+        </button>
       )}
     </div>
   );

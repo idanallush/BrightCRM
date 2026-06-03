@@ -97,7 +97,7 @@ async function sendMorningDigests() {
     );
 
     try {
-      await sendEmail([member.email], subject, html);
+      await sendEmail([member.email], subject, html, { type: "digest" });
       sent++;
     } catch (err) {
       console.error(`[Digest] Email to ${member.email} failed:`, err);
