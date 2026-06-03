@@ -25,6 +25,7 @@ const STATUS_OPTIONS: { value: TaskInput["status"]; label: string }[] = [
 ];
 
 const NONE = "__none__";
+const GENERAL = "__general__";
 
 function getInitials(name: string): string {
   return name.split(/\s+/).map((w) => w[0]).join("").toUpperCase().slice(0, 2);
@@ -47,7 +48,14 @@ export function TaskForm({
   const [pending, setPending] = React.useState(false);
 
   const [title, setTitle] = React.useState(task?.title ?? "");
-  const [clientId, setClientId] = React.useState(task?.client_id ?? clients[0]?.id ?? "");
+  const [clientId, setClientId] = React.useState(task ? (task.client_id ?? GENERAL) : (clients[0]?.id ?? ""));
+
+  function handleClientChange(value: string) {
+    setClientId(value);
+    if (value === GENERAL) {
+      setAssigneeIds(team.map((m) => m.id));
+    }
+  }
   const [description, setDescription] = React.useState(task?.description ?? "");
   const [status, setStatus] = React.useState<TaskInput["status"]>(
     (task?.status as TaskInput["status"]) ?? "מחכה לטיפול",
@@ -98,8 +106,9 @@ export function TaskForm({
     if (!finalTitle) { toast.error("חסרה כותרת"); return; }
     if (!clientId) { toast.error("בחר לקוח"); return; }
     setPending(true);
+    const isGeneral = clientId === GENERAL;
     const payload: TaskInput = {
-      title: finalTitle, client_id: clientId, description: description.trim() || null,
+      title: finalTitle, client_id: isGeneral ? null : clientId, description: description.trim() || null,
       status, due_date: dueDate || null, assignee_ids: assigneeIds, watcher_ids: watcherIds, tag_ids: tagIds,
     };
     const res = task ? await updateTask(task.id, payload) : await createTask(payload);
@@ -127,11 +136,17 @@ export function TaskForm({
           <>
             <div className="flex flex-col gap-1">
               <span className="text-xs font-medium text-ink-secondary">לקוח</span>
-              <Select value={clientId} onValueChange={setClientId}>
+              <Select value={clientId} onValueChange={handleClientChange}>
                 <SelectTrigger className="h-9 text-sm">
                   <SelectValue placeholder="בחר לקוח" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value={GENERAL}>
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-accent/30 text-[9px] font-bold text-ink">כל</span>
+                      כללי (לכולם)
+                    </div>
+                  </SelectItem>
                   {clients.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       <div className="flex items-center gap-2">
@@ -194,9 +209,10 @@ export function TaskForm({
           <>
             <div className="flex flex-col gap-1.5">
               <Label>לקוח</Label>
-              <Select value={clientId} onValueChange={setClientId}>
+              <Select value={clientId} onValueChange={handleClientChange}>
                 <SelectTrigger><SelectValue placeholder="בחר לקוח" /></SelectTrigger>
                 <SelectContent>
+                  <SelectItem value={GENERAL}>כללי (לכולם)</SelectItem>
                   {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                 </SelectContent>
               </Select>

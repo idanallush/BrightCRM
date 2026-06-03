@@ -79,7 +79,7 @@ function KanbanCard({ task, onClick }: {
           ))}
         </div>
       )}
-      <div className="mt-1 text-body-sm text-ink-secondary">{task.client?.name ?? "\u2014"}</div>
+      <div className="mt-1 text-body-sm text-ink-secondary">{task.client?.name ?? "\u05db\u05dc\u05dc\u05d9"}</div>
       <div className="mt-2 flex items-center justify-between">
         <span className={`text-caption ${overdue ? "font-medium text-overdue" : "text-ink-muted"}`}>
           {overdue && <AlertTriangle className="mb-px me-1 inline h-3 w-3" />}

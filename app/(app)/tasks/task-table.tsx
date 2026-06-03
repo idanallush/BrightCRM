@@ -266,11 +266,11 @@ export function TaskTable({
           {t.description && (
             <div className="mt-0.5 max-w-xs truncate text-sm text-ink-secondary">{t.description}</div>
           )}
-          <div className="mt-0.5 text-sm text-ink-muted md:hidden">{t.client?.name ?? ""}</div>
+          <div className="mt-0.5 text-sm text-ink-muted md:hidden">{t.client?.name ?? "כללי"}</div>
         </td>
         {/* Client */}
         <td className="hidden px-4 py-2.5 align-middle text-ink-secondary md:table-cell">
-          {t.client?.name ?? ""}
+          {t.client?.name ?? "כללי"}
         </td>
         {/* Assignee */}
         <td className="hidden px-4 py-2.5 align-middle lg:table-cell">

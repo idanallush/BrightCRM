@@ -463,6 +463,7 @@ export function TasksClient({
               <SelectTrigger className="h-9 w-auto min-w-[120px]"><SelectValue placeholder="לקוח" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="__all__">כל הלקוחות</SelectItem>
+                <SelectItem value="__general__">כללי</SelectItem>
                 {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
               </SelectContent>
             </Select>
@@ -612,7 +613,7 @@ export function TasksClient({
                 className="flex w-full items-center gap-3 px-5 py-2.5 text-right transition-colors hover:bg-surface"
               >
                 <span className="min-w-0 flex-1 truncate text-sm font-medium text-ink">{wt.title}</span>
-                {wt.client_name && <span className="shrink-0 text-caption text-ink-muted">{wt.client_name}</span>}
+                <span className="shrink-0 text-caption text-ink-muted">{wt.client_name ?? "כללי"}</span>
                 <StatusCell status={wt.status} />
               </button>
             ))}

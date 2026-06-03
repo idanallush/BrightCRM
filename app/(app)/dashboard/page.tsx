@@ -238,7 +238,7 @@ export default async function DashboardPage() {
                             </span>
                           )}
                         </td>
-                        <td className="hidden px-4 py-3 text-ink-secondary sm:table-cell">{t.client_name ?? ""}</td>
+                        <td className="hidden px-4 py-3 text-ink-secondary sm:table-cell">{t.client_name ?? "כללי"}</td>
                         <td className="px-4 py-3 text-center"><StatusCell status={t.status} /></td>
                         <td className={`px-4 py-3 ${overdue ? "font-medium text-overdue" : "text-ink-secondary"}`}>{fmtDate(t.due_date)}</td>
                         <td className="px-2 py-3 text-center">

@@ -37,7 +37,7 @@ export default async function TasksPage({
   const effectiveAssigneeId = assigneeId === "__all__" ? undefined : (assigneeId ?? currentMemberId);
 
   const [tasks, clients, team, commentCounts, tags, watchedTasks] = await Promise.all([
-    getTasks({ status, clientId, assigneeId: effectiveAssigneeId, overdue }),
+    getTasks({ status, clientId: clientId ?? undefined, assigneeId: effectiveAssigneeId, overdue }),
     getClients(),
     getTeam(),
     getCommentCountsByTask(),

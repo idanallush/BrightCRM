@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 export type Task = {
   id: string;
   title: string;
-  client_id: string;
+  client_id: string | null;
   description: string | null;
   status: "מחכה לטיפול" | "נכנס לעבודה" | "בעבודה" | "אישור לקוח" | "בוצע";
   start_date: string;
@@ -99,7 +99,11 @@ export async function getTasks(filters?: {
     const statuses = filters.status.split(",");
     q = statuses.length > 1 ? q.in("status", statuses) : q.eq("status", filters.status);
   }
-  if (filters?.clientId) q = q.eq("client_id", filters.clientId);
+  if (filters?.clientId === "__general__") {
+    q = q.is("client_id", null);
+  } else if (filters?.clientId) {
+    q = q.eq("client_id", filters.clientId);
+  }
   if (filters?.overdue) {
     const today = new Date().toISOString().slice(0, 10);
     q = q.in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה"]).lt("due_date", today);

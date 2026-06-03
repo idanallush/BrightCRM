@@ -12,12 +12,11 @@ export type TaskStatus =
 
 export type TaskInput = {
   title: string;
-  client_id: string;
+  client_id: string | null;
   description: string | null;
   status: TaskStatus;
   due_date: string | null;
   assignee_ids: string[];
-  // Optional: callers like quick-add / WhatsApp don't set watchers; defaults to [].
   watcher_ids?: string[];
   tag_ids: string[];
 };
@@ -41,7 +40,7 @@ export async function createTask(input: TaskInput) {
     .from("tasks")
     .insert({
       title: input.title,
-      client_id: input.client_id,
+      client_id: input.client_id || null,
       description: input.description,
       status: input.status,
       due_date: input.due_date,
@@ -93,7 +92,7 @@ export async function updateTask(id: string, input: TaskInput) {
     .from("tasks")
     .update({
       title: input.title,
-      client_id: input.client_id,
+      client_id: input.client_id || null,
       description: input.description,
       status: input.status,
       due_date: input.due_date,
