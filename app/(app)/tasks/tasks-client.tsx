@@ -135,7 +135,7 @@ function TaskDetailPanel({
                 <span className="text-[11px] text-ink-muted">נפתח ע״י</span>
                 <span className="text-sm font-medium text-ink">{creator.full_name}</span>
               </div>
-              <UserChip member={creator as any} size="sm" />
+              <UserChip member={creator} size="sm" />
             </div>
           )}
           {firstAssignee && (
@@ -188,7 +188,7 @@ function TaskDetailPanel({
                   <div className="flex items-center gap-1.5">
                     <div className="flex -space-x-1.5 space-x-reverse">
                       {seenAfterUpdate.slice(0, 3).map((v) => (
-                        <UserChip key={v.member_id} member={{ full_name: v.full_name, avatar_url: v.avatar_url } as any} size="xs" />
+                        <UserChip key={v.member_id} member={{ full_name: v.full_name, avatar_url: v.avatar_url }} size="xs" />
                       ))}
                     </div>
                     {seenAfterUpdate.length > 3 && (

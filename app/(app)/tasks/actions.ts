@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { isBrightEmail } from "@/lib/utils";
 
+type DbRow = Record<string, unknown>;
+
 /** Verify the caller is an authenticated Bright domain member. Returns email or throws. */
 async function requireAuth() {
   const sb = createClient();
@@ -391,7 +393,7 @@ export async function getCommentAttachments(commentIds: string[]) {
   const attachments: Record<string, CommentAttachment[]> = {};
   const thumbs: Record<string, string> = {};
 
-  for (const row of (data ?? []) as any[]) {
+  for (const row of data ?? []) {
     const att: CommentAttachment = {
       id: row.id,
       comment_id: row.comment_id,
@@ -519,12 +521,15 @@ export async function getTaskViews(taskId: string): Promise<{ member_id: string;
     .from("task_views")
     .select("member_id, last_seen_at, member:team_members!task_views_member_id_fkey(full_name, avatar_url)")
     .eq("task_id", taskId);
-  return ((data ?? []) as any[]).map((r) => ({
-    member_id: r.member_id,
-    full_name: r.member?.full_name ?? "",
-    avatar_url: r.member?.avatar_url ?? null,
-    last_seen_at: r.last_seen_at,
-  }));
+  return ((data ?? []) as DbRow[]).map((r) => {
+    const member = r.member as { full_name?: string; avatar_url?: string | null } | null;
+    return {
+      member_id: r.member_id as string,
+      full_name: member?.full_name ?? "",
+      avatar_url: member?.avatar_url ?? null,
+      last_seen_at: r.last_seen_at as string,
+    };
+  });
 }
 
 export type TaskViewRecord = { task_id: string; member_id: string; full_name: string; avatar_url: string | null; last_seen_at: string };
@@ -537,16 +542,18 @@ export async function getTaskViewsBulk(taskIds: string[]): Promise<Record<string
     .select("task_id, member_id, last_seen_at, member:team_members!task_views_member_id_fkey(full_name, avatar_url)")
     .in("task_id", taskIds);
   const map: Record<string, TaskViewRecord[]> = {};
-  for (const r of (data ?? []) as any[]) {
+  for (const r of (data ?? []) as DbRow[]) {
+    const member = r.member as { full_name?: string; avatar_url?: string | null } | null;
     const rec: TaskViewRecord = {
-      task_id: r.task_id,
-      member_id: r.member_id,
-      full_name: r.member?.full_name ?? "",
-      avatar_url: r.member?.avatar_url ?? null,
-      last_seen_at: r.last_seen_at,
+      task_id: r.task_id as string,
+      member_id: r.member_id as string,
+      full_name: member?.full_name ?? "",
+      avatar_url: member?.avatar_url ?? null,
+      last_seen_at: r.last_seen_at as string,
     };
-    if (!map[r.task_id]) map[r.task_id] = [];
-    map[r.task_id].push(rec);
+    const tid = r.task_id as string;
+    if (!map[tid]) map[tid] = [];
+    map[tid].push(rec);
   }
   return map;
 }

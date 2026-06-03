@@ -24,10 +24,20 @@ export const dynamic = "force-dynamic";
 type LinkDef = { label: string; url: string; icon: React.ReactNode };
 
 export default async function ClientDetailPage({ params }: { params: { id: string } }) {
-  const [client, tasks, team, attachments] = await Promise.all([
-    getClient(params.id), getTasksByClient(params.id), getTeam(), getAttachmentsForClient(params.id),
-  ]);
+  let tasks: Awaited<ReturnType<typeof getTasksByClient>> = [];
+  let team: Awaited<ReturnType<typeof getTeam>> = [];
+  let attachments: Awaited<ReturnType<typeof getAttachmentsForClient>> = [];
+
+  const client = await getClient(params.id);
   if (!client) notFound();
+
+  try {
+    [tasks, team, attachments] = await Promise.all([
+      getTasksByClient(params.id), getTeam(), getAttachmentsForClient(params.id),
+    ]);
+  } catch (err) {
+    console.error("Client detail data fetch failed:", err);
+  }
 
   const thumbs: Record<string, string | null> = {};
   await Promise.all(

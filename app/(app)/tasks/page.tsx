@@ -36,13 +36,23 @@ export default async function TasksPage({
   // "__all__" means show everyone's tasks (used by email links and watched task clicks)
   const effectiveAssigneeId = assigneeId === "__all__" ? undefined : (assigneeId ?? currentMemberId);
 
-  const [tasks, clients, team, commentCounts, tags] = await Promise.all([
-    getTasks({ status, clientId: clientId ?? undefined, assigneeId: effectiveAssigneeId, overdue }),
-    getClients(),
-    getTeam(),
-    getCommentCountsByTask(),
-    getTags(),
-  ]);
+  let tasks: Awaited<ReturnType<typeof getTasks>> = [];
+  let clients: Awaited<ReturnType<typeof getClients>> = [];
+  let team: Awaited<ReturnType<typeof getTeam>> = [];
+  let commentCounts: Record<string, number> = {};
+  let tags: Awaited<ReturnType<typeof getTags>> = [];
+
+  try {
+    [tasks, clients, team, commentCounts, tags] = await Promise.all([
+      getTasks({ status, clientId: clientId ?? undefined, assigneeId: effectiveAssigneeId, overdue }),
+      getClients(),
+      getTeam(),
+      getCommentCountsByTask(),
+      getTags(),
+    ]);
+  } catch (err) {
+    console.error("Tasks data fetch failed:", err);
+  }
 
   return (
     <TasksClient

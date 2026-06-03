@@ -575,16 +575,19 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
       .eq("task_id", taskId)
       .order("created_at", { ascending: true });
     if (data) {
-      const mapped = (data as any[]).map((c) => ({
-        id: c.id,
-        content: c.content,
-        author_name: c.author?.full_name ?? null,
-        author_id: c.author?.id ?? null,
-        author_avatar_url: c.author?.avatar_url ?? null,
-        parent_id: c.parent_id ?? null,
-        created_at: c.created_at,
-        mentions: Array.isArray(c.mentions) ? c.mentions : [],
-      }));
+      const mapped = (data as Record<string, unknown>[]).map((c) => {
+        const author = c.author as { id?: string; full_name?: string; avatar_url?: string | null } | null;
+        return {
+          id: c.id as string,
+          content: c.content as string,
+          author_name: author?.full_name ?? null,
+          author_id: author?.id ?? null,
+          author_avatar_url: author?.avatar_url ?? null,
+          parent_id: (c.parent_id as string | null) ?? null,
+          created_at: c.created_at as string,
+          mentions: Array.isArray(c.mentions) ? c.mentions : [],
+        };
+      });
       setComments(mapped);
 
       // Fetch attachments for all comments

@@ -50,11 +50,15 @@ async function getMyActiveTasks(memberId: string): Promise<TaskRow[]> {
     .select("id,title,status,due_date,client:clients(name),assignees:task_assignees(member:team_members(id))")
     .in("status", ACTIVE_STATUSES)
     .order("due_date", { ascending: true, nullsFirst: false });
-  return ((data ?? []) as any[])
-    .filter((t: any) => (t.assignees ?? []).some((a: any) => a.member?.id === memberId))
-    .map((t: any) => ({
-      id: t.id, title: t.title, status: t.status, due_date: t.due_date,
-      client_name: t.client?.name ?? null,
+  type DbRow = Record<string, unknown>;
+  return ((data ?? []) as DbRow[])
+    .filter((t) => {
+      const assignees = (t.assignees ?? []) as { member?: { id?: string } | null }[];
+      return assignees.some((a) => a.member?.id === memberId);
+    })
+    .map((t) => ({
+      id: t.id as string, title: t.title as string, status: t.status as string, due_date: t.due_date as string | null,
+      client_name: (t.client as { name?: string } | null)?.name ?? null,
     }));
 }
 

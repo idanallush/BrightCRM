@@ -21,14 +21,17 @@ export async function GET(
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const comments = ((data ?? []) as any[]).map((c) => ({
-    id: c.id,
-    content: c.content,
-    mentions: c.mentions ?? [],
-    created_at: c.created_at,
-    author_id: c.author?.id ?? null,
-    author_name: c.author?.full_name ?? null,
-  }));
+  const comments = ((data ?? []) as Record<string, unknown>[]).map((c) => {
+    const author = c.author as { id?: string; full_name?: string } | null;
+    return {
+      id: c.id as string,
+      content: c.content as string,
+      mentions: (c.mentions ?? []) as string[],
+      created_at: c.created_at as string,
+      author_id: author?.id ?? null,
+      author_name: author?.full_name ?? null,
+    };
+  });
 
   return NextResponse.json(comments);
 }

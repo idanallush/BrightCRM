@@ -9,7 +9,7 @@ import {
 
 type NotifyMember = {
   id: string;
-  full_name?: string;
+  full_name: string;
   email?: string | null;
   notify_email?: boolean | null;
 };
@@ -54,7 +54,7 @@ export async function notifyNewTask(taskId: string) {
       .select("member:team_members!inner(id, full_name, email, notify_email)")
       .eq("task_id", taskId);
 
-    const assignees = ((assigneeRows ?? []) as any[]).map((r) => r.member);
+    const assignees = ((assigneeRows ?? []) as Record<string, unknown>[]).map((r) => r.member as NotifyMember);
     console.log("[Email] Assignees found:", assignees.length, JSON.stringify(assignees), "error:", assigneeErr?.message ?? "none");
 
     const { data: watcherRows } = await db
@@ -62,7 +62,7 @@ export async function notifyNewTask(taskId: string) {
       .select("member:team_members!inner(id, full_name, email, notify_email)")
       .eq("task_id", taskId);
 
-    const watchers = ((watcherRows ?? []) as any[]).map((r) => r.member);
+    const watchers = ((watcherRows ?? []) as Record<string, unknown>[]).map((r) => r.member as NotifyMember);
     console.log("[Email] Watchers found:", watchers.length);
 
     if (assignees.length === 0 && watchers.length === 0) {
@@ -106,8 +106,9 @@ export async function notifyNewTask(taskId: string) {
     console.log("[Email] Sending email to:", recipients, "subject:", subject);
     const result = await sendEmail(recipients, subject, html, { type: "new_task", referenceId: taskId });
     console.log("[Email] Resend result:", JSON.stringify(result));
-  } catch (err: any) {
-    console.error("[Email] Error in notifyNewTask:", err?.message, err?.stack);
+  } catch (err: unknown) {
+    const e = err as { message?: string; stack?: string };
+    console.error("[Email] Error in notifyNewTask:", e?.message, e?.stack);
   }
 }
 
@@ -143,14 +144,14 @@ export async function notifyNewComment(commentId: string) {
     .select("member:team_members!inner(id, full_name, email, notify_email)")
     .eq("task_id", comment.task_id);
 
-  const assignees = ((assigneeRows ?? []) as any[]).map((r) => r.member);
+  const assignees = ((assigneeRows ?? []) as Record<string, unknown>[]).map((r) => r.member as NotifyMember);
 
   const { data: watcherRows } = await db
     .from("task_watchers")
     .select("member:team_members!inner(id, full_name, email, notify_email)")
     .eq("task_id", comment.task_id);
 
-  const watchers = ((watcherRows ?? []) as any[]).map((r) => r.member);
+  const watchers = ((watcherRows ?? []) as Record<string, unknown>[]).map((r) => r.member as NotifyMember);
   const client = (task.clients as unknown as { name: string } | null) ?? { name: "כללי" };
 
   const mentionIds = new Set<string>(comment.mentions ?? []);
@@ -217,9 +218,14 @@ export async function notifyOverdueByEmail() {
 
   let sent = 0;
 
-  for (const row of rows) {
-    const client = (row.clients as unknown as { name: string } | null) ?? { name: "כללי" };
-    const assignees = (row.task_assignees as any[]).map((a) => a.member);
+  for (const row of rows as Record<string, unknown>[]) {
+    const rowId = row.id as string;
+    const rowTitle = row.title as string;
+    const rowDueDate = row.due_date as string | null;
+    const rowStatus = row.status as string;
+    const client = (row.clients as { name: string } | null) ?? { name: "כללי" };
+    const taskAssignees = (row.task_assignees ?? []) as { member?: { id: string; full_name: string; email?: string } | null }[];
+    const assignees = taskAssignees.map((a) => a.member).filter(Boolean) as { id: string; full_name: string; email?: string }[];
 
     for (const assignee of assignees) {
       if (!assignee.email) continue;
@@ -230,24 +236,24 @@ export async function notifyOverdueByEmail() {
         .select("id")
         .eq("type", "overdue")
         .eq("recipient_email", assignee.email)
-        .eq("reference_id", row.id)
+        .eq("reference_id", rowId)
         .gte("sent_at", `${today}T00:00:00Z`)
         .limit(1);
 
       if (existing && existing.length > 0) continue;
 
       const { subject, html } = overdueEmail(
-        { id: row.id, title: row.title, due_date: row.due_date, status: row.status },
+        { id: rowId, title: rowTitle, due_date: rowDueDate, status: rowStatus },
         client,
         assignees,
       );
 
       try {
-        await sendEmail([assignee.email], subject, html, { type: "overdue", referenceId: row.id });
+        await sendEmail([assignee.email], subject, html, { type: "overdue", referenceId: rowId });
         await db.from("notification_log").insert({
           type: "overdue",
           recipient_email: assignee.email,
-          reference_id: row.id,
+          reference_id: rowId,
         });
         sent++;
       } catch (err) {

@@ -9,6 +9,7 @@ import {
   getDashboardCounts, getDashboardTrends, getMyTasks,
   getRecentTasksDetailed, getClientsWithOpenTaskCounts, getCriticalClients,
   getCommentCountsByTask,
+  type DashboardCounts,
 } from "@/lib/data";
 import { createClient } from "@/lib/supabase/server";
 import { MarkDoneButton } from "@/components/dashboard/mark-done-button";
@@ -86,15 +87,30 @@ export default async function DashboardPage() {
     currentMemberId = memberRow?.id ?? undefined;
   }
 
-  const [counts, trends, myTasks, recent, clientsOpen, criticalClients, commentCounts] = await Promise.all([
-    getDashboardCounts(currentMemberId),
-    getDashboardTrends(),
-    getMyTasks(userEmail),
-    getRecentTasksDetailed(5),
-    getClientsWithOpenTaskCounts(),
-    getCriticalClients(),
-    getCommentCountsByTask(),
-  ]);
+  let counts: DashboardCounts = { incoming: 0, working: 0, awaitingApproval: 0, overdueTasks: 0, watching: 0 };
+  let trends: Awaited<ReturnType<typeof getDashboardTrends>> = {
+    waiting: { delta: 0, period: "day" }, working: { delta: 0, period: "day" },
+    approval: { delta: 0, period: "day" }, overdue: { delta: 0, period: "day" },
+  };
+  let myTasks: Awaited<ReturnType<typeof getMyTasks>> = [];
+  let recent: Awaited<ReturnType<typeof getRecentTasksDetailed>> = [];
+  let clientsOpen: Awaited<ReturnType<typeof getClientsWithOpenTaskCounts>> = [];
+  let criticalClients: Awaited<ReturnType<typeof getCriticalClients>> = [];
+  let commentCounts: Record<string, number> = {};
+
+  try {
+    [counts, trends, myTasks, recent, clientsOpen, criticalClients, commentCounts] = await Promise.all([
+      getDashboardCounts(currentMemberId),
+      getDashboardTrends(),
+      getMyTasks(userEmail),
+      getRecentTasksDetailed(5),
+      getClientsWithOpenTaskCounts(),
+      getCriticalClients(),
+      getCommentCountsByTask(),
+    ]);
+  } catch (err) {
+    console.error("Dashboard data fetch failed:", err);
+  }
 
   const statValues: Record<string, number> = {
     waiting: counts.incoming,

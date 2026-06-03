@@ -1,5 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 
+// Helper: Supabase's select parser infers join relations as arrays without
+// Database-typed generics. This cast treats each row as a generic record so
+// the explicit .map() transformations below can access properties freely.
+type DbRow = Record<string, unknown>;
+function asRows(data: unknown): DbRow[] {
+  return (data ?? []) as DbRow[];
+}
+
 export type Task = {
   id: string;
   title: string;
@@ -112,14 +120,29 @@ export async function getTasks(filters?: {
   const { data, error } = await q;
   if (error) throw error;
 
-  const rows = (data ?? []).map((row: any) => ({
-    ...row,
-    client: row.client ?? null,
-    assignees: (row.assignees ?? []).map((a: any) => a.member).filter(Boolean),
-    watchers: (row.watchers ?? []).map((w: any) => w.member).filter(Boolean),
-    creator: row.creator ?? null,
-    tags: (row.task_tags ?? []).map((tt: any) => tt.tag).filter(Boolean),
-  })) as TaskWithRelations[];
+  const rows = asRows(data).map((row) => {
+    const assigneeList = (row.assignees ?? []) as { member?: { id: string; full_name: string; avatar_url?: string | null } | null }[];
+    const watcherList = (row.watchers ?? []) as { member?: { id: string; full_name: string; avatar_url?: string | null } | null }[];
+    const tagList = (row.task_tags ?? []) as { tag?: { id: string; name: string; color: string; created_at: string } | null }[];
+    return {
+      id: row.id as string,
+      title: row.title as string,
+      client_id: row.client_id as string | null,
+      description: row.description as string | null,
+      status: row.status as string,
+      start_date: row.start_date as string | null,
+      due_date: row.due_date as string | null,
+      created_by_id: row.created_by_id as string | null,
+      source: row.source as string | null,
+      created_at: row.created_at as string,
+      updated_at: row.updated_at as string,
+      client: (row.client as { id: string; name: string } | null) ?? null,
+      assignees: assigneeList.map((a) => a.member).filter(Boolean) as { id: string; full_name: string; avatar_url?: string | null }[],
+      watchers: watcherList.map((w) => w.member).filter(Boolean) as { id: string; full_name: string; avatar_url?: string | null }[],
+      creator: (row.creator as { id: string; full_name: string; avatar_url?: string | null } | null) ?? null,
+      tags: tagList.map((tt) => tt.tag).filter(Boolean) as Tag[],
+    };
+  }) as TaskWithRelations[];
 
   if (filters?.assigneeId) {
     return rows.filter((t) =>
@@ -162,19 +185,23 @@ export async function getClientsWithManager(): Promise<
     )
     .order("name");
   if (error) throw error;
-  return ((data ?? []) as any[]).map((c) => ({
-    ...(c as Client),
-    manager_name: (c.manager?.full_name as string | undefined) ?? null,
+  return asRows(data).map((c) => ({
+    ...(c as unknown as Client),
+    manager_name: (c.manager as { full_name?: string } | null)?.full_name ?? null,
   }));
 }
 
 export async function getCampaignsByClient(clientId: string) {
   const sb = createClient();
-  const { data } = await sb
+  const { data, error } = await sb
     .from("campaigns")
     .select("id,name,platform,status,start_date,spent,external_campaign_id,created_at")
     .eq("client_id", clientId)
     .order("created_at", { ascending: false });
+  if (error) {
+    console.error('[getCampaignsByClient] failed:', error);
+    throw error;
+  }
   return (data ?? []) as Omit<Campaign, "client_id">[];
 }
 
@@ -197,8 +224,12 @@ async function getAttachments(scope: { clientId?: string; taskId?: string }) {
   if (scope.clientId) q = q.eq("client_id", scope.clientId);
   if (scope.taskId) q = q.eq("task_id", scope.taskId);
 
-  const { data } = await q;
-  return ((data ?? []) as any[]).map((a) => ({
+  const { data, error } = await q;
+  if (error) {
+    console.error('[getAttachments] failed:', error);
+    throw error;
+  }
+  return asRows(data).map((a) => ({
     id: a.id as string,
     file_name: a.file_name as string,
     file_size: (a.file_size as number | null) ?? null,
@@ -207,17 +238,21 @@ async function getAttachments(scope: { clientId?: string; taskId?: string }) {
     client_id: (a.client_id as string | null) ?? null,
     task_id: (a.task_id as string | null) ?? null,
     uploaded_by: (a.uploaded_by as string | null) ?? null,
-    uploader_name: (a.uploader?.full_name as string | undefined) ?? null,
+    uploader_name: (a.uploader as { full_name?: string } | null)?.full_name ?? null,
     created_at: a.created_at as string,
   }));
 }
 
 export async function getOpenTaskCountsByClient(): Promise<Record<string, number>> {
   const sb = createClient();
-  const { data } = await sb
+  const { data, error } = await sb
     .from("tasks")
     .select("client_id")
     .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח"]);
+  if (error) {
+    console.error('[getOpenTaskCountsByClient] failed:', error);
+    throw error;
+  }
   const map: Record<string, number> = {};
   for (const row of (data ?? []) as { client_id: string }[]) {
     map[row.client_id] = (map[row.client_id] ?? 0) + 1;
@@ -254,31 +289,47 @@ export async function searchAll(query: string): Promise<SearchResults> {
       .ilike("name", like)
       .limit(5),
   ]);
+  if (tasksRes.error) {
+    console.error('[searchAll] tasks query failed:', tasksRes.error);
+    throw tasksRes.error;
+  }
+  if (clientsRes.error) {
+    console.error('[searchAll] clients query failed:', clientsRes.error);
+    throw clientsRes.error;
+  }
+  if (campaignsRes.error) {
+    console.error('[searchAll] campaigns query failed:', campaignsRes.error);
+    throw campaignsRes.error;
+  }
   return {
-    tasks: ((tasksRes.data ?? []) as any[]).map((t) => ({
+    tasks: asRows(tasksRes.data).map((t) => ({
       id: t.id as string,
       title: t.title as string,
-      client_name: (t.client?.name as string | undefined) ?? null,
+      client_name: (t.client as { name?: string } | null)?.name ?? null,
     })),
-    clients: ((clientsRes.data ?? []) as any[]).map((c) => ({
+    clients: asRows(clientsRes.data).map((c) => ({
       id: c.id as string,
       name: c.name as string,
     })),
-    campaigns: ((campaignsRes.data ?? []) as any[]).map((c) => ({
+    campaigns: asRows(campaignsRes.data).map((c) => ({
       id: c.id as string,
       name: c.name as string,
-      client_name: (c.client?.name as string | undefined) ?? null,
+      client_name: (c.client as { name?: string } | null)?.name ?? null,
     })),
   };
 }
 
 export async function getTasksByClient(clientId: string) {
   const sb = createClient();
-  const { data } = await sb
+  const { data, error } = await sb
     .from("tasks")
     .select("id,title,status,due_date")
     .eq("client_id", clientId)
     .order("due_date", { ascending: true, nullsFirst: false });
+  if (error) {
+    console.error('[getTasksByClient] failed:', error);
+    throw error;
+  }
   return (data ?? []) as {
     id: string;
     title: string;
@@ -316,10 +367,14 @@ export async function getDashboardCounts(memberId?: string): Promise<DashboardCo
   // When scoped to a member, first resolve the task ids assigned to them.
   let taskIds: string[] | null = null;
   if (memberId) {
-    const { data: assigneeRows } = await sb
+    const { data: assigneeRows, error: assigneeError } = await sb
       .from("task_assignees")
       .select("task_id")
       .eq("member_id", memberId);
+    if (assigneeError) {
+      console.error('[getDashboardCounts] assignee query failed:', assigneeError);
+      throw assigneeError;
+    }
     taskIds = (assigneeRows ?? []).map((r: { task_id: string }) => r.task_id);
     // Member has no assigned tasks — return zeros (but keep watching count).
     if (taskIds.length === 0) {
@@ -341,6 +396,10 @@ export async function getDashboardCounts(memberId?: string): Promise<DashboardCo
       .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח"])
       .lt("due_date", today),
   ]);
+  if (incoming.error) { console.error('[getDashboardCounts] incoming query failed:', incoming.error); throw incoming.error; }
+  if (working.error) { console.error('[getDashboardCounts] working query failed:', working.error); throw working.error; }
+  if (approval.error) { console.error('[getDashboardCounts] approval query failed:', approval.error); throw approval.error; }
+  if (overdue.error) { console.error('[getDashboardCounts] overdue query failed:', overdue.error); throw overdue.error; }
 
   return {
     incoming: incoming.count ?? 0,
@@ -354,17 +413,25 @@ export async function getDashboardCounts(memberId?: string): Promise<DashboardCo
 // Count of open tasks the member watches (excludes done).
 export async function getWatchingCount(memberId: string): Promise<number> {
   const sb = createClient();
-  const { data: watchRows } = await sb
+  const { data: watchRows, error: watchError } = await sb
     .from("task_watchers")
     .select("task_id")
     .eq("member_id", memberId);
+  if (watchError) {
+    console.error('[getWatchingCount] watchers query failed:', watchError);
+    throw watchError;
+  }
   const taskIds = (watchRows ?? []).map((r: { task_id: string }) => r.task_id);
   if (taskIds.length === 0) return 0;
-  const { count } = await sb
+  const { count, error: countError } = await sb
     .from("tasks")
     .select("*", { count: "exact", head: true })
     .in("id", taskIds)
     .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח"]);
+  if (countError) {
+    console.error('[getWatchingCount] count query failed:', countError);
+    throw countError;
+  }
   return count ?? 0;
 }
 
@@ -372,26 +439,34 @@ export async function getWatchingCount(memberId: string): Promise<number> {
 export async function getWatchedTasks(memberId: string) {
   const sb = createClient();
 
-  const { data: watchRows } = await sb
+  const { data: watchRows, error: watchError } = await sb
     .from("task_watchers")
     .select("task_id")
     .eq("member_id", memberId);
+  if (watchError) {
+    console.error('[getWatchedTasks] watchers query failed:', watchError);
+    throw watchError;
+  }
   const taskIds = (watchRows ?? []).map((r: { task_id: string }) => r.task_id);
   if (taskIds.length === 0) return [];
 
-  const { data } = await sb
+  const { data, error } = await sb
     .from("tasks")
     .select("id,title,status,due_date,client:clients(name)")
     .in("id", taskIds)
     .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח"])
     .order("due_date", { ascending: true, nullsFirst: false });
+  if (error) {
+    console.error('[getWatchedTasks] tasks query failed:', error);
+    throw error;
+  }
 
-  return ((data ?? []) as any[]).map((t) => ({
+  return asRows(data).map((t) => ({
     id: t.id as string,
     title: t.title as string,
     status: t.status as string,
     due_date: t.due_date as string | null,
-    client_name: (t.client?.name as string | undefined) ?? null,
+    client_name: (t.client as { name?: string } | null)?.name ?? null,
   }));
 }
 
@@ -420,6 +495,14 @@ export async function getDashboardTrends(): Promise<{
     sb.from("tasks").select("*", { count: "exact", head: true }).in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה"]).lt("due_date", now.toISOString().slice(0, 10)),
     sb.from("tasks").select("*", { count: "exact", head: true }).in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה"]).lt("due_date", now.toISOString().slice(0, 10)).lt("updated_at", startOfWeek),
   ]);
+  if (waitNew.error) { console.error('[getDashboardTrends] waitNew query failed:', waitNew.error); throw waitNew.error; }
+  if (waitOld.error) { console.error('[getDashboardTrends] waitOld query failed:', waitOld.error); throw waitOld.error; }
+  if (workNew.error) { console.error('[getDashboardTrends] workNew query failed:', workNew.error); throw workNew.error; }
+  if (workOld.error) { console.error('[getDashboardTrends] workOld query failed:', workOld.error); throw workOld.error; }
+  if (apprNew.error) { console.error('[getDashboardTrends] apprNew query failed:', apprNew.error); throw apprNew.error; }
+  if (apprOld.error) { console.error('[getDashboardTrends] apprOld query failed:', apprOld.error); throw apprOld.error; }
+  if (overdueNew.error) { console.error('[getDashboardTrends] overdueNew query failed:', overdueNew.error); throw overdueNew.error; }
+  if (overdueOld.error) { console.error('[getDashboardTrends] overdueOld query failed:', overdueOld.error); throw overdueOld.error; }
 
   return {
     waiting: { delta: (waitNew.count ?? 0) - (waitOld.count ?? 0), period: "day" },
@@ -435,10 +518,14 @@ export type SourceCounts = { whatsapp: number; web: number; import: number; tota
 export async function getWeeklySourceCounts(): Promise<SourceCounts> {
   const sb = createClient();
   const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
-  const { data } = await sb
+  const { data, error } = await sb
     .from("tasks")
     .select("source")
     .gte("created_at", weekAgo);
+  if (error) {
+    console.error('[getWeeklySourceCounts] failed:', error);
+    throw error;
+  }
   const counts: SourceCounts = { whatsapp: 0, web: 0, import: 0, total: 0 };
   for (const row of (data ?? []) as { source: string }[]) {
     if (row.source === "whatsapp") counts.whatsapp++;
@@ -451,41 +538,54 @@ export async function getWeeklySourceCounts(): Promise<SourceCounts> {
 
 export async function getRecentTasks(limit = 5) {
   const sb = createClient();
-  const { data } = await sb
+  const { data, error } = await sb
     .from("tasks")
     .select("id,title,status,due_date,client:clients(name)")
     .order("created_at", { ascending: false })
     .limit(limit);
-  return ((data ?? []) as any[]).map((r) => ({
+  if (error) {
+    console.error('[getRecentTasks] failed:', error);
+    throw error;
+  }
+  return asRows(data).map((r) => ({
     id: r.id as string,
     title: r.title as string,
     status: r.status as string,
     due_date: r.due_date as string | null,
-    client: (r.client ?? null) as { name: string } | null,
+    client: (r.client as { name?: string } | null) ?? null,
   }));
 }
 
 export async function getRecentTasksDetailed(limit = 5) {
   const sb = createClient();
-  const { data } = await sb
+  const { data, error } = await sb
     .from("tasks")
     .select(
       "id,title,status,due_date,source,created_at,client:clients(name),assignees:task_assignees(member:team_members(full_name)),creator:team_members!tasks_created_by_id_fkey(full_name)",
     )
     .order("created_at", { ascending: false })
     .limit(limit);
-  return ((data ?? []) as any[]).map((r) => ({
-    id: r.id as string,
-    title: r.title as string,
-    status: r.status as string,
-    due_date: r.due_date as string | null,
-    source: r.source as string,
-    created_at: r.created_at as string,
-    client_name: (r.client?.name as string | undefined) ?? null,
-    created_by:
-      (r.creator?.full_name as string | undefined) ??
-      (r.assignees?.[0]?.member?.full_name as string | undefined) ?? null,
-  }));
+  if (error) {
+    console.error('[getRecentTasksDetailed] failed:', error);
+    throw error;
+  }
+  return asRows(data).map((r) => {
+    const client = r.client as { name?: string } | null;
+    const creator = r.creator as { full_name?: string } | null;
+    const assigneeList = (r.assignees ?? []) as { member?: { full_name?: string } | null }[];
+    return {
+      id: r.id as string,
+      title: r.title as string,
+      status: r.status as string,
+      due_date: r.due_date as string | null,
+      source: r.source as string,
+      created_at: r.created_at as string,
+      client_name: client?.name ?? null,
+      created_by:
+        creator?.full_name ??
+        assigneeList[0]?.member?.full_name ?? null,
+    };
+  });
 }
 
 export type ActivityItem =
@@ -529,28 +629,43 @@ export async function getRecentActivity(limit = 50): Promise<ActivityItem[]> {
       .order("created_at", { ascending: false })
       .limit(limit),
   ]);
+  if (tasksRes.error) {
+    console.error('[getRecentActivity] tasks query failed:', tasksRes.error);
+    throw tasksRes.error;
+  }
+  if (commentsRes.error) {
+    console.error('[getRecentActivity] comments query failed:', commentsRes.error);
+    throw commentsRes.error;
+  }
 
-  const taskItems: ActivityItem[] = ((tasksRes.data ?? []) as any[]).map((r) => ({
-    type: "task_created" as const,
-    id: `task-${r.id}`,
-    task_id: r.id as string,
-    task_title: r.title as string,
-    source: r.source as string,
-    created_at: r.created_at as string,
-    user_name: (r.creator?.full_name as string | undefined) ?? null,
-    user_avatar_url: (r.creator?.avatar_url as string | undefined) ?? null,
-  }));
+  const taskItems: ActivityItem[] = asRows(tasksRes.data).map((r) => {
+    const creator = r.creator as { full_name?: string; avatar_url?: string | null } | null;
+    return {
+      type: "task_created" as const,
+      id: `task-${r.id}`,
+      task_id: r.id as string,
+      task_title: r.title as string,
+      source: r.source as string,
+      created_at: r.created_at as string,
+      user_name: creator?.full_name ?? null,
+      user_avatar_url: creator?.avatar_url ?? null,
+    };
+  });
 
-  const commentItems: ActivityItem[] = ((commentsRes.data ?? []) as any[]).map((r) => ({
-    type: "comment" as const,
-    id: `comment-${r.id}`,
-    task_id: (r.task?.id as string | undefined) ?? r.task_id,
-    task_title: (r.task?.title as string | undefined) ?? "משימה",
-    content: r.content as string,
-    created_at: r.created_at as string,
-    user_name: (r.author?.full_name as string | undefined) ?? null,
-    user_avatar_url: (r.author?.avatar_url as string | undefined) ?? null,
-  }));
+  const commentItems: ActivityItem[] = asRows(commentsRes.data).map((r) => {
+    const author = r.author as { full_name?: string; avatar_url?: string | null } | null;
+    const task = r.task as { id?: string; title?: string } | null;
+    return {
+      type: "comment" as const,
+      id: `comment-${r.id}`,
+      task_id: task?.id ?? (r.task_id as string),
+      task_title: task?.title ?? "משימה",
+      content: r.content as string,
+      created_at: r.created_at as string,
+      user_name: author?.full_name ?? null,
+      user_avatar_url: author?.avatar_url ?? null,
+    };
+  });
 
   return [...taskItems, ...commentItems]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
@@ -561,60 +676,80 @@ export async function getMyTasks(userEmail: string) {
   const sb = createClient();
 
   // Find team member by email
-  const { data: member } = await sb
+  const { data: member, error: memberError } = await sb
     .from("team_members")
     .select("id")
     .eq("email", userEmail)
     .maybeSingle();
+  if (memberError) {
+    console.error('[getMyTasks] member query failed:', memberError);
+    throw memberError;
+  }
 
   if (!member) return [];
 
-  const { data } = await sb
+  const { data, error } = await sb
     .from("tasks")
     .select(
       "id,title,status,due_date,client:clients(name),assignees:task_assignees(member:team_members(id))",
     )
     .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח"])
     .order("due_date", { ascending: true, nullsFirst: false });
+  if (error) {
+    console.error('[getMyTasks] tasks query failed:', error);
+    throw error;
+  }
 
   // Filter to only tasks assigned to this member
-  return ((data ?? []) as any[])
-    .filter((t: any) =>
-      (t.assignees ?? []).some((a: any) => a.member?.id === member.id),
-    )
-    .map((t: any) => ({
+  return asRows(data)
+    .filter((t) => {
+      const assignees = (t.assignees ?? []) as { member?: { id?: string } | null }[];
+      return assignees.some((a) => a.member?.id === member.id);
+    })
+    .map((t) => ({
       id: t.id as string,
       title: t.title as string,
       status: t.status as string,
       due_date: t.due_date as string | null,
-      client_name: (t.client?.name as string | undefined) ?? null,
+      client_name: (t.client as { name?: string } | null)?.name ?? null,
     }));
 }
 
 export async function getTaskComments(taskId: string) {
   const sb = createClient();
-  const { data } = await sb
+  const { data, error } = await sb
     .from("task_comments")
     .select("id,content,mentions,created_at,author:team_members!task_comments_author_id_fkey(id,full_name,avatar_url)")
     .eq("task_id", taskId)
     .order("created_at", { ascending: true });
-  return ((data ?? []) as any[]).map((c) => ({
-    id: c.id as string,
-    content: c.content as string,
-    mentions: (c.mentions ?? []) as string[],
-    created_at: c.created_at as string,
-    author_id: (c.author?.id as string | undefined) ?? null,
-    author_name: (c.author?.full_name as string | undefined) ?? null,
-    author_avatar_url: (c.author?.avatar_url as string | undefined) ?? null,
-  }));
+  if (error) {
+    console.error('[getTaskComments] failed:', error);
+    throw error;
+  }
+  return asRows(data).map((c) => {
+    const author = c.author as { id?: string; full_name?: string; avatar_url?: string | null } | null;
+    return {
+      id: c.id as string,
+      content: c.content as string,
+      mentions: (c.mentions ?? []) as string[],
+      created_at: c.created_at as string,
+      author_id: author?.id ?? null,
+      author_name: author?.full_name ?? null,
+      author_avatar_url: author?.avatar_url ?? null,
+    };
+  });
 }
 
 // TODO: pulls all rows into memory — replace with Supabase RPC using GROUP BY when scale requires it
 export async function getCommentCountsByTask(): Promise<Record<string, number>> {
   const sb = createClient();
-  const { data } = await sb
+  const { data, error } = await sb
     .from("task_comments")
     .select("task_id");
+  if (error) {
+    console.error('[getCommentCountsByTask] failed:', error);
+    throw error;
+  }
   const map: Record<string, number> = {};
   for (const row of (data ?? []) as { task_id: string }[]) {
     map[row.task_id] = (map[row.task_id] ?? 0) + 1;
@@ -632,16 +767,24 @@ export async function getClientsWithOpenTaskCounts(): Promise<
       "מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח",
     ]),
   ]);
+  if (clientsRes.error) {
+    console.error('[getClientsWithOpenTaskCounts] clients query failed:', clientsRes.error);
+    throw clientsRes.error;
+  }
+  if (tasksRes.error) {
+    console.error('[getClientsWithOpenTaskCounts] tasks query failed:', tasksRes.error);
+    throw tasksRes.error;
+  }
   const counts: Record<string, number> = {};
   for (const row of (tasksRes.data ?? []) as { client_id: string }[]) {
     counts[row.client_id] = (counts[row.client_id] ?? 0) + 1;
   }
-  return ((clientsRes.data ?? []) as any[])
+  return (clientsRes.data ?? [])
     .map((c) => ({
-      id: c.id as string,
-      name: c.name as string,
-      health: (c.health as string | null) ?? null,
-      logo_url: (c.logo_url as string | null) ?? null,
+      id: c.id,
+      name: c.name,
+      health: c.health ?? null,
+      logo_url: c.logo_url ?? null,
       open_count: counts[c.id] ?? 0,
     }))
     .filter((c) => c.open_count > 0)
@@ -660,15 +803,19 @@ export async function getTags(): Promise<Tag[]> {
 
 export async function getCriticalClients() {
   const sb = createClient();
-  const { data } = await sb
+  const { data, error } = await sb
     .from("clients")
     .select("id,name,health,manager:team_members!clients_account_manager_id_fkey(full_name)")
     .eq("health", "קריטי")
     .order("name");
-  return ((data ?? []) as any[]).map((r) => ({
+  if (error) {
+    console.error('[getCriticalClients] failed:', error);
+    throw error;
+  }
+  return asRows(data).map((r) => ({
     id: r.id as string,
     name: r.name as string,
     health: r.health as string,
-    manager: (r.manager ?? null) as { full_name: string } | null,
+    manager: (r.manager as { full_name: string } | null) ?? null,
   }));
 }

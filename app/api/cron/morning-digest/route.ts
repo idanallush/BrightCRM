@@ -58,11 +58,12 @@ async function sendMorningDigests() {
       )
       .eq("member_id", member.id);
 
-    const tasks = ((assignedRows ?? []) as any[])
-      .map((r) => r.task)
+    type TaskJoin = { id: string; title: string; due_date: string | null; status: string; client: { name?: string } | null; assignees: { member: { full_name?: string } | null }[] };
+    const tasks = ((assignedRows ?? []) as Record<string, unknown>[])
+      .map((r) => r.task as TaskJoin | null)
       .filter(
-        (t: any) =>
-          t &&
+        (t): t is TaskJoin =>
+          t !== null &&
           ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח"].includes(
             t.status,
           ),
@@ -70,14 +71,14 @@ async function sendMorningDigests() {
 
     if (tasks.length === 0) continue;
 
-    const toDigestTask = (t: any) => ({
-      id: t.id as string,
-      title: t.title as string,
-      client_name: (t.client?.name as string) ?? "כללי",
-      due_date: t.due_date as string | null,
-      status: t.status as string,
-      assignee_names: ((t.assignees ?? []) as any[])
-        .map((a: any) => a.member?.full_name)
+    const toDigestTask = (t: TaskJoin) => ({
+      id: t.id,
+      title: t.title,
+      client_name: t.client?.name ?? "כללי",
+      due_date: t.due_date,
+      status: t.status,
+      assignee_names: (t.assignees ?? [])
+        .map((a) => a.member?.full_name)
         .filter(Boolean)
         .join(", "),
     });

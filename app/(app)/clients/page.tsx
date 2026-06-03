@@ -19,11 +19,19 @@ export default async function ClientsPage() {
     .eq("email", user?.email ?? "")
     .maybeSingle();
 
-  const [clients, team, openTaskCounts] = await Promise.all([
-    getClientsWithManager(),
-    getTeam(),
-    getOpenTaskCountsByClient(),
-  ]);
+  let clients: Awaited<ReturnType<typeof getClientsWithManager>> = [];
+  let team: Awaited<ReturnType<typeof getTeam>> = [];
+  let openTaskCounts: Record<string, number> = {};
+
+  try {
+    [clients, team, openTaskCounts] = await Promise.all([
+      getClientsWithManager(),
+      getTeam(),
+      getOpenTaskCountsByClient(),
+    ]);
+  } catch (err) {
+    console.error("Clients data fetch failed:", err);
+  }
 
   return (
     <ClientsClient

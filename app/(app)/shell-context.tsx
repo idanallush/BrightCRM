@@ -7,9 +7,12 @@ const MobileMenuContext = React.createContext({
   setMobileOpen: (_: boolean) => {},
 });
 
-const SidebarContext = React.createContext({
+const SidebarContext = React.createContext<{
+  collapsed: boolean;
+  setCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
+}>({
   collapsed: false,
-  setCollapsed: (_: boolean | ((v: boolean) => boolean)) => {},
+  setCollapsed: () => {},
 });
 
 export function ShellProvider({ children }: { children: React.ReactNode }) {
@@ -17,7 +20,7 @@ export function ShellProvider({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = React.useState(false);
   return (
     <MobileMenuContext.Provider value={{ mobileOpen, setMobileOpen }}>
-      <SidebarContext.Provider value={{ collapsed, setCollapsed: setCollapsed as any }}>
+      <SidebarContext.Provider value={{ collapsed, setCollapsed }}>
         {children}
       </SidebarContext.Provider>
     </MobileMenuContext.Provider>

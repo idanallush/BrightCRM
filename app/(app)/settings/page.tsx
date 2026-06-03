@@ -128,7 +128,16 @@ export default async function SettingsPage() {
           <Users className="h-4 w-4 text-ink-secondary" />
           <h2 className="text-base font-bold text-ink">ניהול צוות</h2>
         </div>
-        <TeamManager members={(allMembers ?? []) as any} />
+        <TeamManager members={(allMembers ?? []).map((m) => ({
+          id: m.id,
+          full_name: m.full_name,
+          role: m.role,
+          email: m.email,
+          whatsapp_phone: m.whatsapp_phone,
+          active: m.active,
+          notify_email: m.notify_email ?? null,
+          notify_whatsapp: m.notify_whatsapp ?? null,
+        }))} />
       </div>
       </StaggerItem>
 
@@ -142,7 +151,15 @@ export default async function SettingsPage() {
             {(emailLogs ?? []).length}
           </span>
         </div>
-        <EmailLog logs={(emailLogs ?? []) as any} />
+        <EmailLog logs={(emailLogs ?? []).map((l) => ({
+          id: l.id,
+          recipients: l.recipients as string[],
+          subject: l.subject,
+          email_type: l.email_type,
+          status: l.status,
+          error_message: l.error_message,
+          created_at: l.created_at,
+        }))} />
       </div>
       </StaggerItem>
     </StaggerContainer>
