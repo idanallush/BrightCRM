@@ -12,12 +12,11 @@ import { toast } from "@/components/ui/toaster";
 import { useRouter } from "next/navigation";
 import type { TaskWithRelations } from "@/lib/data";
 
-const ALL_STATUSES = ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח", "בוצע"] as const;
+const ALL_STATUSES = ["מחכה לטיפול", "נכנס לעבודה", "אישור לקוח", "בוצע"] as const;
 
 const STATUS_LABELS: Record<string, string> = {
   "מחכה לטיפול": "ממתין",
   "נכנס לעבודה": "נכנס לעבודה",
-  "בעבודה": "בעבודה",
   "אישור לקוח": "אישור לקוח",
   "בוצע": "בוצע",
 };
@@ -25,7 +24,6 @@ const STATUS_LABELS: Record<string, string> = {
 const STATUS_BG: Record<string, string> = {
   "מחכה לטיפול": "bg-st-waiting-bg",
   "נכנס לעבודה": "bg-st-incoming-bg",
-  "בעבודה":      "bg-st-working-bg",
   "אישור לקוח":  "bg-st-approval-bg",
   "בוצע":        "bg-st-done-bg",
 };
@@ -33,7 +31,6 @@ const STATUS_BG: Record<string, string> = {
 const STATUS_TEXT: Record<string, string> = {
   "מחכה לטיפול": "text-st-waiting-text",
   "נכנס לעבודה": "text-st-incoming-text",
-  "בעבודה":      "text-st-working-text",
   "אישור לקוח":  "text-st-approval-text",
   "בוצע":        "text-st-done-text",
 };
@@ -134,14 +131,12 @@ const DONE_STATUSES = ["בוצע"];
 const STATUS_ORDER = [
   "מחכה לטיפול",
   "נכנס לעבודה",
-  "בעבודה",
   "אישור לקוח",
 ];
 
 const STATUS_GROUP_LABELS: Record<string, string> = {
   "מחכה לטיפול": "ממתין",
   "נכנס לעבודה": "נכנס לעבודה",
-  "בעבודה": "בעבודה",
   "אישור לקוח": "אישור לקוח",
 };
 
@@ -168,14 +163,16 @@ export function TaskTable({
   const allActive = tasks.filter((t) => !DONE_STATUSES.includes(t.status));
   const staleTasks = allActive.filter((t) => isStale(t, staleCutoff));
   const activeTasks = hideStale ? allActive.filter((t) => !isStale(t, staleCutoff)) : allActive;
-  const completedTasks = tasks.filter((t) => DONE_STATUSES.includes(t.status));
+  const completedTasks = tasks
+    .filter((t) => DONE_STATUSES.includes(t.status))
+    .sort((a, b) => (b.updated_at ?? b.created_at).localeCompare(a.updated_at ?? a.created_at));
 
   const groups = STATUS_ORDER.map((status) => ({
     status,
     label: STATUS_GROUP_LABELS[status],
     color: STATUS_COLORS[status] ?? "#C4C4C4",
     tasks: activeTasks
-      .filter((t) => t.status === status)
+      .filter((t) => t.status === status || (status === "נכנס לעבודה" && t.status === "בעבודה"))
       .sort((a, b) => {
         if (a.due_date && b.due_date) return a.due_date.localeCompare(b.due_date);
         if (a.due_date) return -1;
@@ -274,13 +271,20 @@ export function TaskTable({
         </td>
         {/* Assignee */}
         <td className="hidden px-4 py-2.5 align-middle lg:table-cell">
-          {t.assignees.length === 0 ? null : t.assignees.length === 1 ? (
-            <UserChip member={t.assignees[0]} size="xs" />
-          ) : (
-            <AvatarStack
-              people={t.assignees.map((a) => ({ full_name: a.full_name, avatar_url: undefined }))}
-              size="xs"
-            />
+          {t.assignees.length === 0 ? null : (
+            <div className="flex items-center gap-2">
+              {t.assignees.length === 1 ? (
+                <UserChip member={t.assignees[0]} size="xs" withName />
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <AvatarStack
+                    people={t.assignees.map((a) => ({ full_name: a.full_name, avatar_url: a.avatar_url }))}
+                    size="xs"
+                  />
+                  <span className="text-body-sm text-ink-secondary">{t.assignees.map(a => a.full_name.split(" ")[0]).join(", ")}</span>
+                </div>
+              )}
+            </div>
           )}
         </td>
         {/* Deadline */}

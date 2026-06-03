@@ -383,3 +383,34 @@ export async function getCommentAttachments(commentIds: string[]) {
 
   return { attachments, thumbs };
 }
+
+export async function updateComment(commentId: string, content: string) {
+  const sb = createClient();
+  const { error } = await sb
+    .from("task_comments")
+    .update({ content })
+    .eq("id", commentId);
+  if (error) return { error: error.message };
+  revalidatePath("/tasks");
+  return { ok: true as const };
+}
+
+export async function deleteComment(commentId: string) {
+  const sb = createClient();
+  // Delete attachments from storage first
+  const { data: attachments } = await sb
+    .from("comment_attachments")
+    .select("storage_path")
+    .eq("comment_id", commentId);
+  if (attachments && attachments.length > 0) {
+    await sb.storage.from(COMMENT_BUCKET).remove(attachments.map((a) => a.storage_path));
+    await sb.from("comment_attachments").delete().eq("comment_id", commentId);
+  }
+  // Delete child replies
+  await sb.from("task_comments").delete().eq("parent_id", commentId);
+  // Delete the comment itself
+  const { error } = await sb.from("task_comments").delete().eq("id", commentId);
+  if (error) return { error: error.message };
+  revalidatePath("/tasks");
+  return { ok: true as const };
+}

@@ -34,7 +34,6 @@ const STATUS_PILLS = [
   { key: "__all__", label: "הכל" },
   { key: "מחכה לטיפול", label: "ממתין" },
   { key: "נכנס לעבודה", label: "נכנס" },
-  { key: "בעבודה", label: "בעבודה" },
   { key: "אישור לקוח", label: "אישור" },
   { key: "בוצע", label: "בוצע" },
 ] as const;

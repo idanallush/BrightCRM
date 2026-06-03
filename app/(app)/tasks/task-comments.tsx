@@ -1,12 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { Send, Paperclip, AtSign, FileText, FileSpreadsheet, FileImage, File as FileIcon, Loader2, ChevronDown, ChevronUp, Maximize2, X } from "lucide-react";
+import { Send, Paperclip, AtSign, FileText, FileSpreadsheet, FileImage, File as FileIcon, Loader2, ChevronDown, ChevronUp, Maximize2, X, Pencil, Trash2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/toaster";
-import { addComment, uploadCommentAttachment, getCommentAttachments } from "./actions";
+import { addComment, uploadCommentAttachment, getCommentAttachments, updateComment, deleteComment } from "./actions";
 import type { CommentAttachment } from "./actions";
 import type { TeamMember } from "@/lib/data";
 import { createClient } from "@/lib/supabase/client";
@@ -391,6 +391,9 @@ function SingleComment({
   thumbs,
   onReplyClick,
   isReply,
+  currentUserId,
+  onEdited,
+  onDeleted,
 }: {
   comment: Comment;
   team: TeamMember[];
@@ -399,8 +402,18 @@ function SingleComment({
   thumbs: Record<string, string>;
   onReplyClick?: () => void;
   isReply?: boolean;
+  currentUserId: string | null;
+  onEdited: () => void;
+  onDeleted: () => void;
 }) {
-  // Resolve stored mention IDs to the names actually present in the content.
+  const [editing, setEditing] = React.useState(false);
+  const [editText, setEditText] = React.useState(comment.content);
+  const [saving, setSaving] = React.useState(false);
+  const [confirmDelete, setConfirmDelete] = React.useState(false);
+  const [deleting, setDeleting] = React.useState(false);
+
+  const isOwner = currentUserId && comment.author_id === currentUserId;
+
   const mentionNames = React.useMemo(() => {
     if (!comment.mentions || comment.mentions.length === 0) return [];
     const byId = new Map(team.map((m) => [m.id, m.full_name]));
@@ -409,8 +422,28 @@ function SingleComment({
       .filter((n): n is string => !!n);
   }, [comment.mentions, team]);
 
+  async function handleSaveEdit() {
+    const trimmed = editText.trim();
+    if (!trimmed || trimmed === comment.content) { setEditing(false); setEditText(comment.content); return; }
+    setSaving(true);
+    const res = await updateComment(comment.id, trimmed);
+    setSaving(false);
+    if ("error" in res) { toast.error("העדכון נכשל"); return; }
+    setEditing(false);
+    onEdited();
+  }
+
+  async function handleDelete() {
+    setDeleting(true);
+    const res = await deleteComment(comment.id);
+    setDeleting(false);
+    if ("error" in res) { toast.error("המחיקה נכשלה"); return; }
+    setConfirmDelete(false);
+    onDeleted();
+  }
+
   return (
-    <div className="flex gap-3">
+    <div className="group/comment flex gap-3">
       <div className={`flex shrink-0 items-center justify-center rounded-full bg-surface text-[11px] font-semibold text-ink ${isReply ? "h-6 w-6 text-[9px]" : "h-8 w-8"}`}>
         {comment.author_name ? getInitials(comment.author_name) : "?"}
       </div>
@@ -419,13 +452,58 @@ function SingleComment({
           <span className={`font-semibold text-ink ${isReply ? "text-xs" : "text-base"}`}>
             {comment.author_name ?? "לא ידוע"}
           </span>
-          <span className="text-xs text-ink-muted">{timeAgo(comment.created_at)}</span>
+          <div className="flex items-center gap-1.5">
+            {isOwner && !editing && !confirmDelete && (
+              <span className="flex items-center gap-0.5 opacity-0 transition-opacity group-hover/comment:opacity-100">
+                <button type="button" onClick={() => { setEditText(comment.content); setEditing(true); }}
+                  className="flex h-6 w-6 items-center justify-center rounded-md text-ink-muted hover:bg-surface hover:text-ink" aria-label="ערוך">
+                  <Pencil className="h-3 w-3" />
+                </button>
+                <button type="button" onClick={() => setConfirmDelete(true)}
+                  className="flex h-6 w-6 items-center justify-center rounded-md text-ink-muted hover:bg-overdue-bg hover:text-overdue" aria-label="מחק">
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              </span>
+            )}
+            <span className="text-xs text-ink-muted">{timeAgo(comment.created_at)}</span>
+          </div>
         </div>
-        <p className={`mt-0.5 text-ink-secondary whitespace-pre-wrap leading-relaxed ${isReply ? "text-xs" : "text-base"}`}>
-          {renderContentWithMentions(comment.content, mentionNames)}
-        </p>
+
+        {confirmDelete ? (
+          <div className="mt-1 flex items-center gap-2 rounded-lg bg-overdue-bg p-2">
+            <span className="text-xs text-overdue">למחוק תגובה?</span>
+            <Button variant="danger" size="sm" onClick={handleDelete} disabled={deleting} className="h-6 px-2 text-xs">
+              {deleting ? <Loader2 className="h-3 w-3 animate-spin" /> : "מחק"}
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setConfirmDelete(false)} className="h-6 px-2 text-xs">ביטול</Button>
+          </div>
+        ) : editing ? (
+          <div className="mt-1">
+            <textarea
+              value={editText}
+              onChange={(e) => setEditText(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSaveEdit(); } if (e.key === "Escape") { setEditing(false); setEditText(comment.content); } }}
+              rows={2}
+              className="w-full resize-none rounded-lg border border-border bg-white px-3 py-2 text-sm text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              autoFocus
+              disabled={saving}
+            />
+            <div className="mt-1 flex items-center gap-1.5">
+              <Button size="sm" onClick={handleSaveEdit} disabled={saving} className="h-6 gap-1 px-2 text-xs">
+                {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+                שמור
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => { setEditing(false); setEditText(comment.content); }} className="h-6 px-2 text-xs">ביטול</Button>
+            </div>
+          </div>
+        ) : (
+          <p className={`mt-0.5 text-ink-secondary whitespace-pre-wrap leading-relaxed ${isReply ? "text-xs" : "text-base"}`}>
+            {renderContentWithMentions(comment.content, mentionNames)}
+          </p>
+        )}
+
         <CommentAttachmentList attachments={attachments} thumbs={thumbs} />
-        {!isReply && (
+        {!isReply && !editing && !confirmDelete && (
           <div className="mt-1 flex items-center gap-3">
             <button
               type="button"
@@ -591,6 +669,9 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
                   replyCount={replies.length}
                   attachments={attachmentMap[c.id] ?? []}
                   thumbs={thumbMap}
+                  currentUserId={memberId}
+                  onEdited={fetchComments}
+                  onDeleted={fetchComments}
                   onReplyClick={() => {
                     setReplyingTo(replyingTo === c.id ? null : c.id);
                     if (replies.length > 0) setExpandedThreads((prev) => new Set(prev).add(c.id));
@@ -620,6 +701,9 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
                         attachments={attachmentMap[r.id] ?? []}
                         thumbs={thumbMap}
                         isReply
+                        currentUserId={memberId}
+                        onEdited={fetchComments}
+                        onDeleted={fetchComments}
                       />
                     ))}
                   </div>

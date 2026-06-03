@@ -19,7 +19,6 @@ import type { Client, Tag, TaskWithRelations, TeamMember } from "@/lib/data";
 const STATUS_OPTIONS: { value: TaskInput["status"]; label: string }[] = [
   { value: "מחכה לטיפול", label: "ממתין" },
   { value: "נכנס לעבודה", label: "נכנס לעבודה" },
-  { value: "בעבודה", label: "בעבודה" },
   { value: "אישור לקוח", label: "אישור לקוח" },
   { value: "בוצע", label: "בוצע" },
 ];

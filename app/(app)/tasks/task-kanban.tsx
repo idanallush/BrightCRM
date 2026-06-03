@@ -9,7 +9,6 @@ import { AvatarStack } from "@/components/user-avatar";
 const COLUMNS = [
   { key: "מחכה לטיפול", label: "ממתין" },
   { key: "נכנס לעבודה", label: "נכנס לעבודה" },
-  { key: "בעבודה", label: "בעבודה" },
   { key: "אישור לקוח", label: "אישור לקוח" },
 ];
 
@@ -30,11 +29,11 @@ export function TaskKanban({
   onCardClick: (t: TaskWithRelations) => void;
 }) {
   function byStatus(key: string) {
-    return tasks.filter((t) => t.status === key);
+    return tasks.filter((t) => t.status === key || (key === "נכנס לעבודה" && t.status === "בעבודה"));
   }
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {COLUMNS.map((col) => {
         const colTasks = byStatus(col.key);
         const light = STATUS_LIGHT[col.key] ?? { bg: "#F7F7F8", text: "#050038", dot: "#C4C4C4" };

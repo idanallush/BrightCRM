@@ -75,9 +75,9 @@ export type Tag = {
 
 export type TaskWithRelations = Task & {
   client: { id: string; name: string } | null;
-  assignees: { id: string; full_name: string }[];
-  watchers: { id: string; full_name: string }[];
-  creator: { id: string; full_name: string } | null;
+  assignees: { id: string; full_name: string; avatar_url?: string | null }[];
+  watchers: { id: string; full_name: string; avatar_url?: string | null }[];
+  creator: { id: string; full_name: string; avatar_url?: string | null } | null;
   tags: Tag[];
 };
 
@@ -91,7 +91,7 @@ export async function getTasks(filters?: {
   let q = sb
     .from("tasks")
     .select(
-      "id,title,client_id,description,status,start_date,due_date,created_by_id,source,created_at,updated_at,client:clients(id,name),assignees:task_assignees(member:team_members(id,full_name)),watchers:task_watchers(member:team_members(id,full_name)),creator:team_members!tasks_created_by_id_fkey(id,full_name),task_tags(tag:tags(id,name,color,created_at))",
+      "id,title,client_id,description,status,start_date,due_date,created_by_id,source,created_at,updated_at,client:clients(id,name),assignees:task_assignees(member:team_members(id,full_name,avatar_url)),watchers:task_watchers(member:team_members(id,full_name,avatar_url)),creator:team_members!tasks_created_by_id_fkey(id,full_name,avatar_url),task_tags(tag:tags(id,name,color,created_at))",
     )
     .order("due_date", { ascending: true, nullsFirst: false });
 
@@ -290,7 +290,7 @@ export async function getTeam(): Promise<TeamMember[]> {
   const sb = createClient();
   const { data, error } = await sb
     .from("team_members")
-    .select("id,full_name,role,email,active,whatsapp_phone")
+    .select("id,full_name,role,email,active,whatsapp_phone,avatar_url")
     .eq("active", true)
     .order("full_name");
   if (error) throw error;
