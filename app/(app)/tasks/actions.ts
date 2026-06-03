@@ -436,3 +436,49 @@ export async function toggleWatchTask(taskId: string, memberId: string) {
   revalidatePath("/tasks");
   return { ok: true as const, watching: true };
 }
+
+export async function recordTaskView(taskId: string, memberId: string) {
+  const sb = createClient();
+  await sb.from("task_views").upsert(
+    { task_id: taskId, member_id: memberId, last_seen_at: new Date().toISOString() },
+    { onConflict: "task_id,member_id" },
+  );
+}
+
+export async function getTaskViews(taskId: string): Promise<{ member_id: string; full_name: string; avatar_url: string | null; last_seen_at: string }[]> {
+  const sb = createClient();
+  const { data } = await sb
+    .from("task_views")
+    .select("member_id, last_seen_at, member:team_members!task_views_member_id_fkey(full_name, avatar_url)")
+    .eq("task_id", taskId);
+  return ((data ?? []) as any[]).map((r) => ({
+    member_id: r.member_id,
+    full_name: r.member?.full_name ?? "",
+    avatar_url: r.member?.avatar_url ?? null,
+    last_seen_at: r.last_seen_at,
+  }));
+}
+
+export type TaskViewRecord = { task_id: string; member_id: string; full_name: string; avatar_url: string | null; last_seen_at: string };
+
+export async function getTaskViewsBulk(taskIds: string[]): Promise<Record<string, TaskViewRecord[]>> {
+  if (taskIds.length === 0) return {};
+  const sb = createClient();
+  const { data } = await sb
+    .from("task_views")
+    .select("task_id, member_id, last_seen_at, member:team_members!task_views_member_id_fkey(full_name, avatar_url)")
+    .in("task_id", taskIds);
+  const map: Record<string, TaskViewRecord[]> = {};
+  for (const r of (data ?? []) as any[]) {
+    const rec: TaskViewRecord = {
+      task_id: r.task_id,
+      member_id: r.member_id,
+      full_name: r.member?.full_name ?? "",
+      avatar_url: r.member?.avatar_url ?? null,
+      last_seen_at: r.last_seen_at,
+    };
+    if (!map[r.task_id]) map[r.task_id] = [];
+    map[r.task_id].push(rec);
+  }
+  return map;
+}

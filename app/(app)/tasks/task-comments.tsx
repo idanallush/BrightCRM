@@ -1,13 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { Send, Paperclip, AtSign, FileText, FileSpreadsheet, FileImage, File as FileIcon, Loader2, ChevronDown, ChevronUp, Maximize2, X, Pencil, Trash2, Check } from "lucide-react";
+import { Send, Paperclip, AtSign, FileText, FileSpreadsheet, FileImage, File as FileIcon, Loader2, ChevronDown, ChevronUp, Maximize2, X, Pencil, Trash2, Check, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/toaster";
-import { addComment, uploadCommentAttachment, getCommentAttachments, updateComment, deleteComment } from "./actions";
+import { addComment, uploadCommentAttachment, getCommentAttachments, updateComment, deleteComment, getTaskViews } from "./actions";
 import type { CommentAttachment } from "./actions";
+import { UserAvatar } from "@/components/user-avatar";
 import type { TeamMember } from "@/lib/data";
 import { createClient } from "@/lib/supabase/client";
 import { getInitials } from "@/lib/utils";
@@ -394,6 +395,7 @@ function SingleComment({
   currentUserId,
   onEdited,
   onDeleted,
+  seenBy,
 }: {
   comment: Comment;
   team: TeamMember[];
@@ -405,6 +407,7 @@ function SingleComment({
   currentUserId: string | null;
   onEdited: () => void;
   onDeleted: () => void;
+  seenBy?: { full_name: string; avatar_url: string | null }[];
 }) {
   const [editing, setEditing] = React.useState(false);
   const [editText, setEditText] = React.useState(comment.content);
@@ -517,6 +520,20 @@ function SingleComment({
                 {replyCount} {replyCount === 1 ? "תגובה" : "תגובות"}
               </span>
             ) : null}
+            {seenBy && seenBy.length > 0 && (
+              <>
+                <span className="h-3 w-px bg-border" />
+                <span className="inline-flex items-center gap-1 text-ink-muted" title={`נצפה ע״י: ${seenBy.map(s => s.full_name).join(", ")}`}>
+                  <Eye className="h-3 w-3" />
+                  <span className="flex -space-x-1 space-x-reverse">
+                    {seenBy.slice(0, 3).map((s, i) => (
+                      <UserAvatar key={i} name={s.full_name} avatarUrl={s.avatar_url} size="xs" ring />
+                    ))}
+                  </span>
+                  {seenBy.length > 3 && <span className="text-[10px]">+{seenBy.length - 3}</span>}
+                </span>
+              </>
+            )}
           </div>
         )}
       </div>
@@ -526,9 +543,12 @@ function SingleComment({
 
 // ---- Main component ----
 
+type TaskView = { member_id: string; full_name: string; avatar_url: string | null; last_seen_at: string };
+
 export function TaskComments({ taskId, team }: { taskId: string; team: TeamMember[] }) {
   const [comments, setComments] = React.useState<Comment[]>([]);
   const [memberId, setMemberId] = React.useState<string | null>(null);
+  const [views, setViews] = React.useState<TaskView[]>([]);
   const [replyingTo, setReplyingTo] = React.useState<string | null>(null);
   const [expandedThreads, setExpandedThreads] = React.useState<Set<string>>(new Set());
   const [showAll, setShowAll] = React.useState(false);
@@ -579,6 +599,11 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
   }, [taskId]);
 
   React.useEffect(() => { fetchComments(); }, [fetchComments]);
+
+  // Fetch who has viewed this task
+  React.useEffect(() => {
+    getTaskViews(taskId).then(setViews);
+  }, [taskId]);
 
   // Build tree
   const topLevel = comments.filter((c) => !c.parent_id);
@@ -672,6 +697,7 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
                   currentUserId={memberId}
                   onEdited={fetchComments}
                   onDeleted={fetchComments}
+                  seenBy={views.filter(v => v.last_seen_at >= c.created_at && v.member_id !== c.author_id)}
                   onReplyClick={() => {
                     setReplyingTo(replyingTo === c.id ? null : c.id);
                     if (replies.length > 0) setExpandedThreads((prev) => new Set(prev).add(c.id));
@@ -704,6 +730,7 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
                         currentUserId={memberId}
                         onEdited={fetchComments}
                         onDeleted={fetchComments}
+                        seenBy={views.filter(v => v.last_seen_at >= r.created_at && v.member_id !== r.author_id)}
                       />
                     ))}
                   </div>

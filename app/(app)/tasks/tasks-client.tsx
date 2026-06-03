@@ -26,7 +26,7 @@ import { TaskCalendar } from "./task-calendar";
 import { TaskForm } from "./task-form";
 import { TaskAttachments } from "./task-attachments";
 import { TaskComments } from "./task-comments";
-import { deleteTask, updateTask, bulkUpdateStatus, bulkUpdateAssignees, bulkDeleteTasks, toggleWatchTask, type TaskInput } from "./actions";
+import { deleteTask, updateTask, bulkUpdateStatus, bulkUpdateAssignees, bulkDeleteTasks, recordTaskView, getTaskViewsBulk, type TaskInput, type TaskViewRecord } from "./actions";
 import { STATUS_LIGHT, StatusCell } from "@/components/ui/badge";
 import type { Client, Tag, TaskWithRelations, TeamMember } from "@/lib/data";
 
@@ -270,6 +270,23 @@ export function TasksClient({
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
   const [bulkLoading, setBulkLoading] = React.useState(false);
   const [confirmBulkDelete, setConfirmBulkDelete] = React.useState(false);
+  const [taskViews, setTaskViews] = React.useState<Record<string, TaskViewRecord[]>>({});
+
+  // Fetch task views
+  React.useEffect(() => {
+    const ids = tasks.map((t) => t.id);
+    if (ids.length > 0) getTaskViewsBulk(ids).then(setTaskViews);
+  }, [tasks]);
+
+  // Record view when opening a task
+  const openTask = React.useCallback((t: TaskWithRelations) => {
+    setEditing(t);
+    if (currentMemberId) {
+      recordTaskView(t.id, currentMemberId).then(() => {
+        getTaskViewsBulk(tasks.map((tt) => tt.id)).then(setTaskViews);
+      });
+    }
+  }, [currentMemberId, tasks]);
 
   // Clear selection when filters/view change
   React.useEffect(() => { setSelectedIds(new Set()); }, [filters, tagFilter, searchText, view]);
@@ -283,7 +300,7 @@ export function TasksClient({
     const id = searchParams.get("task");
     if (id && (!editing || editing.id !== id)) {
       const found = tasks.find((t) => t.id === id);
-      if (found) setEditing(found);
+      if (found) openTask(found);
     }
   }, [searchParams, tasks, editing]);
 
@@ -602,7 +619,7 @@ export function TasksClient({
                 type="button"
                 onClick={() => {
                   const found = tasks.find((t) => t.id === wt.id);
-                  if (found) setEditing(found);
+                  if (found) openTask(found);
                   else {
                     const params = new URLSearchParams();
                     params.set("task", wt.id);
@@ -635,15 +652,15 @@ export function TasksClient({
         </motion.div>
       ) : view === "table" ? (
         <motion.div key="table" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-          <TaskTable tasks={filteredTasks} commentCounts={commentCounts} onRowClick={setEditing} selectedIds={selectedIds} onSelectionChange={setSelectedIds} currentMemberId={currentMemberId} watchedTaskIds={new Set(watchedTasks.map(w => w.id))} />
+          <TaskTable tasks={filteredTasks} commentCounts={commentCounts} onRowClick={openTask} selectedIds={selectedIds} onSelectionChange={setSelectedIds} taskViews={taskViews} teamSize={team.length} />
         </motion.div>
       ) : view === "kanban" ? (
         <motion.div key="kanban" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-          <TaskKanban tasks={filteredTasks} onCardClick={setEditing} />
+          <TaskKanban tasks={filteredTasks} onCardClick={openTask} />
         </motion.div>
       ) : (
         <motion.div key="calendar" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-          <TaskCalendar tasks={filteredTasks} commentCounts={commentCounts} onTaskClick={setEditing} />
+          <TaskCalendar tasks={filteredTasks} commentCounts={commentCounts} onTaskClick={openTask} />
         </motion.div>
       )}
       </AnimatePresence>
