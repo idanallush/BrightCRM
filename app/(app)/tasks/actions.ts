@@ -391,9 +391,9 @@ export async function getCommentAttachments(commentIds: string[]) {
     .order("created_at", { ascending: true });
 
   const attachments: Record<string, CommentAttachment[]> = {};
-  const thumbs: Record<string, string> = {};
+  const allRows = data ?? [];
 
-  for (const row of data ?? []) {
+  for (const row of allRows) {
     const att: CommentAttachment = {
       id: row.id,
       comment_id: row.comment_id,
@@ -405,12 +405,20 @@ export async function getCommentAttachments(commentIds: string[]) {
     };
     if (!attachments[att.comment_id]) attachments[att.comment_id] = [];
     attachments[att.comment_id].push(att);
+  }
 
-    // Generate signed URLs for ALL files (images and non-images)
+  // Batch signed URL generation instead of N+1 loop
+  const thumbs: Record<string, string> = {};
+  if (allRows.length > 0) {
+    const paths = allRows.map((r) => r.storage_path);
     const { data: signedData } = await sb.storage
       .from(COMMENT_BUCKET)
-      .createSignedUrl(att.storage_path, 600);
-    if (signedData?.signedUrl) thumbs[att.storage_path] = signedData.signedUrl;
+      .createSignedUrls(paths, 600);
+    if (signedData) {
+      for (const item of signedData) {
+        if (item.signedUrl && item.path) thumbs[item.path] = item.signedUrl;
+      }
+    }
   }
 
   return { attachments, thumbs };

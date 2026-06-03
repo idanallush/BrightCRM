@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { notifyNewComment, notifyMentions } from "@/lib/email/notify";
+import { notifyNewComment } from "@/lib/email/notify";
 
 export async function GET(
   _request: NextRequest,
@@ -105,9 +105,6 @@ export async function POST(
 
   try {
     await notifyNewComment(comment.id);
-    if (mentions.length > 0) {
-      await notifyMentions(comment.id);
-    }
   } catch (err) {
     console.error("[Email] comment notification failed:", err);
   }

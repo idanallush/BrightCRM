@@ -45,21 +45,28 @@ async function getMemberId(email: string): Promise<string | null> {
 
 async function getMyActiveTasks(memberId: string): Promise<TaskRow[]> {
   const db = createAdminClient();
+  // Filter at DB level via inner join on task_assignees
   const { data } = await db
-    .from("tasks")
-    .select("id,title,status,due_date,client:clients(name),assignees:task_assignees(member:team_members(id))")
-    .in("status", ACTIVE_STATUSES)
-    .order("due_date", { ascending: true, nullsFirst: false });
+    .from("task_assignees")
+    .select("task:tasks!inner(id,title,status,due_date,client:clients(name))")
+    .eq("member_id", memberId);
   type DbRow = Record<string, unknown>;
   return ((data ?? []) as DbRow[])
-    .filter((t) => {
-      const assignees = (t.assignees ?? []) as { member?: { id?: string } | null }[];
-      return assignees.some((a) => a.member?.id === memberId);
+    .map((r) => {
+      const t = r.task as { id?: string; title?: string; status?: string; due_date?: string | null; client?: { name?: string } | null } | null;
+      return t;
     })
+    .filter((t): t is NonNullable<typeof t> => !!t && ACTIVE_STATUSES.includes(t.status ?? ""))
     .map((t) => ({
-      id: t.id as string, title: t.title as string, status: t.status as string, due_date: t.due_date as string | null,
-      client_name: (t.client as { name?: string } | null)?.name ?? null,
-    }));
+      id: t.id as string, title: t.title as string, status: t.status as string, due_date: (t.due_date as string | null) ?? null,
+      client_name: t.client?.name ?? null,
+    }))
+    .sort((a, b) => {
+      if (!a.due_date && !b.due_date) return 0;
+      if (!a.due_date) return 1;
+      if (!b.due_date) return -1;
+      return a.due_date.localeCompare(b.due_date);
+    });
 }
 
 async function handleQuickAction(action: string, memberId: string) {

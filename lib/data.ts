@@ -245,17 +245,14 @@ async function getAttachments(scope: { clientId?: string; taskId?: string }) {
 
 export async function getOpenTaskCountsByClient(): Promise<Record<string, number>> {
   const sb = createClient();
-  const { data, error } = await sb
-    .from("tasks")
-    .select("client_id")
-    .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח"]);
+  const { data, error } = await sb.rpc("get_open_task_counts_by_client");
   if (error) {
     console.error('[getOpenTaskCountsByClient] failed:', error);
     throw error;
   }
   const map: Record<string, number> = {};
-  for (const row of (data ?? []) as { client_id: string }[]) {
-    map[row.client_id] = (map[row.client_id] ?? 0) + 1;
+  for (const row of (data ?? []) as { client_id: string; count: number }[]) {
+    map[row.client_id] = row.count;
   }
   return map;
 }
@@ -514,24 +511,19 @@ export async function getDashboardTrends(): Promise<{
 
 export type SourceCounts = { whatsapp: number; web: number; import: number; total: number };
 
-// TODO: client-side counting — replace with per-source count queries when scale requires it
 export async function getWeeklySourceCounts(): Promise<SourceCounts> {
   const sb = createClient();
-  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
-  const { data, error } = await sb
-    .from("tasks")
-    .select("source")
-    .gte("created_at", weekAgo);
+  const { data, error } = await sb.rpc("get_weekly_source_counts");
   if (error) {
     console.error('[getWeeklySourceCounts] failed:', error);
     throw error;
   }
   const counts: SourceCounts = { whatsapp: 0, web: 0, import: 0, total: 0 };
-  for (const row of (data ?? []) as { source: string }[]) {
-    if (row.source === "whatsapp") counts.whatsapp++;
-    else if (row.source === "web") counts.web++;
-    else counts.import++;
-    counts.total++;
+  for (const row of (data ?? []) as { source: string; count: number }[]) {
+    if (row.source === "whatsapp") counts.whatsapp += row.count;
+    else if (row.source === "web") counts.web += row.count;
+    else counts.import += row.count;
+    counts.total += row.count;
   }
   return counts;
 }
@@ -688,31 +680,36 @@ export async function getMyTasks(userEmail: string) {
 
   if (!member) return [];
 
-  const { data, error } = await sb
-    .from("tasks")
-    .select(
-      "id,title,status,due_date,client:clients(name),assignees:task_assignees(member:team_members(id))",
-    )
-    .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח"])
-    .order("due_date", { ascending: true, nullsFirst: false });
-  if (error) {
-    console.error('[getMyTasks] tasks query failed:', error);
-    throw error;
+  // Filter at DB level via inner join on task_assignees
+  const { data: assignedRows, error: assignError } = await sb
+    .from("task_assignees")
+    .select("task:tasks!inner(id,title,status,due_date,client:clients(name))")
+    .eq("member_id", member.id);
+  if (assignError) {
+    console.error('[getMyTasks] assigned tasks query failed:', assignError);
+    throw assignError;
   }
 
-  // Filter to only tasks assigned to this member
-  return asRows(data)
-    .filter((t) => {
-      const assignees = (t.assignees ?? []) as { member?: { id?: string } | null }[];
-      return assignees.some((a) => a.member?.id === member.id);
+  const openStatuses = new Set(["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח"]);
+  return asRows(assignedRows)
+    .map((r) => {
+      const task = r.task as { id?: string; title?: string; status?: string; due_date?: string | null; client?: { name?: string } | null } | null;
+      return task;
     })
+    .filter((t): t is NonNullable<typeof t> => !!t && openStatuses.has(t.status ?? ""))
     .map((t) => ({
       id: t.id as string,
       title: t.title as string,
       status: t.status as string,
-      due_date: t.due_date as string | null,
-      client_name: (t.client as { name?: string } | null)?.name ?? null,
-    }));
+      due_date: (t.due_date as string | null) ?? null,
+      client_name: t.client?.name ?? null,
+    }))
+    .sort((a, b) => {
+      if (!a.due_date && !b.due_date) return 0;
+      if (!a.due_date) return 1;
+      if (!b.due_date) return -1;
+      return a.due_date.localeCompare(b.due_date);
+    });
 }
 
 export async function getTaskComments(taskId: string) {
@@ -740,19 +737,31 @@ export async function getTaskComments(taskId: string) {
   });
 }
 
-// TODO: pulls all rows into memory — replace with Supabase RPC using GROUP BY when scale requires it
 export async function getCommentCountsByTask(): Promise<Record<string, number>> {
   const sb = createClient();
-  const { data, error } = await sb
-    .from("task_comments")
-    .select("task_id");
+  // Use RPC with GROUP BY in PostgreSQL instead of pulling all rows into JS
+  // Pass a sentinel empty array — the RPC counts all when task_ids is empty
+  // We select all distinct task_ids first as the filter
+  const { data: taskIdRows, error: tErr } = await sb
+    .from("tasks")
+    .select("id");
+  if (tErr) {
+    console.error('[getCommentCountsByTask] task_ids query failed:', tErr);
+    throw tErr;
+  }
+  const ids = (taskIdRows ?? []).map((r: { id: string }) => r.id);
+  if (ids.length === 0) return {};
+
+  const { data, error } = await sb.rpc("get_comment_counts_by_tasks", {
+    task_ids: ids,
+  });
   if (error) {
     console.error('[getCommentCountsByTask] failed:', error);
     throw error;
   }
   const map: Record<string, number> = {};
-  for (const row of (data ?? []) as { task_id: string }[]) {
-    map[row.task_id] = (map[row.task_id] ?? 0) + 1;
+  for (const row of (data ?? []) as { task_id: string; count: number }[]) {
+    map[row.task_id] = row.count;
   }
   return map;
 }
@@ -761,23 +770,21 @@ export async function getClientsWithOpenTaskCounts(): Promise<
   { id: string; name: string; health: string | null; logo_url: string | null; open_count: number }[]
 > {
   const sb = createClient();
-  const [clientsRes, tasksRes] = await Promise.all([
+  const [clientsRes, countsData] = await Promise.all([
     sb.from("clients").select("id,name,health,logo_url").order("name"),
-    sb.from("tasks").select("client_id").in("status", [
-      "מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח",
-    ]),
+    sb.rpc("get_open_task_counts_by_client"),
   ]);
   if (clientsRes.error) {
     console.error('[getClientsWithOpenTaskCounts] clients query failed:', clientsRes.error);
     throw clientsRes.error;
   }
-  if (tasksRes.error) {
-    console.error('[getClientsWithOpenTaskCounts] tasks query failed:', tasksRes.error);
-    throw tasksRes.error;
+  if (countsData.error) {
+    console.error('[getClientsWithOpenTaskCounts] counts RPC failed:', countsData.error);
+    throw countsData.error;
   }
   const counts: Record<string, number> = {};
-  for (const row of (tasksRes.data ?? []) as { client_id: string }[]) {
-    counts[row.client_id] = (counts[row.client_id] ?? 0) + 1;
+  for (const row of (countsData.data ?? []) as { client_id: string; count: number }[]) {
+    counts[row.client_id] = row.count;
   }
   return (clientsRes.data ?? [])
     .map((c) => ({

@@ -174,6 +174,7 @@ export async function notifyNewComment(commentId: string) {
   const seen = new Set<string>();
   const taskInfo = { id: task.id, title: task.title, due_date: task.due_date, status: task.status };
 
+  const emailPromises: Promise<unknown>[] = [];
   for (const m of allMembers) {
     if (!m || !m.email) continue;
     if (m.notify_email === false) continue;
@@ -187,17 +188,12 @@ export async function notifyNewComment(commentId: string) {
       ? mentionEmail(taskInfo, client, { content: comment.content }, author, m)
       : newCommentEmail(taskInfo, client, { content: comment.content }, author);
 
-    try {
-      await sendEmail([m.email], subject, html, { type: isMentioned ? "mention" : "comment", referenceId: comment.task_id });
-    } catch (err) {
-      console.error(`[Notify] comment email to ${m.email} failed:`, err);
-    }
+    emailPromises.push(
+      sendEmail([m.email], subject, html, { type: isMentioned ? "mention" : "comment", referenceId: comment.task_id })
+        .catch((err) => { console.error(`[Notify] comment email to ${m.email} failed:`, err); }),
+    );
   }
-}
-
-// Kept for backwards compatibility but no longer called from addComment.
-export async function notifyMentions(_commentId: string) {
-  // Mentions are now handled inside notifyNewComment to avoid duplicate emails.
+  await Promise.allSettled(emailPromises);
 }
 
 export async function notifyOverdueByEmail() {
