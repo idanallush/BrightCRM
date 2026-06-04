@@ -233,12 +233,20 @@ export function TaskTable({
             </div>
           )}
         </td>
-        {/* Deadline */}
+        {/* Deadline / Completion date */}
         <td className="px-4 py-2.5 align-middle">
-          <span className={`inline-flex items-center gap-1 text-body-sm ${dateClass}`}>
-            {overdue && <AlertTriangle className="h-3.5 w-3.5" />}
-            {dateText}
-          </span>
+          {DONE_STATUSES.includes(t.status) ? (
+            <span className="inline-flex items-center gap-1 text-body-sm text-st-done-text">
+              {t.completed_at
+                ? `הושלם ${new Date(t.completed_at).toLocaleDateString("he-IL")}`
+                : "הושלם"}
+            </span>
+          ) : (
+            <span className={`inline-flex items-center gap-1 text-body-sm ${dateClass}`}>
+              {overdue && <AlertTriangle className="h-3.5 w-3.5" />}
+              {dateText}
+            </span>
+          )}
         </td>
         {/* Status dropdown */}
         <td className="px-4 py-2.5 align-middle">

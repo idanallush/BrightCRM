@@ -339,8 +339,8 @@ function CollapsibleTextarea({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          rows={2}
-          className={cn("text-xs", collapsed && "max-h-24 overflow-hidden")}
+          rows={5}
+          className={cn("min-h-[150px] text-base", collapsed && "max-h-32 overflow-hidden")}
         />
         {collapsed && (
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 rounded-b-xl bg-gradient-to-t from-white to-transparent" />

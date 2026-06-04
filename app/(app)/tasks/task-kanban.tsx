@@ -72,10 +72,18 @@ function KanbanCard({ task, onClick }: {
       )}
       <div className="mt-1 text-body-sm text-ink-secondary">{task.client?.name ?? "\u05db\u05dc\u05dc\u05d9"}</div>
       <div className="mt-2 flex items-center justify-between">
-        <span className={`text-caption ${overdue ? "font-medium text-overdue" : "text-ink-muted"}`}>
-          {overdue && <AlertTriangle className="mb-px me-1 inline h-3 w-3" />}
-          {dateText}
-        </span>
+        {task.status === "בוצע" ? (
+          <span className="text-caption text-st-done-text">
+            {task.completed_at
+              ? `הושלם ${new Date(task.completed_at).toLocaleDateString("he-IL")}`
+              : "הושלם"}
+          </span>
+        ) : (
+          <span className={`text-caption ${overdue ? "font-medium text-overdue" : "text-ink-muted"}`}>
+            {overdue && <AlertTriangle className="mb-px me-1 inline h-3 w-3" />}
+            {dateText}
+          </span>
+        )}
         <AvatarStack people={task.assignees} size="xs" max={3} />
       </div>
     </button>

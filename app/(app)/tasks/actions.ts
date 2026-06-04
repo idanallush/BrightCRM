@@ -103,16 +103,21 @@ export async function createTask(input: TaskInput) {
 export async function updateTask(id: string, input: TaskInput) {
   try { await requireAuth(); } catch { return { error: "לא מאומת" }; }
   const sb = createClient();
-  const { error } = await sb
-    .from("tasks")
-    .update({
-      title: input.title,
-      client_id: input.client_id || null,
-      description: input.description,
-      status: input.status,
-      due_date: input.due_date,
-    })
-    .eq("id", id);
+  const updates: Record<string, unknown> = {
+    title: input.title,
+    client_id: input.client_id || null,
+    description: input.description,
+    status: input.status,
+    due_date: input.due_date,
+  };
+  // Fetch current status to detect transition to/from completed
+  const { data: current } = await sb.from("tasks").select("status").eq("id", id).single();
+  if (input.status === "בוצע" && current?.status !== "בוצע") {
+    updates.completed_at = new Date().toISOString();
+  } else if (input.status !== "בוצע") {
+    updates.completed_at = null;
+  }
+  const { error } = await sb.from("tasks").update(updates).eq("id", id);
   if (error) return { error: error.message };
 
   const { error: dErr } = await sb.from("task_assignees").delete().eq("task_id", id);
@@ -161,7 +166,13 @@ export async function deleteTask(id: string) {
 export async function updateTaskStatus(id: string, status: string) {
   try { await requireAuth(); } catch { return { error: "לא מאומת" }; }
   const sb = createClient();
-  const { error } = await sb.from("tasks").update({ status }).eq("id", id);
+  const updates: Record<string, unknown> = { status };
+  if (status === "בוצע") {
+    updates.completed_at = new Date().toISOString();
+  } else {
+    updates.completed_at = null;
+  }
+  const { error } = await sb.from("tasks").update(updates).eq("id", id);
   if (error) return { error: error.message };
   revalidatePath("/tasks");
   revalidatePath("/dashboard");
@@ -172,7 +183,13 @@ export async function bulkUpdateStatus(ids: string[], status: string) {
   try { await requireAuth(); } catch { return { error: "לא מאומת" }; }
   if (ids.length === 0) return { error: "לא נבחרו משימות" };
   const sb = createClient();
-  const { error } = await sb.from("tasks").update({ status }).in("id", ids);
+  const updates: Record<string, unknown> = { status };
+  if (status === "בוצע") {
+    updates.completed_at = new Date().toISOString();
+  } else {
+    updates.completed_at = null;
+  }
+  const { error } = await sb.from("tasks").update(updates).in("id", ids);
   if (error) return { error: error.message };
   revalidatePath("/tasks");
   revalidatePath("/dashboard");

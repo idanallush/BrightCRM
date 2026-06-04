@@ -99,53 +99,39 @@ export function TaskDetailPanel({
           </div>
         </div>
 
-        {/* Roles bar */}
+        {/* Roles bar — deduplicated: same person with multiple roles shows one avatar */}
         <div className="mt-4 flex items-center gap-6 border-t border-border pt-4">
-          {creator && (
-            <div className="flex items-center gap-2.5">
-              <div className="flex flex-col items-end">
-                <span className="text-[11px] text-ink-muted">נפתח ע״י</span>
-                <span className="text-sm font-medium text-ink">{creator.full_name}</span>
-              </div>
-              <UserChip member={creator} size="sm" />
-            </div>
-          )}
-          {firstAssignee && (
-            <>
-              <div className="h-8 w-px bg-border" />
-              <div className="flex items-center gap-2.5">
-                <div className="flex flex-col items-end">
-                  <span className="text-[11px] text-ink-muted">אחראי</span>
-                  <span className="text-sm font-medium text-ink">
-                    {task.assignees.map(a => a.full_name).join(", ")}
-                  </span>
+          {(() => {
+            const roleMap = new Map<string, { member: { id?: string; full_name: string; avatar_url?: string | null }; roles: string[] }>();
+
+            if (creator && task.created_by_id) {
+              roleMap.set(task.created_by_id, { member: creator, roles: ["נפתח ע״י"] });
+            }
+            for (const a of task.assignees) {
+              const existing = roleMap.get(a.id);
+              if (existing) { existing.roles.push("אחראי"); }
+              else { roleMap.set(a.id, { member: a, roles: ["אחראי"] }); }
+            }
+            for (const w of task.watchers) {
+              const existing = roleMap.get(w.id);
+              if (existing) { existing.roles.push("במעקב"); }
+              else { roleMap.set(w.id, { member: w, roles: ["במעקב"] }); }
+            }
+
+            const entries = [...roleMap.values()];
+            return entries.map((entry, i) => (
+              <React.Fragment key={entry.member.full_name}>
+                {i > 0 && <div className="h-8 w-px bg-border" />}
+                <div className="flex items-center gap-2.5">
+                  <div className="flex flex-col items-end">
+                    <span className="text-[11px] text-ink-muted">{entry.roles.join(" · ")}</span>
+                    <span className="text-sm font-medium text-ink">{entry.member.full_name}</span>
+                  </div>
+                  <UserChip member={entry.member} size="sm" />
                 </div>
-                <div className="flex -space-x-1.5 space-x-reverse">
-                  {task.assignees.map((a) => (
-                    <UserChip key={a.id} member={a} size="sm" />
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-          {firstWatcher && (
-            <>
-              <div className="h-8 w-px bg-border" />
-              <div className="flex items-center gap-2.5">
-                <div className="flex flex-col items-end">
-                  <span className="text-[11px] text-ink-muted">במעקב</span>
-                  <span className="text-sm font-medium text-ink">
-                    {task.watchers.map(w => w.full_name).join(", ")}
-                  </span>
-                </div>
-                <div className="flex -space-x-1.5 space-x-reverse">
-                  {task.watchers.map((w) => (
-                    <UserChip key={w.id} member={w} size="sm" />
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
+              </React.Fragment>
+            ));
+          })()}
           {/* Seen-by indicator */}
           {(() => {
             const seenAfterUpdate = taskViews.filter((v) => v.last_seen_at >= (task.updated_at ?? task.created_at));

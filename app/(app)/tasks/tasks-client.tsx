@@ -157,9 +157,15 @@ export function TasksClient({
     router.replace(params.toString() ? `/tasks?${params}` : "/tasks", { scroll: false });
     setTimeout(() => {
       setEditing(null);
-      closingRef.current = false;
     }, 350);
   }
+
+  // Reset the closing guard once the URL param is actually gone
+  React.useEffect(() => {
+    if (closingRef.current && !searchParams.get("task")) {
+      closingRef.current = false;
+    }
+  }, [searchParams]);
 
   async function onDelete() {
     if (!editing) return;

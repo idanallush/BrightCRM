@@ -18,6 +18,7 @@ export type Task = {
   due_date: string | null;
   created_by_id: string | null;
   source: "web" | "telegram" | "whatsapp" | "import";
+  completed_at: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -99,7 +100,7 @@ export async function getTasks(filters?: {
   let q = sb
     .from("tasks")
     .select(
-      "id,title,client_id,description,status,start_date,due_date,created_by_id,source,created_at,updated_at,client:clients(id,name),assignees:task_assignees(member:team_members(id,full_name,avatar_url)),watchers:task_watchers(member:team_members(id,full_name,avatar_url)),creator:team_members!tasks_created_by_id_fkey(id,full_name,avatar_url),task_tags(tag:tags(id,name,color,created_at))",
+      "id,title,client_id,description,status,start_date,due_date,created_by_id,source,completed_at,created_at,updated_at,client:clients(id,name),assignees:task_assignees(member:team_members(id,full_name,avatar_url)),watchers:task_watchers(member:team_members(id,full_name,avatar_url)),creator:team_members!tasks_created_by_id_fkey(id,full_name,avatar_url),task_tags(tag:tags(id,name,color,created_at))",
     )
     .order("due_date", { ascending: true, nullsFirst: false });
 
@@ -134,6 +135,7 @@ export async function getTasks(filters?: {
       due_date: row.due_date as string | null,
       created_by_id: row.created_by_id as string | null,
       source: row.source as string | null,
+      completed_at: (row.completed_at as string | null) ?? null,
       created_at: row.created_at as string,
       updated_at: row.updated_at as string,
       client: (row.client as { id: string; name: string } | null) ?? null,
