@@ -137,6 +137,11 @@ export function TaskTable({
     const overdue = !DONE_STATUSES.includes(t.status) && t.due_date && t.due_date < today;
     const { text: dateText, className: dateClass } = relativeDate(t.due_date);
     const cc = commentCounts[t.id] ?? 0;
+    const views = taskViews[t.id] ?? [];
+    const seenAfterUpdate = views.filter((v) => v.last_seen_at >= (t.updated_at ?? t.created_at));
+    const seenCount = seenAfterUpdate.length;
+    const seenNames = seenAfterUpdate.map((v) => v.full_name).join(", ");
+    const allSeen = seenCount >= teamSize;
     return (
       <tr
         key={t.id}
@@ -144,7 +149,7 @@ export function TaskTable({
         className={cn("group cursor-pointer border-b border-border transition-colors duration-150 hover:bg-surface", selectedIds.has(t.id) && "bg-surface")}
       >
         {/* Checkbox */}
-        <td className="w-8 px-2 pe-0 align-middle">
+        <td className="w-8 px-2 pe-0 align-middle border-e border-border">
           <input
             type="checkbox"
             checked={selectedIds.has(t.id)}
@@ -154,42 +159,7 @@ export function TaskTable({
             aria-label={`בחר ${t.title}`}
           />
         </td>
-        {/* Open arrow */}
-        <td className="w-8 px-2 pe-0 align-middle">
-          <Hint label="פתח משימה" side="bottom">
-            <button
-              type="button"
-              onClick={(e) => { e.stopPropagation(); onRowClick(t); }}
-              className="flex items-center justify-center rounded-lg p-1 text-ink-muted opacity-40 transition-[color,background-color,opacity] duration-150 group-hover:opacity-100 group-hover:text-primary hover:bg-surface-soft focus-visible:outline-none"
-              aria-label="פתח משימה"
-            >
-              <ArrowUpLeft className="h-4 w-4" />
-            </button>
-          </Hint>
-        </td>
-        {/* Seen by */}
-        <td className="w-10 px-1 align-middle">
-          {(() => {
-            const views = taskViews[t.id] ?? [];
-            const seenAfterUpdate = views.filter((v) => v.last_seen_at >= (t.updated_at ?? t.created_at));
-            const count = seenAfterUpdate.length;
-            if (count === 0) return null;
-            const names = seenAfterUpdate.map((v) => v.full_name).join(", ");
-            const allSeen = count >= teamSize;
-            return (
-              <Hint label={`נצפה ע״י: ${names}`} side="bottom">
-                <span className={cn(
-                  "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium",
-                  allSeen ? "text-st-done-text" : "text-ink-muted",
-                )}>
-                  <Eye className="h-3 w-3" />
-                  {count}
-                </span>
-              </Hint>
-            );
-          })()}
-        </td>
-        {/* Task title + comment badge + tags */}
+        {/* Task title + comment badge + seen + tags */}
         <td className="max-w-xs px-4 py-2.5 align-middle">
           <div className="flex items-center gap-2">
             {t.recurrence_rule && (
@@ -202,6 +172,17 @@ export function TaskTable({
               <span className="inline-flex items-center gap-1 rounded-full bg-surface px-2 py-0.5 text-xs font-medium text-ink">
                 <MessageCircle className="h-3 w-3" />{cc}
               </span>
+            )}
+            {seenCount > 0 && (
+              <Hint label={`נצפה ע״י: ${seenNames}`} side="bottom">
+                <span className={cn(
+                  "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-medium",
+                  allSeen ? "text-st-done-text" : "text-ink-muted",
+                )}>
+                  <Eye className="h-3 w-3" />
+                  {seenCount}
+                </span>
+              </Hint>
             )}
           </div>
           {t.tags && t.tags.length > 0 && (
@@ -259,11 +240,24 @@ export function TaskTable({
         <td className="px-4 py-2.5 align-middle">
           <StatusDropdown taskId={t.id} status={t.status} onUpdated={() => router.refresh()} />
         </td>
+        {/* Open arrow */}
+        <td className="w-8 px-2 ps-0 align-middle">
+          <Hint label="פתח משימה" side="bottom">
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); onRowClick(t); }}
+              className="flex items-center justify-center rounded-lg p-1 text-ink-muted opacity-40 transition-[color,background-color,opacity] duration-150 group-hover:opacity-100 group-hover:text-primary hover:bg-surface-soft focus-visible:outline-none"
+              aria-label="פתח משימה"
+            >
+              <ArrowUpLeft className="h-4 w-4" />
+            </button>
+          </Hint>
+        </td>
       </tr>
     );
   }
 
-  const COL_COUNT = 8;
+  const COL_COUNT = 7;
 
   return (
     <div className="flex flex-col gap-4">
@@ -271,7 +265,7 @@ export function TaskTable({
         <table className="w-full text-right text-body-sm">
           <thead>
             <tr className="bg-surface text-caption text-ink-secondary">
-              <th className="w-8 px-2 pe-0">
+              <th className="w-8 px-2 pe-0 border-e border-border">
                 <input
                   type="checkbox"
                   checked={allSelected}
@@ -281,13 +275,12 @@ export function TaskTable({
                   aria-label="בחר הכל"
                 />
               </th>
-              <th className="w-8 px-2 pe-0" />
-              <th className="w-10 px-1" />
               <th className="px-4 py-2.5 text-right font-medium">משימה</th>
               <th className="hidden px-4 py-2.5 text-right font-medium md:table-cell">לקוח</th>
               <th className="hidden px-4 py-2.5 text-right font-medium lg:table-cell">אחראי</th>
               <th className="px-4 py-2.5 text-right font-medium">דדליין</th>
               <th className="px-4 py-2.5 text-right font-medium">סטטוס</th>
+              <th className="w-8 px-2 ps-0" />
             </tr>
           </thead>
           <tbody>
@@ -360,14 +353,13 @@ export function TaskTable({
             <table className="w-full text-right text-body-sm">
               <thead>
                 <tr className="bg-surface text-caption text-ink-secondary">
-                  <th className="w-8 px-2 pe-0" />
-                  <th className="w-8 px-2 pe-0" />
-                  <th className="w-10 px-1" />
+                  <th className="w-8 px-2 pe-0 border-e border-border" />
                   <th className="px-4 py-2.5 text-right font-medium">משימה</th>
                   <th className="hidden px-4 py-2.5 text-right font-medium md:table-cell">לקוח</th>
                   <th className="hidden px-4 py-2.5 text-right font-medium lg:table-cell">אחראי</th>
                   <th className="px-4 py-2.5 text-right font-medium">דדליין</th>
                   <th className="px-4 py-2.5 text-right font-medium">סטטוס</th>
+                  <th className="w-8 px-2 ps-0" />
                 </tr>
               </thead>
               <tbody>
