@@ -114,7 +114,7 @@ export function TaskCalendar({
               return (
                 <div key={di} className="relative min-h-[100px] border-l border-border p-1.5 first:border-l-0">
                   <div className={`mb-1 flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
-                    isToday ? "bg-primary text-white" : "text-ink-secondary"
+                    isToday ? "bg-[#1A1A1A] text-white" : "text-ink-secondary"
                   }`}>
                     {day}
                   </div>

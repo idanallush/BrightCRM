@@ -52,7 +52,7 @@ export function AssigneeDropdown({
               >
                 <span className={cn(
                   "flex h-4 w-4 items-center justify-center rounded border",
-                  active ? "border-primary bg-primary text-white" : "border-border bg-white",
+                  active ? "border-[#1A1A1A] bg-[#1A1A1A] text-white" : "border-border bg-white",
                 )}>
                   {active && <Check className="h-3 w-3" />}
                 </span>

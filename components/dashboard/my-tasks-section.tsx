@@ -45,11 +45,11 @@ export function MyTasksSection({
   }, [tasks, tab]);
 
   return (
-    <div className="overflow-hidden rounded-2xl border-2 border-primary/15 bg-white shadow-elevation-1">
+    <div className="overflow-hidden rounded-2xl border-2 border-[#1A1A1A]/10 bg-white shadow-elevation-1">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-5 py-3">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
-            <ListChecks className="h-4 w-4 text-primary" />
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#1A1A1A]/10">
+            <ListChecks className="h-4 w-4 text-[#1A1A1A]" />
           </div>
           <h2 className="text-base font-bold text-ink">המשימות שלי</h2>
         </div>
@@ -62,7 +62,7 @@ export function MyTasksSection({
               className={cn(
                 "rounded-lg px-3 py-1.5 text-caption font-medium transition-colors",
                 tab === t.key
-                  ? "bg-primary text-white"
+                  ? "bg-[#1A1A1A] text-white"
                   : "text-ink-muted hover:bg-surface"
               )}
             >
@@ -116,7 +116,7 @@ export function MyTasksSection({
                   <td className="px-4 py-3">
                     <Link
                       href={`/tasks?task=${t.id}`}
-                      className="font-medium text-ink group-hover:text-primary after:absolute after:inset-0 after:content-['']"
+                      className="font-medium text-ink group-hover:text-ink after:absolute after:inset-0 after:content-['']"
                     >
                       {t.title}
                     </Link>

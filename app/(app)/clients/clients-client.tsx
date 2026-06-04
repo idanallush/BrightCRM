@@ -97,7 +97,7 @@ export function ClientsClient({
         <div className="flex items-center gap-2">
           {c.health && <HealthCell health={c.health} />}
           {openCount > 0 && (
-            <span className="rounded-full bg-surface px-2 py-0.5 text-[11px] font-medium text-primary">{openCount} משימות</span>
+            <span className="rounded-full bg-surface px-2 py-0.5 text-[11px] font-medium text-[#1A1A1A]">{openCount} משימות</span>
           )}
         </div>
         {managerMember && (
@@ -109,7 +109,7 @@ export function ClientsClient({
           <div className="flex gap-1">
             {links.map((l, i) => (
               <a key={i} href={l.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
-                className="rounded-lg p-1 text-ink-muted transition-colors hover:bg-surface hover:text-primary" title={l.label}>{l.icon}</a>
+                className="rounded-lg p-1 text-ink-muted transition-colors hover:bg-surface hover:text-[#1A1A1A]" title={l.label}>{l.icon}</a>
             ))}
           </div>
         )}
