@@ -3,7 +3,7 @@
 import * as React from "react";
 import { motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Plus, Search, Globe, FileText, Loader2, CheckCircle2, PauseCircle } from "lucide-react";
+import { Plus, Search, Globe, FileText, Loader2, CheckCircle2, PauseCircle, Users, SlidersHorizontal, X } from "lucide-react";
 import { MetaAdsIcon, GoogleDriveIcon } from "@/components/brand-icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -80,7 +80,7 @@ export function ClientsClient({
   const activeFilterCount = (health !== ALL ? 1 : 0) + (managerId !== ALL ? 1 : 0) + (onboardingFilter !== ALL ? 1 : 0) + (search.trim().length > 0 ? 1 : 0);
   function clearFilters() { setSearch(""); setHealth(ALL); setManagerId(ALL); setOnboardingFilter(ALL); }
 
-  function renderRow(c: (typeof clients)[0]) {
+  function renderCard(c: (typeof clients)[0]) {
     const openCount = openTaskCounts[c.id] ?? 0;
     const managerMember = team.find((m) => m.id === c.account_manager_id);
     const links = [
@@ -90,51 +90,30 @@ export function ClientsClient({
     ].filter(Boolean) as { url: string; icon: React.ReactNode; label: string }[];
 
     return (
-      <tr key={c.id} onClick={() => router.push(`/clients/${c.id}`)}
-        className="cursor-pointer border-b border-border transition-colors duration-150 hover:bg-surface">
-        <td className="px-4 py-3 font-medium text-ink">
-          <div className="flex items-center gap-2.5">
-            <ClientLogo logoUrl={c.logo_url} logoStoragePath={c.logo_storage_path} name={c.name} size="md" />
-            {c.name}
-          </div>
-        </td>
-        <td className="px-4 py-3 text-ink-secondary">
-          {managerMember ? (
-            <UserChip member={managerMember} size="sm" />
-          ) : (
-            <span className="text-ink-muted">ללא</span>
+      <div key={c.id} onClick={() => router.push(`/clients/${c.id}`)}
+        className="flex cursor-pointer flex-col items-center gap-2 rounded-2xl border border-border bg-white p-4 shadow-elevation-1 transition-shadow hover:shadow-elevation-2">
+        <ClientLogo logoUrl={c.logo_url} logoStoragePath={c.logo_storage_path} name={c.name} size="lg" />
+        <span className="max-w-full truncate text-center text-sm font-semibold text-ink">{c.name}</span>
+        <div className="flex items-center gap-2">
+          {c.health && <HealthCell health={c.health} />}
+          {openCount > 0 && (
+            <span className="rounded-full bg-surface px-2 py-0.5 text-[11px] font-medium text-primary">{openCount} משימות</span>
           )}
-        </td>
-        <td className="hidden px-4 py-3 sm:table-cell">
-          {c.health ? <HealthCell health={c.health} /> : <span className="text-ink-muted">{"--"}</span>}
-        </td>
-        <td className="hidden px-4 py-3 sm:table-cell">
-          {c.onboarding_status ? (
-            <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium",
-              c.onboarding_status === "בתהליך קליטה" ? "bg-st-approval-bg text-st-approval-text" : c.onboarding_status === "בהשהייה" ? "bg-surface text-ink-secondary" : "bg-st-done-bg text-st-done-text")}>
-              {c.onboarding_status === "בתהליך קליטה" ? <Loader2 className="h-3 w-3" /> : c.onboarding_status === "בהשהייה" ? <PauseCircle className="h-3 w-3" /> : <CheckCircle2 className="h-3 w-3" />}
-              {c.onboarding_status}
-            </span>
-          ) : <span className="text-ink-muted">{"--"}</span>}
-        </td>
-        <td className="px-4 py-3">
-          <span className={openCount > 0 ? "font-semibold text-primary" : "text-ink-muted"}>{openCount}</span>
-        </td>
-        <td className="hidden px-4 py-3 md:table-cell">
-          <div className="flex gap-1.5">
-            {c.brief && (
-              <span onClick={(e) => { e.stopPropagation(); router.push(`/clients/${c.id}#brief`); }}
-                className="rounded-lg p-1.5 text-ink-muted transition-colors hover:bg-surface hover:text-primary cursor-pointer" title="בריף לקוח">
-                <FileText className="h-3.5 w-3.5" />
-              </span>
-            )}
+        </div>
+        {managerMember && (
+          <div className="mt-auto pt-1">
+            <UserChip member={managerMember} size="xs" />
+          </div>
+        )}
+        {links.length > 0 && (
+          <div className="flex gap-1">
             {links.map((l, i) => (
               <a key={i} href={l.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
-                className="rounded-lg p-1.5 text-ink-muted transition-colors hover:bg-surface hover:text-primary" title={l.label}>{l.icon}</a>
+                className="rounded-lg p-1 text-ink-muted transition-colors hover:bg-surface hover:text-primary" title={l.label}>{l.icon}</a>
             ))}
           </div>
-        </td>
-      </tr>
+        )}
+      </div>
     );
   }
 
@@ -145,63 +124,84 @@ export function ClientsClient({
       transition={{ duration: 0.35, ease: "easeOut" }}
       className="flex flex-col gap-4"
     >
-      {/* Header bar */}
-      <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3.5">
-          <div className="flex items-center gap-3">
-            <h1 className="text-base font-bold text-ink">לקוחות</h1>
-            <span className="rounded-full bg-surface px-2.5 py-0.5 text-caption text-ink-secondary">{filtered.length}</span>
-            {activeFilterCount > 0 && (
-              <button type="button" onClick={clearFilters}
-                className="rounded-full bg-surface px-3 py-1 text-[11px] font-medium text-ink-secondary hover:bg-border">
-                {activeFilterCount === 1 ? "פילטר 1" : `${activeFilterCount} פילטרים`} · נקה
-              </button>
-            )}
-          </div>
-          <Button onClick={() => setCreateOpen(true)} className="hidden sm:inline-flex">
-            <Plus className="h-4 w-4" /> לקוח חדש
-          </Button>
+      {/* Compact toolbar */}
+      <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-3 py-2 shadow-elevation-1">
+        <Button onClick={() => setCreateOpen(true)} size="sm" className="shrink-0">
+          <Plus className="h-4 w-4" /> <span className="hidden sm:inline">חדש</span>
+        </Button>
+
+        <div className="h-5 w-px shrink-0 bg-border" />
+
+        {/* Manager filter */}
+        <Select value={managerId} onValueChange={setManagerId}>
+          <SelectTrigger className="h-8 w-auto gap-1.5 border-0 bg-transparent px-2 text-caption shadow-none hover:bg-surface">
+            <Users className="h-4 w-4 text-ink-muted" />
+            <SelectValue placeholder="מנהל" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>כל המנהלים</SelectItem>
+            {team.map((m) => <SelectItem key={m.id} value={m.id}>{m.full_name}</SelectItem>)}
+          </SelectContent>
+        </Select>
+
+        <div className="h-5 w-px shrink-0 bg-border" />
+
+        {/* Search */}
+        <div className="relative min-w-0 flex-1 sm:max-w-[180px]">
+          <Search className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-muted" />
+          <Input value={search} onChange={(e) => setSearch(e.target.value)}
+            placeholder="חיפוש..." aria-label="חיפוש לקוחות" className="h-8 rounded-xl border-0 bg-transparent pr-8 text-caption shadow-none placeholder:text-ink-muted hover:bg-surface focus:bg-surface" />
         </div>
 
-        {/* Filters */}
-        <div className="flex flex-col gap-3 border-t border-border px-4 py-3 sm:flex-row sm:items-center">
-          <div className="flex gap-1 overflow-x-auto pb-1">
-            {HEALTH_PILLS.map((p) => (
-              <button key={p.key} type="button" onClick={() => setHealth(p.key)}
-                className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-caption transition-colors duration-150",
-                  health === p.key ? "font-medium text-white" : "text-ink-secondary hover:bg-surface")}
-                style={health === p.key ? { backgroundColor: p.color || "#050038" } : undefined}>
-                {p.label}
-              </button>
+        {/* Combined filter: health + onboarding */}
+        <Select
+          value={health !== ALL ? health : onboardingFilter !== ALL ? `onb:${onboardingFilter}` : "__none__"}
+          onValueChange={(v) => {
+            if (v === "__none__") { setHealth(ALL); setOnboardingFilter(ALL); return; }
+            if (v.startsWith("onb:")) { setOnboardingFilter(v.replace("onb:", "")); setHealth(ALL); return; }
+            setHealth(v); setOnboardingFilter(ALL);
+          }}
+        >
+          <SelectTrigger className="h-8 w-auto gap-1.5 border-0 bg-transparent px-2 text-caption shadow-none hover:bg-surface">
+            <SlidersHorizontal className="h-4 w-4 text-ink-muted" />
+            <span className="hidden sm:inline">סנן</span>
+            {activeFilterCount > 0 && (
+              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-white">{activeFilterCount}</span>
+            )}
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__none__">ללא סינון</SelectItem>
+            <div className="px-2 py-1.5 text-[11px] font-semibold text-ink-muted">בריאות</div>
+            {HEALTH_PILLS.filter((p) => p.key !== ALL).map((p) => (
+              <SelectItem key={p.key} value={p.key}>
+                <div className="flex items-center gap-2">
+                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: p.color }} />
+                  {p.label}
+                </div>
+              </SelectItem>
             ))}
-            <span className="mx-1 self-center text-border">|</span>
-            {ONBOARDING_PILLS.map((p) => (
-              <button key={p.key} type="button" onClick={() => setOnboardingFilter(p.key)}
-                className={cn("whitespace-nowrap rounded-full px-3 py-1.5 text-caption transition-colors duration-150",
-                  onboardingFilter === p.key
-                    ? "bg-primary font-medium text-white"
-                    : "text-ink-secondary hover:bg-surface")}>
-                {p.label}
-              </button>
+            <div className="px-2 py-1.5 text-[11px] font-semibold text-ink-muted">קליטה</div>
+            {ONBOARDING_PILLS.filter((p) => p.key !== ALL).map((p) => (
+              <SelectItem key={`onb-${p.key}`} value={`onb:${p.key}`}>{p.label}</SelectItem>
             ))}
-          </div>
-          <div className="flex flex-1 flex-wrap items-center gap-2">
-            <div className="relative min-w-[160px] flex-1 sm:max-w-[220px]">
-              <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
-              <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="חיפוש" aria-label="חיפוש לקוחות" className="h-9 pr-9" />
-            </div>
-            <Select value={managerId} onValueChange={setManagerId}>
-              <SelectTrigger className="h-9 w-auto min-w-[120px]"><SelectValue placeholder="מנהל" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value={ALL}>כל המנהלים</SelectItem>
-                {team.map((m) => <SelectItem key={m.id} value={m.id}>{m.full_name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+          </SelectContent>
+        </Select>
+
+        {/* Count badge */}
+        <span className="rounded-full bg-surface px-2.5 py-0.5 text-caption font-medium text-ink-secondary">{filtered.length}</span>
+
+        {/* Clear filters */}
+        {activeFilterCount > 0 && (
+          <>
+            <div className="h-5 w-px shrink-0 bg-border" />
+            <button type="button" onClick={clearFilters} className="rounded-lg p-1.5 text-ink-muted transition-colors hover:bg-surface hover:text-ink" aria-label="נקה פילטרים">
+              <X className="h-4 w-4" />
+            </button>
+          </>
+        )}
       </div>
 
-      {/* Table */}
+      {/* Card grid */}
       {filtered.length === 0 ? (
         activeFilterCount > 0 ? (
           <EmptyState title="לא נמצאו לקוחות" description="נסה לשנות פילטרים."
@@ -211,35 +211,28 @@ export function ClientsClient({
             action={<Button onClick={() => setCreateOpen(true)}><Plus className="h-4 w-4" /> לקוח חדש</Button>} />
         )
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
-          <table className="w-full text-right text-body-sm">
-            <thead>
-              <tr className="bg-surface text-caption text-ink-secondary">
-                <th className="px-4 py-2.5 text-right font-medium">לקוח</th>
-                <th className="px-4 py-2.5 text-right font-medium">מנהל</th>
-                <th className="hidden px-4 py-2.5 text-right font-medium sm:table-cell">בריאות</th>
-                <th className="hidden px-4 py-2.5 text-right font-medium sm:table-cell">קליטה</th>
-                <th className="px-4 py-2.5 text-right font-medium">משימות</th>
-                <th className="hidden px-4 py-2.5 text-right font-medium md:table-cell">קישורים</th>
-              </tr>
-            </thead>
-            <tbody>
-              {myClients.length > 0 && (
-                <>
-                  <tr>
-                    <td colSpan={6} className="border-b border-border bg-surface px-4 py-1.5 text-caption font-semibold text-ink-secondary">הלקוחות שלי</td>
-                  </tr>
-                  {myClients.map(renderRow)}
-                </>
-              )}
-              {myClients.length > 0 && otherClients.length > 0 && (
-                <tr>
-                  <td colSpan={6} className="bg-surface px-4 py-1.5 text-caption font-medium text-ink-secondary">לקוחות נוספים</td>
-                </tr>
-              )}
-              {otherClients.map(renderRow)}
-            </tbody>
-          </table>
+        <div className="flex flex-col gap-4">
+          {myClients.length > 0 && (
+            <div>
+              <h2 className="mb-2 text-caption font-semibold text-ink-secondary">הלקוחות שלי</h2>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                {myClients.map(renderCard)}
+              </div>
+            </div>
+          )}
+          {myClients.length > 0 && otherClients.length > 0 && (
+            <div>
+              <h2 className="mb-2 text-caption font-semibold text-ink-secondary">לקוחות נוספים</h2>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                {otherClients.map(renderCard)}
+              </div>
+            </div>
+          )}
+          {myClients.length === 0 && (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              {otherClients.map(renderCard)}
+            </div>
+          )}
         </div>
       )}
 
