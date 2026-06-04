@@ -2,19 +2,9 @@ import Link from "next/link";
 import { ArrowLeft, Phone, Globe, MessageSquare, Plus } from "lucide-react";
 import { getRecentActivity, type ActivityItem } from "@/lib/data";
 import { UserAvatar } from "@/components/user-avatar";
+import { timeAgo } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
-
-function timeAgo(iso: string): string {
-  const m = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
-  if (m < 1) return "עכשיו";
-  if (m < 60) return `לפני ${m} דק'`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `לפני ${h} שע'`;
-  const d = Math.floor(h / 24);
-  if (d === 1) return "אתמול";
-  return `לפני ${d} ימים`;
-}
 
 function SourceIcon({ source }: { source: string }) {
   if (source === "whatsapp") return <Phone className="h-3 w-3 text-green-600" />;

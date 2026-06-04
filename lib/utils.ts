@@ -32,3 +32,23 @@ export function avatarColor(seed: string | null | undefined): string {
   for (let i = 0; i < s.length; i++) hash = (hash * 31 + s.charCodeAt(i)) >>> 0;
   return AVATAR_COLORS[hash % AVATAR_COLORS.length];
 }
+
+/** Relative date label with overdue flag + Tailwind class hint. */
+export function relativeDate(iso: string | null): { text: string; overdue: boolean; className: string } {
+  if (!iso) return { text: "ללא דדליין", overdue: false, className: "text-ink-muted italic" };
+  const diffDays = Math.ceil((new Date(iso).getTime() - Date.now()) / 86400000);
+  if (diffDays < 0) return { text: `באיחור ${Math.abs(diffDays)} ימים`, overdue: true, className: "text-overdue font-medium" };
+  if (diffDays === 0) return { text: "היום", overdue: false, className: "text-st-waiting font-medium" };
+  if (diffDays === 1) return { text: "מחר", overdue: false, className: "text-ink" };
+  return { text: `עוד ${diffDays} ימים`, overdue: false, className: "text-ink-secondary" };
+}
+
+/** Human-friendly "time ago" label in Hebrew. */
+export function timeAgo(iso: string): string {
+  const m = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+  if (m < 1) return "עכשיו";
+  if (m < 60) return `לפני ${m} דק'`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `לפני ${h} שע'`;
+  return `לפני ${Math.floor(h / 24)} ימים`;
+}

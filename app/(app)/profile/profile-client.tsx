@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { Mail, Phone, Briefcase, MessageCircle, Lock, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/toaster";
 import { UserAvatar } from "@/components/user-avatar";
-import { cn } from "@/lib/utils";
+import { ToggleRow } from "@/components/ui/toggle-row";
+import { Section, Field } from "@/components/ui/form-section";
 import {
   updateProfile,
   uploadAvatar,
@@ -204,7 +204,7 @@ export function ProfileClient({ member }: { member: Member }) {
           בחר היכן לקבל התראות על משימות חדשות, תגובות ואזכורים.
         </p>
         <div className="flex flex-col gap-2">
-          <Toggle
+          <ToggleRow
             label="התראות במייל"
             icon={<Mail className="h-4 w-4" />}
             checked={notifyEmail}
@@ -213,7 +213,7 @@ export function ProfileClient({ member }: { member: Member }) {
               onSavePrefs({ notify_email: v, notify_whatsapp: notifyWhatsapp })
             }
           />
-          <Toggle
+          <ToggleRow
             label="התראות בוואטסאפ"
             icon={<MessageCircle className="h-4 w-4" />}
             checked={notifyWhatsapp}
@@ -259,74 +259,3 @@ export function ProfileClient({ member }: { member: Member }) {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="rounded-2xl border border-border bg-white p-5 shadow-elevation-1 md:p-6">
-      <h2 className="mb-4 text-lg font-semibold text-ink">{title}</h2>
-      {children}
-    </section>
-  );
-}
-
-function Field({
-  label,
-  icon,
-  children,
-}: {
-  label: string;
-  icon?: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <Label className="flex items-center gap-1.5 text-ink-muted">
-        {icon}
-        {label}
-      </Label>
-      {children}
-    </div>
-  );
-}
-
-function Toggle({
-  label,
-  icon,
-  checked,
-  disabled,
-  onChange,
-}: {
-  label: string;
-  icon?: React.ReactNode;
-  checked: boolean;
-  disabled?: boolean;
-  onChange: (v: boolean) => void;
-}) {
-  return (
-    <div className="flex items-center justify-between rounded-xl border border-border px-4 py-3">
-      <span className="flex items-center gap-2 text-body-sm text-ink">
-        {icon}
-        {label}
-      </span>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        aria-label={label}
-        disabled={disabled}
-        onClick={() => onChange(!checked)}
-        className={cn(
-          "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:opacity-50",
-          checked ? "bg-primary" : "bg-border",
-        )}
-      >
-        <span
-          className={cn(
-            "inline-block h-5 w-5 transform rounded-full bg-white shadow-elevation-1 transition-transform duration-150",
-            // RTL: checked moves knob to the left
-            checked ? "-translate-x-0.5" : "-translate-x-[22px]",
-          )}
-        />
-      </button>
-    </div>
-  );
-}

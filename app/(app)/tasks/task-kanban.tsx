@@ -5,21 +5,13 @@ import { AlertTriangle } from "lucide-react";
 import { STATUS_LIGHT } from "@/components/ui/badge";
 import type { TaskWithRelations } from "@/lib/data";
 import { AvatarStack } from "@/components/user-avatar";
+import { relativeDate } from "@/lib/utils";
 
 const COLUMNS = [
   { key: "מחכה לטיפול", label: "ממתין" },
   { key: "נכנס לעבודה", label: "נכנס לעבודה" },
   { key: "אישור לקוח", label: "אישור לקוח" },
 ];
-
-function relativeDate(iso: string | null): { text: string; overdue: boolean } {
-  if (!iso) return { text: "ללא דדליין", overdue: false };
-  const diffDays = Math.ceil((new Date(iso).getTime() - Date.now()) / 86400000);
-  if (diffDays < 0) return { text: `באיחור ${Math.abs(diffDays)} ימים`, overdue: true };
-  if (diffDays === 0) return { text: "היום", overdue: false };
-  if (diffDays === 1) return { text: "מחר", overdue: false };
-  return { text: `עוד ${diffDays} ימים`, overdue: false };
-}
 
 export function TaskKanban({
   tasks,

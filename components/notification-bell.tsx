@@ -3,17 +3,12 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Bell, AtSign, ArrowLeftRight, MessageSquare, CheckCheck } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, timeAgo } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 
 type Notification = { id: string; type: string; task_id: string | null; content: string; read: boolean; created_at: string };
 
-function timeAgo(iso: string) {
-  const m = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
-  if (m < 1) return "עכשיו"; if (m < 60) return `${m} דק'`; const h = Math.floor(m / 60);
-  if (h < 24) return `${h} שע'`; return `${Math.floor(h / 24)} ימים`;
-}
 const TYPE_ICON: Record<string, React.ReactNode> = {
   mention: <AtSign className="h-3.5 w-3.5" />, status_change: <ArrowLeftRight className="h-3.5 w-3.5" />,
   comment: <MessageSquare className="h-3.5 w-3.5" />, assignment: <CheckCheck className="h-3.5 w-3.5" />,

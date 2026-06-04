@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/toaster";
-import { cn } from "@/lib/utils";
+import { cn, getInitials } from "@/lib/utils";
+import { ToggleRow } from "@/components/ui/toggle-row";
 import { updateTeamMember, addTeamMember } from "./actions";
 
 type Member = {
@@ -21,57 +22,6 @@ type Member = {
   notify_email: boolean | null;
   notify_whatsapp: boolean | null;
 };
-
-function getInitials(name: string): string {
-  return name
-    .split(/\s+/)
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
-
-function Toggle({
-  label,
-  icon,
-  checked,
-  disabled,
-  onChange,
-}: {
-  label: string;
-  icon?: React.ReactNode;
-  checked: boolean;
-  disabled?: boolean;
-  onChange: (v: boolean) => void;
-}) {
-  return (
-    <div className="flex items-center justify-between rounded-xl border border-border px-3 py-2.5">
-      <span className="flex items-center gap-2 text-sm text-ink">
-        {icon}
-        {label}
-      </span>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        aria-label={label}
-        disabled={disabled}
-        onClick={() => onChange(!checked)}
-        className={cn(
-          "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:opacity-50",
-          checked ? "bg-primary" : "bg-border",
-        )}
-      >
-        <span
-          className={cn(
-            "inline-block h-5 w-5 transform rounded-full bg-white shadow-elevation-1 transition-transform duration-150",
-            checked ? "-translate-x-0.5" : "-translate-x-[22px]",
-          )}
-        />
-      </button>
-    </div>
-  );
-}
 
 function MemberForm({
   initial,
@@ -140,18 +90,18 @@ function MemberForm({
       </div>
 
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-        <Toggle
+        <ToggleRow
           label="פעיל"
           checked={form.active}
           onChange={(v) => set("active", v)}
         />
-        <Toggle
+        <ToggleRow
           label="התראות מייל"
           icon={<Mail className="h-3.5 w-3.5 text-ink-muted" />}
           checked={form.notify_email}
           onChange={(v) => set("notify_email", v)}
         />
-        <Toggle
+        <ToggleRow
           label="התראות WhatsApp"
           icon={<MessageCircle className="h-3.5 w-3.5 text-ink-muted" />}
           checked={form.notify_whatsapp}

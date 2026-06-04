@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, LayoutGrid, Rows3, CalendarDays, AlertTriangle, Search, Tag as TagIcon, X, Trash2, ArrowRightLeft, ClipboardList, MessageCircle, Paperclip } from "lucide-react";
+import { Plus, LayoutGrid, Rows3, CalendarDays, AlertTriangle, Search, Tag as TagIcon, X, Trash2, ArrowRightLeft } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,15 +18,12 @@ import {
 import { toast } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/empty-state";
-import { UserChip } from "@/components/user-hover-card";
-import { Eye } from "lucide-react";
 import { TaskTable } from "./task-table";
 import { TaskKanban } from "./task-kanban";
 import { TaskCalendar } from "./task-calendar";
 import { TaskForm } from "./task-form";
-import { TaskAttachments } from "./task-attachments";
-import { TaskComments } from "./task-comments";
-import { deleteTask, updateTask, bulkUpdateStatus, bulkUpdateAssignees, bulkDeleteTasks, recordTaskView, getTaskViewsBulk, type TaskInput, type TaskViewRecord } from "./actions";
+import { TaskDetailPanel } from "./task-detail-panel";
+import { deleteTask, bulkUpdateStatus, bulkUpdateAssignees, bulkDeleteTasks, recordTaskView, getTaskViewsBulk, type TaskViewRecord } from "./actions";
 import { STATUS_LIGHT } from "@/components/ui/badge";
 import type { Client, Tag, TaskWithRelations, TeamMember } from "@/lib/data";
 
@@ -39,231 +36,6 @@ const STATUS_PILLS = [
 ] as const;
 const VIEW_KEY = "brightcrm:tasks-view";
 
-
-function TaskDetailPanel({
-  task, clients, team, tags, onClose, onDelete, confirmingDelete, setConfirmingDelete, onTitleSaved, taskViews, teamSize,
-}: {
-  task: TaskWithRelations;
-  clients: Client[];
-  team: TeamMember[];
-  tags: Tag[];
-  onClose: () => void;
-  onDelete: () => void;
-  confirmingDelete: boolean;
-  setConfirmingDelete: (v: boolean) => void;
-  onTitleSaved: (title: string) => void;
-  taskViews: TaskViewRecord[];
-  teamSize: number;
-}) {
-  const router = useRouter();
-  const [fileCount, setFileCount] = React.useState<number | null>(null);
-  const filesOpen = fileCount !== null && fileCount > 0;
-
-  const [editingTitle, setEditingTitle] = React.useState(false);
-  const [titleDraft, setTitleDraft] = React.useState(task.title);
-  const [savingTitle, setSavingTitle] = React.useState(false);
-
-  const creatorName = task.creator?.full_name ?? null;
-  const creatorRole = team.find(m => m.id === task.created_by_id)?.role ?? null;
-  const isCreatorDifferent = creatorName && !task.assignees.some((a) => a.id === task.created_by_id);
-
-  async function saveTitle() {
-    const next = titleDraft.trim();
-    setEditingTitle(false);
-    if (!next || next === task.title) { setTitleDraft(task.title); return; }
-    setSavingTitle(true);
-    const payload = {
-      title: next,
-      client_id: task.client_id,
-      description: task.description,
-      status: task.status as TaskInput["status"],
-      due_date: task.due_date,
-      assignee_ids: task.assignees.map((a) => a.id),
-      watcher_ids: task.watchers.map((w) => w.id),
-      tag_ids: task.tags.map((t) => t.id),
-    };
-    const res = await updateTask(task.id, payload);
-    setSavingTitle(false);
-    if ("error" in res) { toast.error(res.error); setTitleDraft(task.title); return; }
-    onTitleSaved(next);
-    router.refresh();
-  }
-
-  const creator = task.creator ?? (creatorName ? { full_name: creatorName, avatar_url: null } : null);
-  const firstAssignee = task.assignees[0] ?? null;
-  const firstWatcher = task.watchers[0] ?? null;
-
-  return (
-    <>
-      {/* ── Header: title + roles bar ── */}
-      <div className="shrink-0 border-b border-border px-5 pb-4 pt-5 md:px-6 md:pt-6">
-        <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <ClipboardList className="h-5 w-5" />
-          </div>
-          <div className="min-w-0 flex-1">
-            {editingTitle ? (
-              <Input
-                autoFocus
-                value={titleDraft}
-                disabled={savingTitle}
-                onChange={(e) => setTitleDraft(e.target.value)}
-                onBlur={saveTitle}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") { e.preventDefault(); saveTitle(); }
-                  if (e.key === "Escape") { setTitleDraft(task.title); setEditingTitle(false); }
-                }}
-                className="text-xl font-bold text-ink"
-              />
-            ) : (
-              <h2
-                onClick={() => { setTitleDraft(task.title); setEditingTitle(true); }}
-                title="לחץ לעריכה"
-                className="-mx-1.5 cursor-text rounded-lg px-1.5 py-0.5 text-xl font-bold leading-snug text-ink transition-colors hover:bg-surface"
-              >
-                {task.title}
-              </h2>
-            )}
-          </div>
-        </div>
-
-        {/* Roles bar */}
-        <div className="mt-4 flex items-center gap-6 border-t border-border pt-4">
-          {creator && (
-            <div className="flex items-center gap-2.5">
-              <div className="flex flex-col items-end">
-                <span className="text-[11px] text-ink-muted">נפתח ע״י</span>
-                <span className="text-sm font-medium text-ink">{creator.full_name}</span>
-              </div>
-              <UserChip member={creator} size="sm" />
-            </div>
-          )}
-          {firstAssignee && (
-            <>
-              <div className="h-8 w-px bg-border" />
-              <div className="flex items-center gap-2.5">
-                <div className="flex flex-col items-end">
-                  <span className="text-[11px] text-ink-muted">אחראי</span>
-                  <span className="text-sm font-medium text-ink">
-                    {task.assignees.map(a => a.full_name).join(", ")}
-                  </span>
-                </div>
-                <div className="flex -space-x-1.5 space-x-reverse">
-                  {task.assignees.map((a) => (
-                    <UserChip key={a.id} member={a} size="sm" />
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-          {firstWatcher && (
-            <>
-              <div className="h-8 w-px bg-border" />
-              <div className="flex items-center gap-2.5">
-                <div className="flex flex-col items-end">
-                  <span className="text-[11px] text-ink-muted">במעקב</span>
-                  <span className="text-sm font-medium text-ink">
-                    {task.watchers.map(w => w.full_name).join(", ")}
-                  </span>
-                </div>
-                <div className="flex -space-x-1.5 space-x-reverse">
-                  {task.watchers.map((w) => (
-                    <UserChip key={w.id} member={w} size="sm" />
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-          {/* Seen-by indicator */}
-          {(() => {
-            const seenAfterUpdate = taskViews.filter((v) => v.last_seen_at >= (task.updated_at ?? task.created_at));
-            if (seenAfterUpdate.length === 0) return null;
-            return (
-              <>
-                <div className="h-8 w-px bg-border" />
-                <div className="flex items-center gap-2.5" title={`נצפה ע״י: ${seenAfterUpdate.map(v => v.full_name).join(", ")}`}>
-                  <div className="flex flex-col items-end">
-                    <span className="text-[11px] text-ink-muted">נצפה</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="flex -space-x-1.5 space-x-reverse">
-                      {seenAfterUpdate.slice(0, 3).map((v) => (
-                        <UserChip key={v.member_id} member={{ full_name: v.full_name, avatar_url: v.avatar_url }} size="xs" />
-                      ))}
-                    </div>
-                    {seenAfterUpdate.length > 3 && (
-                      <span className="text-xs font-medium text-ink-muted">+{seenAfterUpdate.length - 3}</span>
-                    )}
-                    <Eye className="h-3.5 w-3.5 text-ink-muted" />
-                  </div>
-                </div>
-              </>
-            );
-          })()}
-        </div>
-      </div>
-
-      {/* ── Body: two-column layout ── */}
-      <div className="flex min-h-0 flex-1 overflow-hidden">
-        {/* Left column — form */}
-        <div className="flex w-1/2 flex-col border-e border-border">
-          <div className="flex items-center gap-2 px-5 py-3 md:px-6">
-            <ClipboardList className="h-4 w-4 text-ink-muted" />
-            <h3 className="text-base font-semibold text-ink">פרטי משימה</h3>
-          </div>
-          <div className="flex-1 overflow-y-auto px-5 pb-4 md:px-6">
-            <TaskForm key={task.id} task={task} clients={clients} team={team} tags={tags} onDone={onClose} compact />
-          </div>
-        </div>
-
-        {/* Right column — comments + files */}
-        <div className="flex w-1/2 flex-col">
-          <div className="flex-1 overflow-y-auto">
-            {/* Comments section */}
-            <div className="px-5 pb-4 pt-3 md:px-6">
-              <TaskComments taskId={task.id} team={team} />
-            </div>
-
-            {/* Files section */}
-            <div className="border-t border-border px-5 pb-4 pt-3 md:px-6">
-              <div className="mb-3 flex items-center gap-2">
-                <Paperclip className="h-4 w-4 text-ink-muted" />
-                <h3 className="text-base font-semibold text-ink">
-                  קבצים{fileCount !== null ? ` (${fileCount})` : ""}
-                </h3>
-              </div>
-              <TaskAttachments taskId={task.id} onCountChange={setFileCount} />
-            </div>
-          </div>
-
-          {/* Delete — bottom of right column */}
-          <div className="border-t border-border px-5 py-3 md:px-6">
-            {confirmingDelete ? (
-              <div className="flex flex-col gap-2 rounded-xl bg-overdue-bg p-3 text-right">
-                <p className="text-sm text-overdue">למחוק את המשימה לצמיתות?</p>
-                <div className="flex flex-row-reverse gap-2">
-                  <Button variant="danger" size="sm" onClick={onDelete}>מחק</Button>
-                  <Button variant="ghost" size="sm" onClick={() => setConfirmingDelete(false)}>ביטול</Button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex justify-start">
-                <button
-                  type="button"
-                  onClick={() => setConfirmingDelete(true)}
-                  className="flex items-center gap-1.5 text-sm text-overdue transition-colors hover:text-overdue/80"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  מחיקה
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
 
 export function TasksClient({
   tasks, clients, team, tags, commentCounts, currentMemberId, initialFilters, initialOpenTaskId,

@@ -1,10 +1,46 @@
+import { Suspense } from "react";
 import { getClients, getCommentCountsByTask, getTags, getTasks, getTeam } from "@/lib/data";
 import { createClient } from "@/lib/supabase/server";
 import { TasksClient } from "./tasks-client";
 
 export const dynamic = "force-dynamic";
 
-export default async function TasksPage({
+function TasksSkeleton() {
+  return (
+    <div className="flex flex-col gap-4 p-4" dir="rtl">
+      <div className="flex items-center gap-3">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="h-9 w-24 animate-pulse rounded-xl bg-surface" />
+        ))}
+      </div>
+      <div className="flex flex-col gap-1">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="h-14 animate-pulse rounded-xl bg-surface" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function TasksPage({
+  searchParams,
+}: {
+  searchParams: {
+    status?: string;
+    client?: string;
+    assignee?: string;
+    overdue?: string;
+    task?: string;
+  };
+}) {
+  return (
+    <Suspense fallback={<TasksSkeleton />}>
+      <TasksContent searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function TasksContent({
   searchParams,
 }: {
   searchParams: {

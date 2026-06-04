@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import {
   Plus, Phone, TrendingUp, TrendingDown, Clock, AlertTriangle,
@@ -18,6 +19,7 @@ import {
   AnimatedDashboard, AnimatedSection, AnimatedStatCard, AnimatedNumber,
 } from "@/components/dashboard/animated-layout";
 import { ClientLogo } from "@/components/client-logo";
+import { getInitials, relativeDate, timeAgo } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -35,30 +37,8 @@ function fmtDate(iso: string | null): string {
   return new Date(iso).toLocaleDateString("he-IL", { day: "numeric", month: "long" });
 }
 
-function relativeDate(iso: string | null): { text: string; overdue: boolean } {
-  if (!iso) return { text: "ללא", overdue: false };
-  const d = Math.ceil((new Date(iso).getTime() - Date.now()) / 86400000);
-  if (d < 0) return { text: `באיחור ${Math.abs(d)} ימים`, overdue: true };
-  if (d === 0) return { text: "היום", overdue: false };
-  if (d === 1) return { text: "מחר", overdue: false };
-  return { text: `עוד ${d} ימים`, overdue: false };
-}
-
-function timeAgo(iso: string): string {
-  const m = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
-  if (m < 1) return "עכשיו";
-  if (m < 60) return `לפני ${m} דק'`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `לפני ${h} שע'`;
-  return `לפני ${Math.floor(h / 24)} ימים`;
-}
-
 function getFirstName(label: string): string {
   return label.split(/\s+/)[0] || label;
-}
-
-function getInitials(name: string): string {
-  return name.split(/\s+/).map((w) => w[0]).join("").toUpperCase().slice(0, 2);
 }
 
 const STAT_CARDS = [
@@ -69,7 +49,33 @@ const STAT_CARDS = [
 ] as const;
 
 
-export default async function DashboardPage() {
+function DashboardSkeleton() {
+  return (
+    <div className="flex flex-col gap-5 p-4" dir="rtl">
+      <div className="h-28 animate-pulse rounded-2xl bg-surface" />
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="h-28 animate-pulse rounded-2xl bg-surface" />
+        ))}
+      </div>
+      <div className="h-14 animate-pulse rounded-2xl bg-surface" />
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+        <div className="h-64 animate-pulse rounded-2xl bg-surface lg:col-span-2" />
+        <div className="h-64 animate-pulse rounded-2xl bg-surface" />
+      </div>
+    </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<DashboardSkeleton />}>
+      <DashboardContent />
+    </Suspense>
+  );
+}
+
+async function DashboardContent() {
   const sb = createClient();
   const { data: { user } } = await sb.auth.getUser();
   const userLabel = user?.user_metadata?.full_name || user?.email || "";
