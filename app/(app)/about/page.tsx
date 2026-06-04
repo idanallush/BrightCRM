@@ -40,7 +40,7 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <HowStep
             icon={<MessageCircle className="h-6 w-6 text-white" />}
-            color="#4262FF"
+            color="#1A1A1A"
             title="שולחים הודעה"
             desc="טקסט או הקלטה קולית בטלגרם. בעברית, כמו שמדברים."
           />

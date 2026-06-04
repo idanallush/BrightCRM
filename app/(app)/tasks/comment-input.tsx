@@ -236,7 +236,7 @@ export function CommentInput({
               key={m.id}
               type="button"
               onMouseDown={(e) => { e.preventDefault(); insertMention(m); }}
-              className="flex w-full items-center gap-2 px-3 py-2 text-right text-sm text-ink transition-colors hover:bg-blue-50"
+              className="flex w-full items-center gap-2 px-3 py-2 text-right text-sm text-ink transition-colors hover:bg-gray-50"
             >
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface text-[10px] font-semibold text-ink">
                 {getInitials(m.full_name)}

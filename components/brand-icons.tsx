@@ -53,10 +53,10 @@ export function CmsIcon({ className }: { className?: string }) {
 export function WebsiteIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="12" cy="12" r="9" stroke="#4262FF" strokeWidth="1.5"/>
-      <path d="M12 3C14.5 6 15.5 9 15.5 12C15.5 15 14.5 18 12 21" stroke="#4262FF" strokeWidth="1.5"/>
-      <path d="M12 3C9.5 6 8.5 9 8.5 12C8.5 15 9.5 18 12 21" stroke="#4262FF" strokeWidth="1.5"/>
-      <path d="M3.5 10H20.5M3.5 14H20.5" stroke="#4262FF" strokeWidth="1.5"/>
+      <circle cx="12" cy="12" r="9" stroke="#1A1A1A" strokeWidth="1.5"/>
+      <path d="M12 3C14.5 6 15.5 9 15.5 12C15.5 15 14.5 18 12 21" stroke="#1A1A1A" strokeWidth="1.5"/>
+      <path d="M12 3C9.5 6 8.5 9 8.5 12C8.5 15 9.5 18 12 21" stroke="#1A1A1A" strokeWidth="1.5"/>
+      <path d="M3.5 10H20.5M3.5 14H20.5" stroke="#1A1A1A" strokeWidth="1.5"/>
     </svg>
   );
 }

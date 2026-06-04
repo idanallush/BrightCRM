@@ -104,7 +104,7 @@ export function healthVariant(health: string | null): Variant | null {
 /** Raw saturated color strings (used for small dots/indicators only) */
 export const STATUS_COLORS: Record<string, string> = {
   "מחכה לטיפול": "#FDAB3D",
-  "נכנס לעבודה": "#4262FF",
+  "נכנס לעבודה": "#1A1A1A",
   "בעבודה": "#A25DDC",
   "אישור לקוח": "#FFCB00",
   "בוצע": "#00C875",
@@ -113,7 +113,7 @@ export const STATUS_COLORS: Record<string, string> = {
 /** Light background + dark text pairs for Studio Light treatment */
 export const STATUS_LIGHT: Record<string, { bg: string; text: string; dot: string }> = {
   "מחכה לטיפול": { bg: "#FFF3E0", text: "#92400E", dot: "#FDAB3D" },
-  "נכנס לעבודה": { bg: "#EEF2FF", text: "#2B42B0", dot: "#4262FF" },
+  "נכנס לעבודה": { bg: "#F3F4F6", text: "#1A1A1A", dot: "#1A1A1A" },
   "בעבודה":      { bg: "#F5F3FF", text: "#5B21B6", dot: "#A25DDC" },
   "אישור לקוח":  { bg: "#FFFBEB", text: "#78350F", dot: "#FFCB00" },
   "בוצע":        { bg: "#ECFDF5", text: "#065F46", dot: "#00C875" },

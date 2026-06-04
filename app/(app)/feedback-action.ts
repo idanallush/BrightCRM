@@ -46,12 +46,12 @@ export async function submitFeedback(formData: FormData) {
     const subject = `[BrightCRM Feedback] ${category} — from ${senderName}`;
 
     const fileSection = fileUrl
-      ? `<p style="margin:8px 0;"><strong>קובץ מצורף:</strong> <a href="${escapeHtml(fileUrl)}" style="color:#4262FF;">צפייה בקובץ</a></p>`
+      ? `<p style="margin:8px 0;"><strong>קובץ מצורף:</strong> <a href="${escapeHtml(fileUrl)}" style="color:#1A1A1A;">צפייה בקובץ</a></p>`
       : "";
 
     const html = `
-      <div dir="rtl" style="font-family:Heebo,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#050038;">
-        <h2 style="margin:0 0 16px;font-size:18px;color:#4262FF;">${escapedCategory}</h2>
+      <div dir="rtl" style="font-family:Heebo,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#1A1A1A;">
+        <h2 style="margin:0 0 16px;font-size:18px;color:#1A1A1A;">${escapedCategory}</h2>
         <p style="margin:8px 0;white-space:pre-wrap;line-height:1.6;">${escapedMessage}</p>
         <hr style="border:none;border-top:1px solid #e5e5e5;margin:16px 0;" />
         <p style="margin:8px 0;font-size:14px;color:#666;">

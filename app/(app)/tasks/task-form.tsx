@@ -254,7 +254,7 @@ export function TaskForm({
               <Label>סטטוס</Label>
               <div className="flex flex-wrap gap-1.5">
                 {STATUS_OPTIONS.map((opt) => {
-                  const light = STATUS_LIGHT[opt.value] ?? { bg: "#F7F7F8", text: "#050038", dot: "#C4C4C4" };
+                  const light = STATUS_LIGHT[opt.value] ?? { bg: "#F7F7F8", text: "#1A1A1A", dot: "#C4C4C4" };
                   const isActive = status === opt.value;
                   return (
                     <button key={opt.value} type="button" onClick={() => setStatus(opt.value)}

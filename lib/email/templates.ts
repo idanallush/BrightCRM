@@ -35,7 +35,7 @@ function statusBadge(status: string) {
   const colors: Record<string, string> = {
     "מחכה לטיפול": "#FFD02F",
     "נכנס לעבודה": "#DCE4FF",
-    "בעבודה": "#4262FF",
+    "בעבודה": "#1A1A1A",
     "אישור לקוח": "#EDE0FF",
     "בוצע": "#D0F0E8",
   };
@@ -43,7 +43,7 @@ function statusBadge(status: string) {
     "בעבודה": "#fff",
   };
   const bg = colors[status] || "#E0E0E6";
-  const color = textColors[status] || "#050038";
+  const color = textColors[status] || "#1A1A1A";
   return `<span style="display:inline-block;padding:2px 10px;border-radius:12px;background:${bg};color:${color};font-size:13px;">${escapeHtml(status)}</span>`;
 }
 
@@ -75,7 +75,7 @@ export function newTaskEmail(
   const watcherNames = escapeHtml((watchers ?? []).map((w) => w.full_name).join(", "));
 
   const body = `
-<h2 style="color:#050038;margin:0 0 16px;">משימה חדשה</h2>
+<h2 style="color:#1A1A1A;margin:0 0 16px;">משימה חדשה</h2>
 <table style="width:100%;border-collapse:collapse;font-size:14px;">
   <tr><td style="padding:8px 0;color:#666;width:100px;">משימה:</td><td style="padding:8px 0;font-weight:600;">${escapeHtml(task.title)}</td></tr>
   <tr><td style="padding:8px 0;color:#666;">לקוח:</td><td style="padding:8px 0;">${escapeHtml(client.name)}</td></tr>
@@ -87,7 +87,7 @@ export function newTaskEmail(
   ${task.description ? `<tr><td style="padding:8px 0;color:#666;">תיאור:</td><td style="padding:8px 0;">${escapeHtml(task.description)}</td></tr>` : ""}
 </table>
 <div style="margin-top:20px;">
-  <a href="${taskUrl(task.id)}" style="display:inline-block;padding:10px 24px;background:#4262FF;color:#fff;text-decoration:none;border-radius:20px;font-size:14px;">פתח משימה</a>
+  <a href="${taskUrl(task.id)}" style="display:inline-block;padding:10px 24px;background:#1A1A1A;color:#fff;text-decoration:none;border-radius:20px;font-size:14px;">פתח משימה</a>
 </div>`;
 
   return {
@@ -103,14 +103,14 @@ export function newCommentEmail(
   author: PersonInfo,
 ) {
   const body = `
-<h2 style="color:#050038;margin:0 0 16px;">תגובה חדשה</h2>
+<h2 style="color:#1A1A1A;margin:0 0 16px;">תגובה חדשה</h2>
 <p style="color:#666;font-size:14px;margin:0 0 8px;">משימה: <strong>${escapeHtml(task.title)}</strong> (${escapeHtml(client.name)})</p>
 <div style="background:#f7f7f8;border-radius:8px;padding:12px 16px;margin:12px 0;font-size:14px;">
   <strong>${escapeHtml(author.full_name)}:</strong><br/>
   ${escapeHtml(comment.content)}
 </div>
 <div style="margin-top:20px;">
-  <a href="${taskUrl(task.id, comment.id)}" style="display:inline-block;padding:10px 24px;background:#4262FF;color:#fff;text-decoration:none;border-radius:20px;font-size:14px;">פתח משימה</a>
+  <a href="${taskUrl(task.id, comment.id)}" style="display:inline-block;padding:10px 24px;background:#1A1A1A;color:#fff;text-decoration:none;border-radius:20px;font-size:14px;">פתח משימה</a>
 </div>`;
 
   return {
@@ -127,7 +127,7 @@ export function mentionEmail(
   mentionedUser: PersonInfo,
 ) {
   const body = `
-<h2 style="color:#050038;margin:0 0 16px;">תויגת במשימה</h2>
+<h2 style="color:#1A1A1A;margin:0 0 16px;">תויגת במשימה</h2>
 <p style="color:#666;font-size:14px;margin:0 0 8px;">${escapeHtml(mentionedUser.full_name)}, ${escapeHtml(author.full_name)} תייג/ה אותך בתגובה.</p>
 <p style="color:#666;font-size:14px;margin:0 0 8px;">משימה: <strong>${escapeHtml(task.title)}</strong> (${escapeHtml(client.name)})</p>
 <div style="background:#f7f7f8;border-radius:8px;padding:12px 16px;margin:12px 0;font-size:14px;">
@@ -135,7 +135,7 @@ export function mentionEmail(
   ${escapeHtml(comment.content)}
 </div>
 <div style="margin-top:20px;">
-  <a href="${taskUrl(task.id, comment.id)}" style="display:inline-block;padding:10px 24px;background:#4262FF;color:#fff;text-decoration:none;border-radius:20px;font-size:14px;">פתח משימה</a>
+  <a href="${taskUrl(task.id, comment.id)}" style="display:inline-block;padding:10px 24px;background:#1A1A1A;color:#fff;text-decoration:none;border-radius:20px;font-size:14px;">פתח משימה</a>
 </div>`;
 
   return {
@@ -199,7 +199,7 @@ export function morningDigestEmail(
     const isOverdue = t.due_date && new Date(t.due_date) < new Date(new Date().toISOString().slice(0, 10));
     const dueStyle = isOverdue ? "color:#D32F2F;font-weight:600;" : "";
     return `<tr>
-      <td style="padding:6px 8px;border-bottom:1px solid #f0f0f0;"><a href="${taskUrl(t.id)}" style="color:#4262FF;text-decoration:none;">${escapeHtml(t.title)}</a></td>
+      <td style="padding:6px 8px;border-bottom:1px solid #f0f0f0;"><a href="${taskUrl(t.id)}" style="color:#1A1A1A;text-decoration:none;">${escapeHtml(t.title)}</a></td>
       <td style="padding:6px 8px;border-bottom:1px solid #f0f0f0;">${escapeHtml(t.client_name)}</td>
       <td style="padding:6px 8px;border-bottom:1px solid #f0f0f0;">${escapeHtml(t.assignee_names || "-")}</td>
       <td style="padding:6px 8px;border-bottom:1px solid #f0f0f0;${dueStyle}">${escapeHtml(dueText)}</td>
@@ -220,7 +220,7 @@ export function morningDigestEmail(
 
   if (todayTasks.length > 0) {
     sections += `
-<h3 style="color:#050038;margin:20px 0 8px;">דדליין היום (${todayTasks.length})</h3>
+<h3 style="color:#1A1A1A;margin:20px 0 8px;">דדליין היום (${todayTasks.length})</h3>
 <table style="width:100%;border-collapse:collapse;font-size:13px;">
   <tr style="background:#f7f7f8;"><th style="padding:8px;text-align:right;">משימה</th><th style="padding:8px;text-align:right;">לקוח</th><th style="padding:8px;text-align:right;">אחראים</th><th style="padding:8px;text-align:right;">דדליין</th><th style="padding:8px;text-align:right;">סטטוס</th></tr>
   ${todayTasks.map(taskRow).join("")}
@@ -229,7 +229,7 @@ export function morningDigestEmail(
 
   if (openTasks.length > 0) {
     sections += `
-<h3 style="color:#050038;margin:20px 0 8px;">משימות פתוחות (${openTasks.length})</h3>
+<h3 style="color:#1A1A1A;margin:20px 0 8px;">משימות פתוחות (${openTasks.length})</h3>
 <table style="width:100%;border-collapse:collapse;font-size:13px;">
   <tr style="background:#f7f7f8;"><th style="padding:8px;text-align:right;">משימה</th><th style="padding:8px;text-align:right;">לקוח</th><th style="padding:8px;text-align:right;">אחראים</th><th style="padding:8px;text-align:right;">דדליין</th><th style="padding:8px;text-align:right;">סטטוס</th></tr>
   ${openTasks.map(taskRow).join("")}
@@ -237,11 +237,11 @@ export function morningDigestEmail(
   }
 
   const body = `
-<h2 style="color:#050038;margin:0 0 4px;">בוקר טוב, ${escapeHtml(member.full_name)}</h2>
+<h2 style="color:#1A1A1A;margin:0 0 4px;">בוקר טוב, ${escapeHtml(member.full_name)}</h2>
 <p style="color:#666;font-size:14px;margin:0 0 16px;">${today}</p>
 ${sections || '<p style="color:#666;font-size:14px;">אין משימות פתוחות. יום שקט!</p>'}
 <div style="margin-top:20px;">
-  <a href="${BASE_URL}/tasks" style="display:inline-block;padding:10px 24px;background:#4262FF;color:#fff;text-decoration:none;border-radius:20px;font-size:14px;">כל המשימות</a>
+  <a href="${BASE_URL}/tasks" style="display:inline-block;padding:10px 24px;background:#1A1A1A;color:#fff;text-decoration:none;border-radius:20px;font-size:14px;">כל המשימות</a>
 </div>`;
 
   return {

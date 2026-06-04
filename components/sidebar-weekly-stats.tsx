@@ -120,18 +120,18 @@ export function SidebarWeeklyStats({ collapsed }: { collapsed: boolean }) {
         <div className="flex items-center gap-3">
           <AnimatedCheck key={bump} animate={bump > 0} />
           <div className="flex min-w-0 flex-col gap-0.5">
-            <span className="text-[11px] text-white/40">משימות שבוצעו</span>
+            <span className="text-xs text-white/40">משימות שבוצעו</span>
             <div className="flex items-baseline gap-1.5">
               <motion.span
                 key={count}
                 initial={bump > 0 ? { scale: 1.4, color: "#00C875" } : false}
                 animate={{ scale: 1, color: "rgba(255,255,255,0.9)" }}
                 transition={{ type: "spring", stiffness: 300, damping: 15 }}
-                className="text-xl font-bold leading-none text-white/90"
+                className="text-2xl font-bold leading-none text-white/90"
               >
                 {count}
               </motion.span>
-              <span className="text-[11px] text-white/40">השבוע</span>
+              <span className="text-xs text-white/40">השבוע</span>
             </div>
           </div>
         </div>
@@ -140,7 +140,7 @@ export function SidebarWeeklyStats({ collapsed }: { collapsed: boolean }) {
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.1 }}
-          className="mt-2 text-[12px] leading-snug text-white/50"
+          className="mt-2 text-sm leading-snug text-white/50"
         >
           {message}
         </motion.p>

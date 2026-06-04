@@ -28,7 +28,7 @@ export function TaskKanban({
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {COLUMNS.map((col) => {
         const colTasks = byStatus(col.key);
-        const light = STATUS_LIGHT[col.key] ?? { bg: "#F7F7F8", text: "#050038", dot: "#C4C4C4" };
+        const light = STATUS_LIGHT[col.key] ?? { bg: "#F7F7F8", text: "#1A1A1A", dot: "#C4C4C4" };
         return (
           <div key={col.key} className="min-h-[50vh] rounded-2xl bg-white border border-border shadow-elevation-1">
             {/* Light header with colored dot */}
@@ -64,7 +64,7 @@ function KanbanCard({ task, onClick }: {
       {task.tags && task.tags.length > 0 && (
         <div className="mt-1 flex flex-wrap gap-1">
           {task.tags.map((tag) => (
-            <span key={tag.id} className="inline-flex rounded-full px-1.5 py-0.5 text-[10px] font-medium" style={{ backgroundColor: tag.color ?? "#DCE4FF", color: "#050038" }}>
+            <span key={tag.id} className="inline-flex rounded-full px-1.5 py-0.5 text-[10px] font-medium" style={{ backgroundColor: tag.color ?? "#DCE4FF", color: "#1A1A1A" }}>
               {tag.name}
             </span>
           ))}

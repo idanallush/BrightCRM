@@ -58,7 +58,7 @@ export function renderContentWithMentions(content: string, names: string[]): Rea
       nodes.push(
         <span
           key={`m${i}`}
-          className="rounded-full bg-blue-50 px-1.5 font-semibold text-blue-600"
+          className="rounded-full bg-gray-100 px-1.5 font-semibold text-gray-700"
         >
           {matches[i]}
         </span>,

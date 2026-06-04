@@ -29,17 +29,17 @@ const config: Config = {
         "button": ["14px", { lineHeight: "1.30", fontWeight: "600" }],
       },
       colors: {
-        // Primary interactive blue (Miro-inspired)
-        primary: { DEFAULT: "#4262FF", hover: "#3651D4", pressed: "#2B42B0" },
+        // Primary interactive dark
+        primary: { DEFAULT: "#1A1A1A", hover: "#333333", pressed: "#111111" },
         // Accent: Canary yellow (Miro brand)
         accent: { DEFAULT: "#FFD02F", hover: "#F5C518" },
-        // Text — deep navy ink
-        ink: { DEFAULT: "#050038", hover: "#1A1A4E", secondary: "#6B6B82", muted: "#AEB0C0" },
+        // Text — pure dark
+        ink: { DEFAULT: "#1A1A1A", hover: "#333333", secondary: "#6B7280", muted: "#9CA3AF" },
         // Surface
         canvas: "#FFFFFF",
         surface: { DEFAULT: "#F7F7F8", soft: "#EDEDF0" },
-        // Sidebar — deep dark navy
-        sidebar: { DEFAULT: "#1B1B3A", hover: "#2A2A55", active: "#141430", border: "#3A3A60" },
+        // Sidebar — pure dark
+        sidebar: { DEFAULT: "#1A1A1A", hover: "#2A2A2A", active: "#141414", border: "#333333" },
         // Borders — softer
         border: "#E0E0E6",
         hairline: "#E8E8F0",
@@ -51,13 +51,13 @@ const config: Config = {
           coral: "#FFE0D0",
           teal: "#D0F0E8",
           yellow: "#FFF4CC",
-          blue: "#DCE4FF",
+          blue: "#E5E7EB",
           purple: "#EDE0FF",
         },
         // Status colors — kept functional (Monday.com-style)
         st: {
           waiting: "#FDAB3D",
-          incoming: "#4262FF",
+          incoming: "#1A1A1A",
           working: "#A25DDC",
           approval: "#FFCB00",
           manager: "#FF642E",
@@ -66,8 +66,8 @@ const config: Config = {
           // Light bg + matched dark text (for soft badge treatment)
           "waiting-bg": "#FFF3E0",
           "waiting-text": "#92400E",
-          "incoming-bg": "#EEF2FF",
-          "incoming-text": "#2B42B0",
+          "incoming-bg": "#F3F4F6",
+          "incoming-text": "#1A1A1A",
           "working-bg": "#F5F3FF",
           "working-text": "#5B21B6",
           "approval-bg": "#FFFBEB",
@@ -104,12 +104,12 @@ const config: Config = {
         "feature": "32px",
       },
       boxShadow: {
-        "sm": "0 1px 3px 0 rgba(5,0,56,0.04)",
-        "elevation-1": "0 1px 3px 0 rgba(5,0,56,0.06)",
-        "elevation-2": "0 2px 8px 0 rgba(5,0,56,0.08)",
-        "elevation-3": "0 4px 16px 0 rgba(5,0,56,0.10)",
-        "elevation-4": "0 8px 24px 0 rgba(5,0,56,0.12)",
-        "elevation-5": "0 16px 48px 0 rgba(5,0,56,0.16)",
+        "sm": "0 1px 3px 0 rgba(0,0,0,0.04)",
+        "elevation-1": "0 1px 3px 0 rgba(0,0,0,0.06)",
+        "elevation-2": "0 2px 8px 0 rgba(0,0,0,0.08)",
+        "elevation-3": "0 4px 16px 0 rgba(0,0,0,0.10)",
+        "elevation-4": "0 8px 24px 0 rgba(0,0,0,0.12)",
+        "elevation-5": "0 16px 48px 0 rgba(0,0,0,0.16)",
       },
       keyframes: {
         shimmer: { "0%": { backgroundPosition: "-200% 0" }, "100%": { backgroundPosition: "200% 0" } },

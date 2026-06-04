@@ -115,7 +115,7 @@ export function TagSelector({
                 "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-[color,background-color,box-shadow,opacity] duration-200",
                 active ? "ring-2 ring-primary ring-offset-1 shadow-sm" : "opacity-60 hover:opacity-100",
               )}
-              style={{ backgroundColor: bg, color: "#050038" }}
+              style={{ backgroundColor: bg, color: "#1A1A1A" }}
             >
               {tag.name}
               {active && <X className="h-3 w-3" />}

@@ -102,7 +102,7 @@ export function TaskTable({
 
   const groups = [
     ...(watchedTasks.length > 0
-      ? [{ status: "__watched__", label: "במעקב", color: "#4262FF", isWatched: true, tasks: watchedTasks }]
+      ? [{ status: "__watched__", label: "במעקב", color: "#1A1A1A", isWatched: true, tasks: watchedTasks }]
       : []),
     ...statusGroups,
   ];
@@ -146,7 +146,7 @@ export function TaskTable({
       <tr
         key={t.id}
         onClick={() => onRowClick(t)}
-        className={cn("group cursor-pointer border-b border-border transition-colors duration-150 hover:bg-surface", selectedIds.has(t.id) && "bg-surface")}
+        className={cn("group cursor-pointer border-b border-border transition-colors duration-150 hover:bg-[#F9FAFB]", selectedIds.has(t.id) && "bg-surface")}
       >
         {/* Checkbox */}
         <td className="w-8 px-2 pe-0 align-middle border-e border-border">
@@ -188,7 +188,7 @@ export function TaskTable({
           {t.tags && t.tags.length > 0 && (
             <div className="mt-1 flex flex-wrap gap-1">
               {t.tags.map((tag) => (
-                <span key={tag.id} className="inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium" style={{ backgroundColor: tag.color ?? "#DCE4FF", color: "#050038" }}>
+                <span key={tag.id} className="inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium" style={{ backgroundColor: tag.color ?? "#DCE4FF", color: "#1A1A1A" }}>
                   {tag.name}
                 </span>
               ))}
@@ -297,8 +297,8 @@ export function TaskTable({
                     <td colSpan={COL_COUNT}>
                       {(() => {
                         const light = group.isWatched
-                          ? { bg: "rgba(66,98,255,0.10)", text: "#4262FF", dot: "#4262FF" }
-                          : (STATUS_LIGHT[group.status] ?? { bg: "#F7F7F8", text: "#050038", dot: "#C4C4C4" });
+                          ? { bg: "rgba(26,26,26,0.08)", text: "#1A1A1A", dot: "#1A1A1A" }
+                          : (STATUS_LIGHT[group.status] ?? { bg: "#F7F7F8", text: "#1A1A1A", dot: "#C4C4C4" });
                         return (
                           <button
                             type="button"

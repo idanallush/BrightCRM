@@ -22,7 +22,7 @@ export function getInitials(name: string | null | undefined): string {
 
 // Deterministic avatar color from a name — stable per user, picked from a tasteful palette.
 const AVATAR_COLORS = [
-  "bg-[#4262FF]", "bg-[#A25DDC]", "bg-[#00C875]", "bg-[#FF642E]",
+  "bg-[#1A1A1A]", "bg-[#A25DDC]", "bg-[#00C875]", "bg-[#FF642E]",
   "bg-[#E2445C]", "bg-[#0AA5C2]", "bg-[#7E5BEF]", "bg-[#1FAD66]",
 ];
 
