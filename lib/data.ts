@@ -17,10 +17,13 @@ export type Task = {
   start_date: string;
   due_date: string | null;
   created_by_id: string | null;
-  source: "web" | "telegram" | "whatsapp" | "import";
+  source: "web" | "telegram" | "whatsapp" | "import" | "recurring";
   completed_at: string | null;
   created_at: string;
   updated_at: string;
+  recurrence_rule: { type: "weekly" | "monthly" | "custom"; day: number; interval: number; end_date: string | null } | null;
+  recurring_source_id: string | null;
+  next_recurrence_date: string | null;
 };
 
 export type Client = {
@@ -101,7 +104,7 @@ export async function getTasks(filters?: {
   let q = sb
     .from("tasks")
     .select(
-      "id,title,client_id,description,status,start_date,due_date,created_by_id,source,completed_at,created_at,updated_at,client:clients(id,name),assignees:task_assignees(member:team_members(id,full_name,avatar_url)),watchers:task_watchers(member:team_members(id,full_name,avatar_url)),creator:team_members!tasks_created_by_id_fkey(id,full_name,avatar_url),task_tags(tag:tags(id,name,color,created_at))",
+      "id,title,client_id,description,status,start_date,due_date,created_by_id,source,completed_at,created_at,updated_at,recurrence_rule,recurring_source_id,next_recurrence_date,client:clients(id,name),assignees:task_assignees(member:team_members(id,full_name,avatar_url)),watchers:task_watchers(member:team_members(id,full_name,avatar_url)),creator:team_members!tasks_created_by_id_fkey(id,full_name,avatar_url),task_tags(tag:tags(id,name,color,created_at))",
     )
     .order("due_date", { ascending: true, nullsFirst: false });
 
@@ -139,6 +142,9 @@ export async function getTasks(filters?: {
       completed_at: (row.completed_at as string | null) ?? null,
       created_at: row.created_at as string,
       updated_at: row.updated_at as string,
+      recurrence_rule: (row.recurrence_rule as Task["recurrence_rule"]) ?? null,
+      recurring_source_id: (row.recurring_source_id as string | null) ?? null,
+      next_recurrence_date: (row.next_recurrence_date as string | null) ?? null,
       client: (row.client as { id: string; name: string } | null) ?? null,
       assignees: assigneeList.map((a) => a.member).filter(Boolean) as { id: string; full_name: string; avatar_url?: string | null }[],
       watchers: watcherList.map((w) => w.member).filter(Boolean) as { id: string; full_name: string; avatar_url?: string | null }[],

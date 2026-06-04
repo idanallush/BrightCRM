@@ -16,6 +16,9 @@ import type { Client, Tag, TaskWithRelations, TeamMember } from "@/lib/data";
 import { ClientLogo } from "@/components/client-logo";
 import { AssigneeDropdown } from "./assignee-dropdown";
 import { TagSelector } from "./tag-selector";
+import { Repeat } from "lucide-react";
+import { formatRecurrenceDescription } from "@/lib/recurring";
+import type { RecurrenceRule } from "@/lib/recurring";
 
 const STATUS_OPTIONS: { value: TaskInput["status"]; label: string }[] = [
   { value: "מחכה לטיפול", label: "ממתין" },
@@ -66,6 +69,14 @@ export function TaskForm({
   );
   const [availableTags, setAvailableTags] = React.useState<Tag[]>(initialTags);
 
+  // Recurrence state
+  const existingRule = task?.recurrence_rule as RecurrenceRule | null;
+  const [isRecurring, setIsRecurring] = React.useState(!!existingRule);
+  const [recurrenceType, setRecurrenceType] = React.useState<RecurrenceRule["type"]>(existingRule?.type ?? "weekly");
+  const [recurrenceDay, setRecurrenceDay] = React.useState(existingRule?.day ?? 0);
+  const [recurrenceInterval, setRecurrenceInterval] = React.useState(existingRule?.interval ?? 7);
+  const [recurrenceEndDate, setRecurrenceEndDate] = React.useState(existingRule?.end_date ?? "");
+
   function toggleAssignee(id: string) {
     setAssigneeIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
   }
@@ -101,9 +112,16 @@ export function TaskForm({
     if (!clientId) { toast.error("בחר לקוח"); return; }
     setPending(true);
     const isGeneral = clientId === GENERAL;
+    const recurrenceRule: RecurrenceRule | null = isRecurring ? {
+      type: recurrenceType,
+      day: recurrenceType === "custom" ? 0 : recurrenceDay,
+      interval: recurrenceType === "custom" ? recurrenceInterval : 1,
+      end_date: recurrenceEndDate || null,
+    } : null;
     const payload: TaskInput = {
       title: finalTitle, client_id: isGeneral ? null : clientId, description: description.trim() || null,
       status, due_date: dueDate || null, assignee_ids: assigneeIds, watcher_ids: watcherIds, tag_ids: tagIds,
+      recurrence_rule: recurrenceRule,
     };
     const res = task ? await updateTask(task.id, payload) : await createTask(payload);
     setPending(false);
@@ -180,6 +198,21 @@ export function TaskForm({
               <Input id="due" type="date" className="h-9 text-sm" value={dueDate ?? ""} onChange={(e) => setDueDate(e.target.value)} />
             </div>
 
+            <RecurrenceSection
+              compact
+              isRecurring={isRecurring}
+              setIsRecurring={setIsRecurring}
+              recurrenceType={recurrenceType}
+              setRecurrenceType={setRecurrenceType}
+              recurrenceDay={recurrenceDay}
+              setRecurrenceDay={setRecurrenceDay}
+              recurrenceInterval={recurrenceInterval}
+              setRecurrenceInterval={setRecurrenceInterval}
+              recurrenceEndDate={recurrenceEndDate}
+              setRecurrenceEndDate={setRecurrenceEndDate}
+              dueDate={dueDate}
+            />
+
             <div className="flex flex-col gap-1">
               <span className="text-xs font-medium text-ink-secondary">אחראים</span>
               <AssigneeDropdown team={team} selected={assigneeIds} onToggle={toggleAssignee} />
@@ -247,6 +280,20 @@ export function TaskForm({
               <Input id="due" type="date" value={dueDate ?? ""} onChange={(e) => setDueDate(e.target.value)} />
             </div>
 
+            <RecurrenceSection
+              isRecurring={isRecurring}
+              setIsRecurring={setIsRecurring}
+              recurrenceType={recurrenceType}
+              setRecurrenceType={setRecurrenceType}
+              recurrenceDay={recurrenceDay}
+              setRecurrenceDay={setRecurrenceDay}
+              recurrenceInterval={recurrenceInterval}
+              setRecurrenceInterval={setRecurrenceInterval}
+              recurrenceEndDate={recurrenceEndDate}
+              setRecurrenceEndDate={setRecurrenceEndDate}
+              dueDate={dueDate}
+            />
+
             <div className="flex flex-col gap-1.5">
               <Label>אחראים</Label>
               <div className="flex flex-wrap gap-2">
@@ -310,6 +357,169 @@ export function TaskForm({
         <Button type="button" variant="ghost" onClick={onDone} disabled={pending}>ביטול</Button>
       </div>
     </form>
+  );
+}
+
+const WEEKDAY_LABELS = ["א׳", "ב׳", "ג׳", "ד׳", "ה׳", "ו׳", "ש׳"];
+const RECURRENCE_TYPES: { value: RecurrenceRule["type"]; label: string }[] = [
+  { value: "weekly", label: "שבועי" },
+  { value: "monthly", label: "חודשי" },
+  { value: "custom", label: "כל X ימים" },
+];
+
+function RecurrenceSection({
+  compact,
+  isRecurring,
+  setIsRecurring,
+  recurrenceType,
+  setRecurrenceType,
+  recurrenceDay,
+  setRecurrenceDay,
+  recurrenceInterval,
+  setRecurrenceInterval,
+  recurrenceEndDate,
+  setRecurrenceEndDate,
+  dueDate,
+}: {
+  compact?: boolean;
+  isRecurring: boolean;
+  setIsRecurring: (v: boolean) => void;
+  recurrenceType: RecurrenceRule["type"];
+  setRecurrenceType: (v: RecurrenceRule["type"]) => void;
+  recurrenceDay: number;
+  setRecurrenceDay: (v: number) => void;
+  recurrenceInterval: number;
+  setRecurrenceInterval: (v: number) => void;
+  recurrenceEndDate: string;
+  setRecurrenceEndDate: (v: string) => void;
+  dueDate: string;
+}) {
+  const labelClass = compact ? "text-xs font-medium text-ink-secondary" : "";
+  const gapClass = compact ? "gap-1" : "gap-1.5";
+
+  // When due date changes and type is monthly, default day to due date's day
+  React.useEffect(() => {
+    if (recurrenceType === "monthly" && dueDate) {
+      const d = new Date(dueDate);
+      if (!isNaN(d.getTime())) setRecurrenceDay(d.getDate());
+    }
+  }, [dueDate, recurrenceType, setRecurrenceDay]);
+
+  return (
+    <div className={`flex flex-col ${gapClass}`}>
+      <button
+        type="button"
+        onClick={() => setIsRecurring(!isRecurring)}
+        className={cn(
+          "flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition",
+          isRecurring
+            ? "bg-primary/10 text-primary"
+            : "border border-border bg-white text-ink-muted hover:bg-surface",
+        )}
+      >
+        <Repeat className="h-4 w-4" />
+        משימה חוזרת
+      </button>
+
+      {isRecurring && (
+        <div className="flex flex-col gap-2.5 rounded-xl border border-border bg-surface/50 p-3">
+          {/* Type selector */}
+          <div className="flex gap-1.5">
+            {RECURRENCE_TYPES.map((rt) => (
+              <button
+                key={rt.value}
+                type="button"
+                onClick={() => setRecurrenceType(rt.value)}
+                className={cn(
+                  "rounded-lg px-3 py-1.5 text-xs font-medium transition",
+                  recurrenceType === rt.value
+                    ? "bg-primary text-white"
+                    : "bg-white text-ink border border-border hover:bg-surface",
+                )}
+              >
+                {rt.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Weekly: day-of-week selector */}
+          {recurrenceType === "weekly" && (
+            <div className="flex gap-1">
+              {WEEKDAY_LABELS.map((label, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setRecurrenceDay(i)}
+                  className={cn(
+                    "flex h-8 w-8 items-center justify-center rounded-full text-xs font-medium transition",
+                    recurrenceDay === i
+                      ? "bg-primary text-white"
+                      : "bg-white text-ink border border-border hover:bg-surface",
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Monthly: day of month */}
+          {recurrenceType === "monthly" && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-ink-secondary">יום בחודש:</span>
+              <Input
+                type="number"
+                min={1}
+                max={31}
+                value={recurrenceDay}
+                onChange={(e) => setRecurrenceDay(Math.min(31, Math.max(1, parseInt(e.target.value) || 1)))}
+                className="h-8 w-16 text-center text-sm"
+              />
+            </div>
+          )}
+
+          {/* Custom: every X days */}
+          {recurrenceType === "custom" && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-ink-secondary">כל</span>
+              <Input
+                type="number"
+                min={1}
+                value={recurrenceInterval}
+                onChange={(e) => setRecurrenceInterval(Math.max(1, parseInt(e.target.value) || 1))}
+                className="h-8 w-16 text-center text-sm"
+              />
+              <span className="text-xs text-ink-secondary">ימים</span>
+            </div>
+          )}
+
+          {/* End date (optional) */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-ink-secondary">עד תאריך:</span>
+            <Input
+              type="date"
+              value={recurrenceEndDate}
+              onChange={(e) => setRecurrenceEndDate(e.target.value)}
+              className="h-8 text-sm"
+              placeholder="ללא הגבלה"
+            />
+            {recurrenceEndDate && (
+              <button type="button" onClick={() => setRecurrenceEndDate("")} className="text-xs text-ink-muted hover:text-ink">✕</button>
+            )}
+          </div>
+
+          {/* Preview description */}
+          <p className="text-xs text-ink-muted">
+            {formatRecurrenceDescription({
+              type: recurrenceType,
+              day: recurrenceType === "custom" ? 0 : recurrenceDay,
+              interval: recurrenceType === "custom" ? recurrenceInterval : 1,
+              end_date: recurrenceEndDate || null,
+            })}
+          </p>
+        </div>
+      )}
+    </div>
   );
 }
 

@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { isBrightEmail } from "@/lib/utils";
+import { calculateNextRecurrenceDate, createNextRecurringInstance } from "@/lib/recurring";
+import type { RecurrenceRule } from "@/lib/recurring";
 
 type DbRow = Record<string, unknown>;
 
@@ -32,6 +34,7 @@ export type TaskInput = {
   assignee_ids: string[];
   watcher_ids?: string[];
   tag_ids: string[];
+  recurrence_rule?: { type: "weekly" | "monthly" | "custom"; day: number; interval: number; end_date: string | null } | null;
 };
 
 export async function createTask(input: TaskInput) {
@@ -50,6 +53,14 @@ export async function createTask(input: TaskInput) {
     createdById = member?.id ?? null;
   }
 
+  // Calculate next_recurrence_date if recurrence_rule is set
+  let nextRecurrenceDate: string | null = null;
+  if (input.recurrence_rule) {
+    const fromDate = input.due_date ? new Date(input.due_date) : new Date();
+    const next = calculateNextRecurrenceDate(input.recurrence_rule as RecurrenceRule, fromDate);
+    nextRecurrenceDate = next ? next.toISOString().slice(0, 10) : null;
+  }
+
   const { data, error } = await sb
     .from("tasks")
     .insert({
@@ -60,6 +71,8 @@ export async function createTask(input: TaskInput) {
       due_date: input.due_date,
       source: "web",
       created_by_id: createdById,
+      recurrence_rule: input.recurrence_rule ?? null,
+      next_recurrence_date: nextRecurrenceDate,
     })
     .select("id")
     .single();
@@ -103,21 +116,42 @@ export async function createTask(input: TaskInput) {
 export async function updateTask(id: string, input: TaskInput) {
   try { await requireAuth(); } catch { return { error: "לא מאומת" }; }
   const sb = createClient();
+  // Handle recurrence_rule: recalculate next_recurrence_date if rule changed
+  let nextRecurrenceDate: string | null = null;
+  if (input.recurrence_rule) {
+    const fromDate = input.due_date ? new Date(input.due_date) : new Date();
+    const next = calculateNextRecurrenceDate(input.recurrence_rule as RecurrenceRule, fromDate);
+    nextRecurrenceDate = next ? next.toISOString().slice(0, 10) : null;
+  }
+
   const updates: Record<string, unknown> = {
     title: input.title,
     client_id: input.client_id || null,
     description: input.description,
     status: input.status,
     due_date: input.due_date,
+    recurrence_rule: input.recurrence_rule ?? null,
+    next_recurrence_date: nextRecurrenceDate,
   };
   // Fetch current status to detect transition to/from completed
-  const { data: current } = await sb.from("tasks").select("status").eq("id", id).single();
+  const { data: current } = await sb.from("tasks").select("status,recurrence_rule").eq("id", id).single();
   if (input.status === "בוצע" && current?.status !== "בוצע") {
     updates.completed_at = new Date().toISOString();
   } else if (input.status !== "בוצע") {
     updates.completed_at = null;
   }
   const { error } = await sb.from("tasks").update(updates).eq("id", id);
+
+  // If task just got completed and has recurrence_rule, create next instance
+  if (!error && input.status === "בוצע" && current?.status !== "בוצע" && current?.recurrence_rule) {
+    try {
+      const { createAdminClient } = await import("@/lib/supabase/admin");
+      const db = createAdminClient();
+      await createNextRecurringInstance(id, db);
+    } catch (err) {
+      console.error("[Recurring] Failed to create next instance on completion:", err);
+    }
+  }
   if (error) return { error: error.message };
 
   const { error: dErr } = await sb.from("task_assignees").delete().eq("task_id", id);
@@ -166,6 +200,10 @@ export async function deleteTask(id: string) {
 export async function updateTaskStatus(id: string, status: string) {
   try { await requireAuth(); } catch { return { error: "לא מאומת" }; }
   const sb = createClient();
+
+  // Fetch current task to detect completion transition
+  const { data: current } = await sb.from("tasks").select("status,recurrence_rule").eq("id", id).single();
+
   const updates: Record<string, unknown> = { status };
   if (status === "בוצע") {
     updates.completed_at = new Date().toISOString();
@@ -174,6 +212,18 @@ export async function updateTaskStatus(id: string, status: string) {
   }
   const { error } = await sb.from("tasks").update(updates).eq("id", id);
   if (error) return { error: error.message };
+
+  // If task just got completed and has recurrence_rule, create next instance
+  if (status === "בוצע" && current?.status !== "בוצע" && current?.recurrence_rule) {
+    try {
+      const { createAdminClient } = await import("@/lib/supabase/admin");
+      const db = createAdminClient();
+      await createNextRecurringInstance(id, db);
+    } catch (err) {
+      console.error("[Recurring] Failed to create next instance on completion:", err);
+    }
+  }
+
   revalidatePath("/tasks");
   revalidatePath("/dashboard");
   return { ok: true as const };
@@ -183,6 +233,19 @@ export async function bulkUpdateStatus(ids: string[], status: string) {
   try { await requireAuth(); } catch { return { error: "לא מאומת" }; }
   if (ids.length === 0) return { error: "לא נבחרו משימות" };
   const sb = createClient();
+
+  // If completing, fetch which tasks have recurrence_rule (before status update)
+  let recurringIds: string[] = [];
+  if (status === "בוצע") {
+    const { data: recurring } = await sb
+      .from("tasks")
+      .select("id")
+      .in("id", ids)
+      .not("recurrence_rule", "is", null)
+      .neq("status", "בוצע");
+    recurringIds = (recurring ?? []).map((r) => r.id);
+  }
+
   const updates: Record<string, unknown> = { status };
   if (status === "בוצע") {
     updates.completed_at = new Date().toISOString();
@@ -191,6 +254,22 @@ export async function bulkUpdateStatus(ids: string[], status: string) {
   }
   const { error } = await sb.from("tasks").update(updates).in("id", ids);
   if (error) return { error: error.message };
+
+  // Create next instances for recurring tasks that just got completed
+  if (recurringIds.length > 0) {
+    try {
+      const { createAdminClient } = await import("@/lib/supabase/admin");
+      const db = createAdminClient();
+      for (const taskId of recurringIds) {
+        await createNextRecurringInstance(taskId, db).catch((err) =>
+          console.error(`[Recurring] Failed for task ${taskId}:`, err)
+        );
+      }
+    } catch (err) {
+      console.error("[Recurring] Bulk recurring creation failed:", err);
+    }
+  }
+
   revalidatePath("/tasks");
   revalidatePath("/dashboard");
   return { ok: true as const, count: ids.length };

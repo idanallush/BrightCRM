@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Trash2, ClipboardList, Paperclip } from "lucide-react";
+import { Trash2, ClipboardList, Paperclip, Repeat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toaster";
@@ -13,6 +13,8 @@ import { TaskAttachments } from "./task-attachments";
 import { TaskComments } from "./task-comments";
 import { updateTask, type TaskInput, type TaskViewRecord } from "./actions";
 import type { Client, Tag, TaskWithRelations, TeamMember } from "@/lib/data";
+import { formatRecurrenceDescription } from "@/lib/recurring";
+import type { RecurrenceRule } from "@/lib/recurring";
 
 export function TaskDetailPanel({
   task, clients, team, tags, onClose, onDelete, confirmingDelete, setConfirmingDelete, onTitleSaved, taskViews, teamSize, focusCommentId,
@@ -97,6 +99,19 @@ export function TaskDetailPanel({
               >
                 {task.title}
               </h2>
+            )}
+            {/* Recurrence badge */}
+            {task.recurrence_rule && (
+              <div className="mt-1 flex items-center gap-1.5 text-xs text-primary">
+                <Repeat className="h-3.5 w-3.5" />
+                <span>{formatRecurrenceDescription(task.recurrence_rule as RecurrenceRule)}</span>
+              </div>
+            )}
+            {/* Recurring source link */}
+            {task.recurring_source_id && (
+              <p className="mt-1 text-xs text-ink-muted">
+                נוצרה ממשימה חוזרת
+              </p>
             )}
           </div>
         </div>

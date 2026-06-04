@@ -11,6 +11,10 @@
     {
       "path": "/api/cron/overdue-email",
       "schedule": "0 7 * * 0-4"
+    },
+    {
+      "path": "/api/cron/recurring",
+      "schedule": "0 5 * * *"
     }
   ]
 }

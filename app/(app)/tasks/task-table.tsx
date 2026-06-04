@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ArrowUpLeft, ChevronDown, ChevronUp, AlertTriangle, MessageCircle, EyeOff, Eye } from "lucide-react";
+import { ArrowUpLeft, ChevronDown, ChevronUp, AlertTriangle, MessageCircle, EyeOff, Eye, Repeat } from "lucide-react";
 import { UserChip } from "@/components/user-hover-card";
 import { AvatarStack } from "@/components/user-avatar";
 import { Hint } from "@/components/ui/tooltip";
@@ -190,6 +190,11 @@ export function TaskTable({
         {/* Task title + comment badge + tags */}
         <td className="max-w-xs px-4 py-2.5 align-middle">
           <div className="flex items-center gap-2">
+            {t.recurrence_rule && (
+              <Hint label="משימה חוזרת" side="top">
+                <Repeat className="h-3.5 w-3.5 shrink-0 text-ink-muted" />
+              </Hint>
+            )}
             <span className="font-medium text-ink">{t.title}</span>
             {cc > 0 && (
               <span className="inline-flex items-center gap-1 rounded-full bg-surface px-2 py-0.5 text-xs font-medium text-ink">
