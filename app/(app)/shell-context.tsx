@@ -15,13 +15,22 @@ const SidebarContext = React.createContext<{
   setCollapsed: () => {},
 });
 
+type GlobalDialogType = "task" | "client" | null;
+const GlobalDialogContext = React.createContext<{
+  openDialog: GlobalDialogType;
+  setOpenDialog: (d: GlobalDialogType) => void;
+}>({ openDialog: null, setOpenDialog: () => {} });
+
 export function ShellProvider({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [collapsed, setCollapsed] = React.useState(false);
+  const [openDialog, setOpenDialog] = React.useState<GlobalDialogType>(null);
   return (
     <MobileMenuContext.Provider value={{ mobileOpen, setMobileOpen }}>
       <SidebarContext.Provider value={{ collapsed, setCollapsed }}>
-        {children}
+        <GlobalDialogContext.Provider value={{ openDialog, setOpenDialog }}>
+          {children}
+        </GlobalDialogContext.Provider>
       </SidebarContext.Provider>
     </MobileMenuContext.Provider>
   );
@@ -33,4 +42,8 @@ export function useMobileMenu() {
 
 export function useSidebarCollapsed() {
   return React.useContext(SidebarContext);
+}
+
+export function useGlobalDialog() {
+  return React.useContext(GlobalDialogContext);
 }

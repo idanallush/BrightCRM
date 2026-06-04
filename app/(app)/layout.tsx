@@ -10,6 +10,7 @@ import { QuickAdd } from "@/components/quick-add";
 import { MobileNav } from "@/components/mobile-nav";
 import { FeedbackButton } from "@/components/feedback-button";
 import { AppShellContent } from "./app-shell-content";
+import { GlobalAddDialogs } from "@/components/global-add-dialogs";
 
 export default async function AppLayout({
   children,
@@ -45,6 +46,7 @@ export default async function AppLayout({
               {children}
             </main>
           </AppShellContent>
+          <GlobalAddDialogs />
           <QuickAdd />
           <FeedbackButton />
           <MobileNav />

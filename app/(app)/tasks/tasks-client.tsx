@@ -299,7 +299,7 @@ export function TasksClient({
             <SlidersHorizontal className="h-4 w-4 text-ink-muted" />
             <span className="hidden sm:inline">סנן</span>
             {activeFilterCount > 0 && (
-              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-white">{activeFilterCount}</span>
+              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-[#1A1A1A] px-1 text-[10px] font-bold text-white">{activeFilterCount}</span>
             )}
           </SelectTrigger>
           <SelectContent>
@@ -378,7 +378,7 @@ export function TasksClient({
               {selectedIds.size} {selectedIds.size === 1 ? "משימה נבחרה" : "משימות נבחרו"}
             </span>
 
-            <div className="h-4 w-px bg-primary/20" />
+            <div className="h-4 w-px bg-[#1A1A1A]/20" />
 
             {/* Status change */}
             <Select onValueChange={onBulkStatus} disabled={bulkLoading}>
@@ -413,7 +413,7 @@ export function TasksClient({
               </SelectContent>
             </Select>
 
-            <div className="h-4 w-px bg-primary/20" />
+            <div className="h-4 w-px bg-[#1A1A1A]/20" />
 
             {/* Delete */}
             {confirmBulkDelete ? (

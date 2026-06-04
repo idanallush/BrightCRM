@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, CheckSquare, Users, Bot, Settings, Info, ChevronsLeft, ChevronsRight, X, LogOut, UserCircle, Activity, Plus, MessageSquarePlus } from "lucide-react";
+import { LayoutDashboard, CheckSquare, Users, Bot, Settings, Info, ChevronsLeft, ChevronsRight, X, LogOut, UserCircle, Activity, Plus, MessageSquarePlus, UserPlus, ListTodo } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useMobileMenu, useSidebarCollapsed } from "./shell-context";
+import { useMobileMenu, useSidebarCollapsed, useGlobalDialog } from "./shell-context";
 import { NotificationBell } from "@/components/notification-bell";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
@@ -27,7 +27,18 @@ export function Sidebar({ userLabel, userAvatarUrl }: { userLabel: string; userA
   const router = useRouter();
   const { collapsed, setCollapsed } = useSidebarCollapsed();
   const { mobileOpen, setMobileOpen } = useMobileMenu();
+  const { setOpenDialog } = useGlobalDialog();
+  const [addMenuOpen, setAddMenuOpen] = React.useState(false);
+  const addMenuRef = React.useRef<HTMLDivElement>(null);
   React.useEffect(() => { setMobileOpen(false); }, [pathname, setMobileOpen]);
+  React.useEffect(() => {
+    if (!addMenuOpen) return;
+    function handleClick(e: MouseEvent) {
+      if (addMenuRef.current && !addMenuRef.current.contains(e.target as Node)) setAddMenuOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [addMenuOpen]);
 
   async function signOut() { const sb = createClient(); await sb.auth.signOut(); router.push("/login"); router.refresh(); }
 
@@ -77,11 +88,40 @@ export function Sidebar({ userLabel, userAvatarUrl }: { userLabel: string; userA
       {/* Weekly stats */}
       <SidebarWeeklyStats collapsed={collapsed && !isMobile} />
 
-      {/* "הוספה" button */}
-      <div className={cn("px-3", !isMobile && collapsed && "px-2")}>
+      {/* "הוספה" button with dropdown */}
+      <div className={cn("relative px-3", !isMobile && collapsed && "px-2")} ref={addMenuRef}>
+        <AnimatePresence>
+          {addMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 6 }}
+              transition={{ duration: 0.15 }}
+              className="absolute bottom-full left-0 right-0 z-50 mb-2 overflow-hidden rounded-xl bg-white shadow-elevation-3"
+            >
+              <button
+                type="button"
+                onClick={() => { setAddMenuOpen(false); setOpenDialog("task"); if (isMobile) setMobileOpen(false); }}
+                className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm text-ink transition-colors hover:bg-surface"
+              >
+                <ListTodo className="h-4 w-4 text-ink-muted" />
+                <span>משימה חדשה</span>
+              </button>
+              <div className="mx-3 h-px bg-border" />
+              <button
+                type="button"
+                onClick={() => { setAddMenuOpen(false); setOpenDialog("client"); if (isMobile) setMobileOpen(false); }}
+                className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm text-ink transition-colors hover:bg-surface"
+              >
+                <UserPlus className="h-4 w-4 text-ink-muted" />
+                <span>לקוח חדש</span>
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
         <button
           type="button"
-          onClick={() => router.push("/tasks?new=true")}
+          onClick={() => setAddMenuOpen((v) => !v)}
           className={cn(
             "flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-2.5 font-medium text-ink transition-colors hover:bg-accent/85",
             !isMobile && collapsed && "px-0",
