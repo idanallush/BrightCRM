@@ -12,6 +12,7 @@ import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserAvatar } from "@/components/user-avatar";
 import { Logo } from "@/components/logo";
+import { SidebarWeeklyStats } from "@/components/sidebar-weekly-stats";
 
 const NAV_MAIN = [
   { href: "/dashboard", label: "דשבורד", Icon: LayoutDashboard },
@@ -71,6 +72,7 @@ export function Sidebar({ userLabel, userAvatarUrl }: { userLabel: string; userA
       <nav className="mt-1 flex flex-col gap-0.5 px-3">{NAV_MAIN.map((item, i) => <NavLink key={item.href} {...item} isMobile={isMobile} index={i} />)}</nav>
       <div className="flex-1" />
       <div className="flex flex-col gap-0.5 border-t border-sidebar-border px-3 pt-2 pb-1">{NAV_BOTTOM.map((item, i) => <NavLink key={item.href} {...item} isMobile={isMobile} index={NAV_MAIN.length + i} />)}</div>
+      <SidebarWeeklyStats collapsed={collapsed && !isMobile} />
       <div className="shrink-0 border-t border-sidebar-border p-3">
         <div className={cn("flex items-center gap-3 rounded-xl px-2 py-2", collapsed && !isMobile && "justify-center px-0")}>
           <Link href="/profile" className="flex min-w-0 flex-1 items-center gap-3 transition-opacity hover:opacity-80" title="פרופיל">
