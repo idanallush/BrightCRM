@@ -1,10 +1,10 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import {
-  Plus, Phone, TrendingUp, TrendingDown, Clock, AlertTriangle,
-  CheckCircle2, ArrowLeft, Users, Inbox, ListChecks, Eye, MessageSquare,
+  Plus, Phone, TrendingUp, TrendingDown, AlertTriangle,
+  CheckCircle2, ArrowLeft, Users, Inbox, ListChecks, Eye,
+  LayoutDashboard,
 } from "lucide-react";
-import { StatusCell } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   getDashboardCounts, getDashboardTrends, getMyTasks,
@@ -13,13 +13,13 @@ import {
   type DashboardCounts,
 } from "@/lib/data";
 import { createClient } from "@/lib/supabase/server";
-import { MarkDoneButton } from "@/components/dashboard/mark-done-button";
 import { DashboardSearch } from "@/components/dashboard/dashboard-search";
 import {
-  AnimatedDashboard, AnimatedSection, AnimatedStatCard, AnimatedNumber,
+  AnimatedDashboard, AnimatedSection, AnimatedNumber,
 } from "@/components/dashboard/animated-layout";
+import { MyTasksSection } from "@/components/dashboard/my-tasks-section";
 import { ClientLogo } from "@/components/client-logo";
-import { getInitials, relativeDate, timeAgo } from "@/lib/utils";
+import { getInitials, timeAgo } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -30,11 +30,6 @@ function formatHebrewDate(): string {
   const day = HEBREW_DAYS[now.getDay()];
   const date = now.toLocaleDateString("he-IL", { day: "numeric", month: "long", year: "numeric" });
   return `${day}, ${date}`;
-}
-
-function fmtDate(iso: string | null): string {
-  if (!iso) return "ללא";
-  return new Date(iso).toLocaleDateString("he-IL", { day: "numeric", month: "long" });
 }
 
 function getFirstName(label: string): string {
@@ -166,119 +161,63 @@ async function DashboardContent() {
       </div>
       </AnimatedSection>
 
-      {/* Stat cards — Studio Light */}
+      {/* Stat strip — סקירה */}
       <AnimatedSection>
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {STAT_CARDS.map((card) => {
-          const value = statValues[card.key] ?? 0;
-          const trend = trends[card.trendKey];
-          const isNegativeMeaning = card.key === "overdue";
-          const trendIsGood = isNegativeMeaning ? trend.delta <= 0 : trend.delta >= 0;
-          const trendColor = trend.delta === 0 ? "text-ink-muted" : trendIsGood ? "text-success" : "text-overdue";
-          const periodLabel = trend.period === "day" ? "מאתמול" : "השבוע";
-          return (
-            <AnimatedStatCard key={card.key}>
-            <Link href={card.href} className="block cursor-pointer overflow-hidden rounded-2xl bg-white border border-border p-5 shadow-elevation-1 transition-shadow hover:shadow-elevation-2" role="status" aria-label={`${card.label}: ${value}`}>
-              <div className="flex items-center justify-between">
-                <span className="text-caption font-medium text-ink/70">{card.label}</span>
-                <div className="flex h-8 w-8 items-center justify-center rounded-full" style={{ backgroundColor: card.color + "15" }}>
-                  <card.Icon className="h-4.5 w-4.5" style={{ color: card.color }} />
-                </div>
-              </div>
-              <div className="mt-3 text-3xl font-bold text-ink"><AnimatedNumber value={value} /></div>
-              {trend.delta !== 0 && (
-                <div className={`mt-1 flex items-center gap-1 text-caption ${trendColor}`}>
-                  {trend.delta > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                  <span>{trend.delta > 0 ? "+" : ""}{trend.delta} {periodLabel}</span>
-                </div>
-              )}
-              {trend.delta === 0 && (
-                <div className="mt-1 text-caption text-ink/40">ללא שינוי</div>
-              )}
-            </Link>
-            </AnimatedStatCard>
-          );
-        })}
-      </div>
-      </AnimatedSection>
-
-      {/* Watching card — tasks the current user follows but isn't responsible for */}
-      <AnimatedSection>
-        <Link
-          href="/tasks"
-          className="flex items-center justify-between gap-4 overflow-hidden rounded-2xl bg-white border border-border p-5 shadow-elevation-1 transition-shadow hover:shadow-elevation-2"
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface">
-              <Eye className="h-4.5 w-4.5 text-ink-secondary" />
-            </div>
-            <span className="text-caption font-medium text-ink/70">משימות שאני עוקב אחריהן</span>
+      <div className="overflow-x-auto rounded-2xl border border-border bg-white shadow-elevation-1">
+        <div className="flex min-w-max items-stretch divide-x divide-x-reverse divide-border">
+          {/* Header */}
+          <div className="flex shrink-0 items-center gap-2.5 px-5 py-4">
+            <LayoutDashboard className="h-5 w-5 text-ink-secondary" />
+            <span className="text-base font-bold text-ink">סקירה</span>
           </div>
-          <div className="text-3xl font-bold text-ink"><AnimatedNumber value={counts.watching} /></div>
-        </Link>
+          {/* Stat items */}
+          {STAT_CARDS.map((card) => {
+            const value = statValues[card.key] ?? 0;
+            const trend = trends[card.trendKey];
+            const isNegativeMeaning = card.key === "overdue";
+            const trendIsGood = isNegativeMeaning ? trend.delta <= 0 : trend.delta >= 0;
+            const trendColor = trend.delta === 0 ? "text-ink-muted" : trendIsGood ? "text-success" : "text-overdue";
+            const periodLabel = trend.period === "day" ? "מאתמול" : "השבוע";
+            return (
+              <Link key={card.key} href={card.href} className="flex shrink-0 items-center gap-3 px-5 py-4 transition-colors hover:bg-surface">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ backgroundColor: card.color + "15" }}>
+                  <card.Icon className="h-5 w-5" style={{ color: card.color }} />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-caption text-ink-muted">{card.label}</span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-bold text-ink"><AnimatedNumber value={value} /></span>
+                    {trend.delta !== 0 && (
+                      <span className={`flex items-center gap-0.5 text-caption ${trendColor}`}>
+                        {trend.delta > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                        {trend.delta > 0 ? "+" : ""}{trend.delta} {periodLabel}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+          {/* Watching */}
+          <Link href="/tasks" className="flex shrink-0 items-center gap-3 px-5 py-4 transition-colors hover:bg-surface">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface">
+              <Eye className="h-5 w-5 text-ink-secondary" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-caption text-ink-muted">אני עוקב</span>
+              <span className="text-2xl font-bold text-ink"><AnimatedNumber value={counts.watching} /></span>
+            </div>
+          </Link>
+        </div>
+      </div>
       </AnimatedSection>
 
       {/* Main content: Tasks + Sidebar */}
       <AnimatedSection>
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-        {/* My Tasks */}
+        {/* My Tasks — emphasized */}
         <div className="lg:col-span-2">
-          <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
-            <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
-              <h2 className="text-base font-bold text-ink">המשימות שלי</h2>
-              <Link href="/tasks" className="flex items-center gap-1 text-caption text-ink-secondary transition-colors hover:text-ink">
-                כל המשימות <ArrowLeft className="h-3 w-3" />
-              </Link>
-            </div>
-            {myTasks.length === 0 ? (
-              <div className="flex flex-col items-center gap-3 px-4 py-10 text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-surface">
-                  <CheckCircle2 className="h-6 w-6 text-success" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-ink">אין משימות פתוחות</p>
-                  <p className="mt-0.5 text-caption text-ink-muted">כל המשימות טופלו</p>
-                </div>
-              </div>
-            ) : (
-              <table className="w-full text-right text-body-sm">
-                <thead>
-                  <tr className="bg-surface text-caption text-ink-secondary">
-                    <th className="px-4 py-2.5 text-right font-medium">משימה</th>
-                    <th className="hidden px-4 py-2.5 text-right font-medium sm:table-cell">לקוח</th>
-                    <th className="px-4 py-2.5 text-center font-medium">סטטוס</th>
-                    <th className="hidden px-4 py-2.5 text-right font-medium lg:table-cell">נפתח</th>
-                    <th className="px-4 py-2.5 text-right font-medium">דדליין</th>
-                    <th className="w-10 px-2" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {myTasks.map((t) => {
-                    const { overdue } = relativeDate(t.due_date);
-                    return (
-                      <tr key={t.id} className="group relative border-b border-border transition-colors hover:bg-surface">
-                        <td className="px-4 py-3">
-                          <Link href={`/tasks?task=${t.id}`} className="font-medium text-ink group-hover:text-primary after:absolute after:inset-0 after:content-['']">{t.title}</Link>
-                          {(commentCounts[t.id] ?? 0) > 0 && (
-                            <span className="inline-flex items-center gap-0.5 text-xs text-ink-muted ms-2">
-                              <MessageSquare className="h-3 w-3" />{commentCounts[t.id]}
-                            </span>
-                          )}
-                        </td>
-                        <td className="hidden px-4 py-3 text-ink-secondary sm:table-cell">{t.client_name ?? "כללי"}</td>
-                        <td className="px-4 py-3 text-center"><StatusCell status={t.status} /></td>
-                        <td className="hidden px-4 py-3 text-ink-muted lg:table-cell">{new Date(t.created_at).toLocaleDateString("he-IL", { day: "numeric", month: "short" })}</td>
-                        <td className={`px-4 py-3 ${overdue ? "font-medium text-overdue" : "text-ink-secondary"}`}>{fmtDate(t.due_date)}</td>
-                        <td className="relative z-10 px-2 py-3 text-center">
-                          <MarkDoneButton taskId={t.id} />
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )}
-          </div>
+          <MyTasksSection tasks={myTasks} commentCounts={commentCounts} />
         </div>
 
         {/* Sidebar: Clients attention + Activity */}
@@ -354,7 +293,7 @@ async function DashboardContent() {
       </div>
       </AnimatedSection>
 
-      {/* Clients with open tasks */}
+      {/* Clients with open tasks — horizontal scroll */}
       {clientsOpen.length > 0 && (
         <AnimatedSection>
         <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
@@ -367,17 +306,19 @@ async function DashboardContent() {
               כל הלקוחות <ArrowLeft className="h-3 w-3" />
             </Link>
           </div>
-          <div className="grid grid-cols-2 gap-px bg-border sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-            {clientsOpen.map((c) => (
+          <div className="overflow-x-auto">
+            <div className="flex min-w-max items-stretch divide-x divide-x-reverse divide-border pe-20">
+              {clientsOpen.map((c) => (
                 <Link key={c.id} href={`/clients/${c.id}`}
-                  className="flex flex-col items-center gap-1.5 bg-white px-3 py-4 transition-colors hover:bg-surface">
+                  className="flex shrink-0 flex-col items-center gap-1.5 px-5 py-4 transition-colors hover:bg-surface">
                   <ClientLogo logoUrl={c.logo_url} logoStoragePath={c.logo_storage_path} name={c.name} size="lg" />
-                  <span className="max-w-full truncate text-center text-sm font-medium text-ink">{c.name}</span>
+                  <span className="max-w-[120px] truncate text-center text-sm font-medium text-ink">{c.name}</span>
                   <span className="rounded-full bg-surface px-2.5 py-0.5 text-caption font-semibold text-ink-secondary">
-                    {c.open_count} משימות
+                    {c.open_count} {c.open_count === 1 ? "משימה" : "משימות"}
                   </span>
                 </Link>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
         </AnimatedSection>

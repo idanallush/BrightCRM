@@ -129,7 +129,7 @@ export function FeedbackButton() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-40 end-5 z-50 flex h-12 flex-row-reverse items-center gap-2 rounded-full bg-primary px-4 text-white shadow-elevation-3 transition hover:scale-[1.03] md:bottom-20"
+        className="fixed bottom-40 end-5 z-40 flex h-12 flex-row-reverse items-center gap-2 rounded-full bg-primary px-4 text-white shadow-elevation-3 transition hover:scale-[1.03] md:bottom-20"
         aria-label="שליחת משוב"
       >
         <MessageSquarePlus className="h-5 w-5 shrink-0" />
