@@ -74,7 +74,7 @@ export function TaskDetailPanel({
       {/* ── Header: title + roles bar ── */}
       <div className="shrink-0 border-b border-border px-5 pb-4 pt-5 md:px-6 md:pt-6">
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/20 text-ink">
             <ClipboardList className="h-5 w-5" />
           </div>
           <div className="min-w-0 flex-1">

@@ -28,7 +28,7 @@ export const SheetContent = React.forwardRef<
       className,
     )} {...props}>
       {children}
-      <DialogPrimitive.Close className="absolute start-4 top-4 z-10 rounded-xl p-1.5 text-ink-muted transition-colors hover:bg-surface hover:text-ink focus:outline-none"><X className="h-4 w-4" /></DialogPrimitive.Close>
+      <DialogPrimitive.Close className="absolute end-4 top-4 z-10 rounded-xl p-1.5 text-ink-muted transition-colors hover:bg-surface hover:text-ink focus:outline-none"><X className="h-4 w-4" /></DialogPrimitive.Close>
     </DialogPrimitive.Content>
   </DialogPrimitive.Portal>
 ));
