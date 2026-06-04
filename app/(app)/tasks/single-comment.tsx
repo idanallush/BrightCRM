@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toaster";
 import { updateComment, deleteComment } from "./actions";
 import type { CommentAttachment } from "./actions";
-import { UserAvatar, AvatarStack } from "@/components/user-avatar";
+import { UserAvatar } from "@/components/user-avatar";
+import { SeenIndicator } from "@/components/ui/seen-indicator";
 import { timeAgo } from "@/lib/utils";
 import type { TeamMember } from "@/lib/data";
 import { CommentAttachmentList, renderContentWithMentions } from "./comment-helpers";
@@ -45,7 +46,7 @@ export function SingleComment({
   currentUserId: string | null;
   onEdited: () => void;
   onDeleted: () => void;
-  seenBy?: { full_name: string; avatar_url: string | null }[];
+  seenBy?: { full_name: string; avatar_url: string | null; last_seen_at: string }[];
 }) {
   const [editing, setEditing] = React.useState(false);
   const [editText, setEditText] = React.useState(comment.content);
@@ -160,14 +161,10 @@ export function SingleComment({
                 {replyCount} {replyCount === 1 ? "תגובה" : "תגובות"}
               </span>
             ) : null}
-            {seenBy && seenBy.length > 0 && (
-              <span
-                className="inline-flex items-center gap-1 cursor-default"
-                title={`נצפה ע״י: ${seenBy.map(s => s.full_name).join(", ")}`}
-              >
-                <AvatarStack people={seenBy.map(s => ({ full_name: s.full_name, avatar_url: s.avatar_url }))} size="xs" max={3} />
-              </span>
-            )}
+            <SeenIndicator
+              viewers={seenBy?.map(s => ({ full_name: s.full_name, avatar_url: s.avatar_url, viewed_at: s.last_seen_at }))}
+              size="sm"
+            />
           </div>
         )}
       </div>

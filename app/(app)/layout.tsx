@@ -8,6 +8,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { QuickAdd } from "@/components/quick-add";
 import { MobileNav } from "@/components/mobile-nav";
+import { FeedbackButton } from "@/components/feedback-button";
 import { AppShellContent } from "./app-shell-content";
 
 export default async function AppLayout({
@@ -45,6 +46,7 @@ export default async function AppLayout({
             </main>
           </AppShellContent>
           <QuickAdd />
+          <FeedbackButton />
           <MobileNav />
           <Toaster />
         </div>

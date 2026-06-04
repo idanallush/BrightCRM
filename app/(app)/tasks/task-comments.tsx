@@ -206,7 +206,7 @@ export function TaskComments({ taskId, team, focusCommentId }: { taskId: string;
                   currentUserId={memberId}
                   onEdited={fetchComments}
                   onDeleted={fetchComments}
-                  seenBy={views.filter(v => v.last_seen_at >= c.created_at && v.member_id !== c.author_id)}
+                  seenBy={views.filter(v => v.last_seen_at >= c.created_at && v.member_id !== c.author_id).map(v => ({ full_name: v.full_name, avatar_url: v.avatar_url, last_seen_at: v.last_seen_at }))}
                   onReplyClick={() => {
                     setReplyingTo(replyingTo === c.id ? null : c.id);
                     if (replies.length > 0) setExpandedThreads((prev) => new Set(prev).add(c.id));
@@ -239,7 +239,7 @@ export function TaskComments({ taskId, team, focusCommentId }: { taskId: string;
                           currentUserId={memberId}
                           onEdited={fetchComments}
                           onDeleted={fetchComments}
-                          seenBy={views.filter(v => v.last_seen_at >= r.created_at && v.member_id !== r.author_id)}
+                          seenBy={views.filter(v => v.last_seen_at >= r.created_at && v.member_id !== r.author_id).map(v => ({ full_name: v.full_name, avatar_url: v.avatar_url, last_seen_at: v.last_seen_at }))}
                         />
                       </div>
                     ))}
