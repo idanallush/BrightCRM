@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, LayoutGrid, Rows3, CalendarDays, AlertTriangle, Search, Tag as TagIcon, X, Trash2, ArrowRightLeft } from "lucide-react";
+import { Plus, LayoutGrid, Rows3, CalendarDays, AlertTriangle, Search, Tag as TagIcon, X, Trash2, ArrowRightLeft, SlidersHorizontal, Users, Calendar } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -215,117 +215,122 @@ export function TasksClient({
       transition={{ duration: 0.35, ease: "easeOut" }}
       className="flex flex-col gap-4"
     >
-      {/* Board header */}
-      <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3.5">
-          <div className="flex items-center gap-3">
-            <h1 className="text-base font-bold text-ink">משימות</h1>
-            {activeFilterCount > 0 && (
-              <button type="button" onClick={clearFilters}
-                className="rounded-full bg-surface px-3 py-1 text-[11px] font-medium text-ink-secondary transition-colors hover:bg-border">
-                {activeFilterCount === 1 ? "פילטר 1" : `${activeFilterCount} פילטרים`} · נקה
-              </button>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="inline-flex rounded-full border border-border bg-surface p-0.5">
-              <button type="button" onClick={() => changeView("table")}
-                className={cn("flex items-center gap-1.5 rounded-full px-3 py-1.5 text-caption transition-colors duration-200",
-                  view === "table" ? "bg-white font-medium text-ink shadow-sm" : "text-ink-secondary hover:text-ink")}>
-                <Rows3 className="h-4 w-4" /><span className="hidden sm:inline">טבלה</span>
-              </button>
-              <button type="button" onClick={() => changeView("kanban")}
-                className={cn("flex items-center gap-1.5 rounded-full px-3 py-1.5 text-caption transition-colors duration-200",
-                  view === "kanban" ? "bg-white font-medium text-ink shadow-sm" : "text-ink-secondary hover:text-ink")}>
-                <LayoutGrid className="h-4 w-4" /><span className="hidden sm:inline">קנבן</span>
-              </button>
-              <button type="button" onClick={() => changeView("calendar")}
-                className={cn("flex items-center gap-1.5 rounded-full px-3 py-1.5 text-caption transition-colors duration-200",
-                  view === "calendar" ? "bg-white font-medium text-ink shadow-sm" : "text-ink-secondary hover:text-ink")}>
-                <CalendarDays className="h-4 w-4" /><span className="hidden sm:inline">לוח שנה</span>
-              </button>
-            </div>
-            <Button onClick={() => setCreateOpen(true)} className="hidden sm:inline-flex">
-              <Plus className="h-4 w-4" /> משימה חדשה
-            </Button>
-          </div>
+      {/* Toolbar */}
+      <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-3 py-2 shadow-elevation-1">
+        {/* New task button */}
+        <Button onClick={() => setCreateOpen(true)} size="sm" className="shrink-0">
+          <Plus className="h-4 w-4" /> <span className="hidden sm:inline">חדש</span>
+        </Button>
+
+        <div className="h-5 w-px shrink-0 bg-border" />
+
+        {/* People filter */}
+        <Select value={filters.assigneeId} onValueChange={(v) => updateFilter("assigneeId", v)}>
+          <SelectTrigger className="h-8 w-auto gap-1.5 border-0 bg-transparent px-2 text-caption shadow-none hover:bg-surface">
+            <Users className="h-4 w-4 text-ink-muted" />
+            <SelectValue placeholder="אנשים" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all__">כל האנשים</SelectItem>
+            {team.map((m) => <SelectItem key={m.id} value={m.id}>{m.full_name}</SelectItem>)}
+          </SelectContent>
+        </Select>
+
+        {/* Overdue / date filter */}
+        <button type="button" onClick={() => updateFilter("overdue", !filters.overdue)}
+          className={cn("flex h-8 items-center gap-1.5 rounded-xl px-2 text-caption transition-colors",
+            filters.overdue ? "bg-overdue-bg text-overdue-text" : "text-ink-secondary hover:bg-surface")}>
+          <Calendar className="h-4 w-4" />
+          <span className="hidden sm:inline">תאריכים</span>
+          {filters.overdue && <span className="h-1.5 w-1.5 rounded-full bg-overdue" />}
+        </button>
+
+        <div className="h-5 w-px shrink-0 bg-border" />
+
+        {/* Search */}
+        <div className="relative min-w-0 flex-1 sm:max-w-[180px]">
+          <Search className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-muted" />
+          <Input value={searchText} onChange={(e) => setSearchText(e.target.value)}
+            placeholder="חיפוש..." aria-label="חיפוש משימות" className="h-8 rounded-xl border-0 bg-transparent pr-8 text-caption shadow-none placeholder:text-ink-muted hover:bg-surface focus:bg-surface" />
         </div>
 
-        {/* Filter row */}
-        <div className="flex flex-col gap-3 border-t border-border px-4 py-3 sm:flex-row sm:items-center">
-          <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-none sm:overflow-x-visible sm:pb-0">
-            {STATUS_PILLS.map((pill) => {
-              const isActive = filters.status === pill.key;
+        {/* Filter: status + client + tags */}
+        <Select
+          value={filters.status !== "__all__" ? filters.status : filters.clientId !== "__all__" ? `client:${filters.clientId}` : tagFilter !== "__all__" ? `tag:${tagFilter}` : "__none__"}
+          onValueChange={(v) => {
+            if (v === "__none__") { clearFilters(); return; }
+            if (v.startsWith("client:")) { updateFilter("clientId", v.replace("client:", "")); return; }
+            if (v.startsWith("tag:")) { setTagFilter(v.replace("tag:", "")); return; }
+            updateFilter("status", v);
+          }}
+        >
+          <SelectTrigger className="h-8 w-auto gap-1.5 border-0 bg-transparent px-2 text-caption shadow-none hover:bg-surface">
+            <SlidersHorizontal className="h-4 w-4 text-ink-muted" />
+            <span className="hidden sm:inline">סנן</span>
+            {activeFilterCount > 0 && (
+              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-white">{activeFilterCount}</span>
+            )}
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__none__">ללא סינון</SelectItem>
+            <div className="px-2 py-1.5 text-[11px] font-semibold text-ink-muted">סטטוס</div>
+            {STATUS_PILLS.filter((p) => p.key !== "__all__").map((pill) => {
               const light = STATUS_LIGHT[pill.key];
               return (
-                <button key={pill.key} type="button" onClick={() => updateFilter("status", pill.key)}
-                  className={cn("inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-caption transition-colors duration-200",
-                    isActive
-                      ? light ? "font-medium" : "bg-ink font-medium text-white"
-                      : "text-ink-secondary hover:bg-surface")}
-                  style={isActive && light
-                    ? { backgroundColor: light.bg, color: light.text }
-                    : undefined}>
-                  {isActive && light && <span className="h-2 w-2 rounded-full" style={{ backgroundColor: light.dot }} />}
-                  {pill.label}
-                </button>
+                <SelectItem key={pill.key} value={pill.key}>
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: light?.dot ?? "#C4C4C4" }} />
+                    {pill.label}
+                  </div>
+                </SelectItem>
               );
             })}
-          </div>
-
-          <div className="flex flex-1 flex-wrap items-center gap-2">
-            <div className="relative min-w-[140px] flex-1 sm:max-w-[200px]">
-              <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
-              <Input value={searchText} onChange={(e) => setSearchText(e.target.value)}
-                placeholder="חיפוש..." aria-label="חיפוש משימות" className="h-9 pr-9" />
-            </div>
-
-            <Select value={filters.clientId} onValueChange={(v) => updateFilter("clientId", v)}>
-              <SelectTrigger className="h-9 w-auto min-w-[120px]"><SelectValue placeholder="לקוח" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__all__">כל הלקוחות</SelectItem>
-                <SelectItem value="__general__">כללי</SelectItem>
-                {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-
-            <Select value={filters.assigneeId} onValueChange={(v) => updateFilter("assigneeId", v)}>
-              <SelectTrigger className="h-9 w-auto min-w-[100px]"><SelectValue placeholder="אחראי" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__all__">כל האחראים</SelectItem>
-                {team.map((m) => <SelectItem key={m.id} value={m.id}>{m.full_name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-
-            <button type="button" onClick={() => updateFilter("overdue", !filters.overdue)}
-              className={cn("flex h-9 items-center gap-1.5 rounded-full border px-3 text-caption transition-colors duration-200",
-                filters.overdue ? "border-overdue bg-overdue-bg text-overdue-text" : "border-border bg-white text-ink-secondary hover:bg-surface")}>
-              <AlertTriangle className="h-3.5 w-3.5" />עבר דדליין
-            </button>
-
+            <div className="px-2 py-1.5 text-[11px] font-semibold text-ink-muted">לקוח</div>
+            <SelectItem value="client:__general__">כללי</SelectItem>
+            {clients.map((c) => <SelectItem key={c.id} value={`client:${c.id}`}>{c.name}</SelectItem>)}
             {tags.length > 0 && (
-              <Select value={tagFilter} onValueChange={setTagFilter}>
-                <SelectTrigger className="h-9 w-auto min-w-[100px]">
-                  <div className="flex items-center gap-1.5">
-                    <TagIcon className="h-3.5 w-3.5" />
-                    <SelectValue placeholder="תגית" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__all__">כל התגיות</SelectItem>
-                  {tags.map((tag) => (
-                    <SelectItem key={tag.id} value={tag.id}>
-                      <div className="flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: tag.color ?? "#DCE4FF" }} />
-                        {tag.name}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <>
+                <div className="px-2 py-1.5 text-[11px] font-semibold text-ink-muted">תגית</div>
+                {tags.map((tag) => (
+                  <SelectItem key={tag.id} value={`tag:${tag.id}`}>
+                    <div className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full" style={{ backgroundColor: tag.color ?? "#DCE4FF" }} />
+                      {tag.name}
+                    </div>
+                  </SelectItem>
+                ))}
+              </>
             )}
-          </div>
+          </SelectContent>
+        </Select>
+
+        <div className="h-5 w-px shrink-0 bg-border" />
+
+        {/* View toggle */}
+        <div className="inline-flex items-center gap-0.5">
+          <button type="button" onClick={() => changeView("table")} aria-label="טבלה"
+            className={cn("rounded-lg p-1.5 transition-colors", view === "table" ? "bg-surface text-ink" : "text-ink-muted hover:text-ink")}>
+            <Rows3 className="h-4 w-4" />
+          </button>
+          <button type="button" onClick={() => changeView("kanban")} aria-label="קנבן"
+            className={cn("rounded-lg p-1.5 transition-colors", view === "kanban" ? "bg-surface text-ink" : "text-ink-muted hover:text-ink")}>
+            <LayoutGrid className="h-4 w-4" />
+          </button>
+          <button type="button" onClick={() => changeView("calendar")} aria-label="לוח שנה"
+            className={cn("rounded-lg p-1.5 transition-colors", view === "calendar" ? "bg-surface text-ink" : "text-ink-muted hover:text-ink")}>
+            <CalendarDays className="h-4 w-4" />
+          </button>
         </div>
+
+        {/* Active filter clear */}
+        {activeFilterCount > 0 && (
+          <>
+            <div className="h-5 w-px shrink-0 bg-border" />
+            <button type="button" onClick={clearFilters} className="rounded-lg p-1.5 text-ink-muted transition-colors hover:bg-surface hover:text-ink" aria-label="נקה פילטרים">
+              <X className="h-4 w-4" />
+            </button>
+          </>
+        )}
       </div>
 
       {/* Bulk action bar */}
