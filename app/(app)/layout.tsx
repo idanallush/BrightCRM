@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isBrightEmail } from "@/lib/utils";
 import { Sidebar } from "./sidebar";
-import { Header } from "./header";
+import { MobileTopBar } from "./mobile-topbar";
 import { ShellProvider } from "./shell-context";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
@@ -40,7 +40,7 @@ export default async function AppLayout({
         <div className="min-h-screen bg-surface">
           <Sidebar userLabel={userLabel} userAvatarUrl={userAvatarUrl} />
           <AppShellContent>
-            <Header />
+            <MobileTopBar />
             <main className="mx-auto w-full max-w-7xl flex-1 p-4 pb-20 md:p-6 md:pb-6">
               {children}
             </main>

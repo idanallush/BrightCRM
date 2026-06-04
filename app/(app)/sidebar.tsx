@@ -72,33 +72,44 @@ export function Sidebar({ userLabel, userAvatarUrl }: { userLabel: string; userA
       <nav className="mt-1 flex flex-col gap-0.5 px-3">{NAV_MAIN.map((item, i) => <NavLink key={item.href} {...item} isMobile={isMobile} index={i} />)}</nav>
 
       {/* Quick actions */}
-      <div className={cn("mt-3 flex gap-1.5 px-3", !isMobile && collapsed && "flex-col items-center px-1")}>
-        <button
-          type="button"
-          onClick={() => router.push("/tasks?new=true")}
-          className={cn(
-            "flex items-center gap-2 rounded-xl px-3 py-2 text-body-sm transition-colors duration-150",
-            "text-white/60 hover:bg-accent/20 hover:text-accent",
-            !isMobile && collapsed && "justify-center px-0 py-2",
-          )}
-          title="הוספה מהירה"
-        >
-          <Plus className="h-[18px] w-[18px] shrink-0" />
-          {(isMobile || !collapsed) && <span>הוספה מהירה</span>}
-        </button>
-        <button
-          type="button"
-          onClick={() => window.dispatchEvent(new Event("open-feedback"))}
-          className={cn(
-            "flex items-center gap-2 rounded-xl px-3 py-2 text-body-sm transition-colors duration-150",
-            "text-white/60 hover:bg-primary/20 hover:text-[#7B9EFF]",
-            !isMobile && collapsed && "justify-center px-0 py-2",
-          )}
-          title="דיווח ומשוב"
-        >
-          <MessageSquarePlus className="h-[18px] w-[18px] shrink-0" />
-          {(isMobile || !collapsed) && <span>דיווח ומשוב</span>}
-        </button>
+      <div className={cn("mt-4 px-3", !isMobile && collapsed && "px-2")}>
+        <div className={cn(
+          "flex gap-2",
+          !isMobile && collapsed && "flex-col items-center gap-1.5",
+        )}>
+          <button
+            type="button"
+            onClick={() => router.push("/tasks?new=true")}
+            className={cn(
+              "group flex items-center gap-2 rounded-full transition-all duration-150",
+              !isMobile && collapsed
+                ? "h-8 w-8 justify-center bg-accent/15 hover:bg-accent/25"
+                : "flex-1 bg-accent/15 px-3 py-2 hover:bg-accent/25",
+            )}
+            title="הוספה מהירה"
+          >
+            <Plus className="h-4 w-4 shrink-0 text-accent" />
+            {(isMobile || !collapsed) && (
+              <span className="text-xs font-medium text-accent">הוספה מהירה</span>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new Event("open-feedback"))}
+            className={cn(
+              "group flex items-center gap-2 rounded-full transition-all duration-150",
+              !isMobile && collapsed
+                ? "h-8 w-8 justify-center bg-white/5 hover:bg-white/10"
+                : "bg-white/5 px-3 py-2 hover:bg-white/10",
+            )}
+            title="דיווח ומשוב"
+          >
+            <MessageSquarePlus className="h-4 w-4 shrink-0 text-white/50 group-hover:text-white/70" />
+            {(isMobile || !collapsed) && (
+              <span className="text-xs text-white/50 group-hover:text-white/70">משוב</span>
+            )}
+          </button>
+        </div>
       </div>
 
       <div className="flex-1" />
