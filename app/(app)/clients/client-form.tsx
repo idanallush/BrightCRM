@@ -407,7 +407,7 @@ export function ClientForm({
                       set("digital_assets", form.digital_assets.filter((a) => a !== asset));
                     }
                   }}
-                  className="h-4 w-4 rounded border-border text-primary focus:ring-primary/20"
+                  className="h-4 w-4 rounded border-border text-link focus:ring-link/20"
                 />
                 <span className="text-sm text-ink">{asset}</span>
               </label>
@@ -428,7 +428,7 @@ export function ClientForm({
                       set("previous_campaigns", form.previous_campaigns.filter((p) => p !== platform));
                     }
                   }}
-                  className="h-4 w-4 rounded border-border text-primary focus:ring-primary/20"
+                  className="h-4 w-4 rounded border-border text-link focus:ring-link/20"
                 />
                 <span className="text-sm text-ink">{platform}</span>
               </label>

@@ -31,7 +31,7 @@ function renderTextWithLinks(text: string): React.ReactNode {
     if (URL_PATTERN.test(part)) {
       return (
         <a key={i} href={part} target="_blank" rel="noopener noreferrer"
-          className="text-primary underline hover:text-primary/80 break-all" dir="ltr">
+          className="text-link underline hover:text-link/80 break-all" dir="ltr">
           {part}
         </a>
       );
@@ -58,7 +58,7 @@ export function renderContentWithMentions(content: string, names: string[]): Rea
       nodes.push(
         <span
           key={`m${i}`}
-          className="rounded-full bg-gray-100 px-1.5 font-semibold text-gray-700"
+          className="rounded-full bg-blue-50 px-1.5 font-semibold text-blue-700"
         >
           {matches[i]}
         </span>,

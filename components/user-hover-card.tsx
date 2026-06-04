@@ -73,7 +73,7 @@ export function UserHoverCard({
               <Detail
                 icon={<Mail className="h-3.5 w-3.5" />}
                 value={
-                  <a href={`mailto:${member.email}`} className="hover:text-primary hover:underline" dir="ltr">
+                  <a href={`mailto:${member.email}`} className="hover:text-link hover:underline" dir="ltr">
                     {member.email}
                   </a>
                 }

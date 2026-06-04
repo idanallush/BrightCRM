@@ -218,7 +218,7 @@ export function TaskComments({ taskId, team, focusCommentId }: { taskId: string;
                   <button
                     type="button"
                     onClick={() => toggleThread(c.id)}
-                    className="ms-11 mt-1 flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+                    className="ms-11 mt-1 flex items-center gap-1 text-xs font-medium text-link hover:text-link/80 transition-colors"
                   >
                     {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                     {isExpanded ? "הסתר תגובות" : `הצג ${replies.length} ${replies.length === 1 ? "תגובה" : "תגובות"}`}
@@ -264,7 +264,7 @@ export function TaskComments({ taskId, team, focusCommentId }: { taskId: string;
             <button
               type="button"
               onClick={() => setShowAll(true)}
-              className="text-sm font-medium text-primary hover:text-primary/80 transition-colors py-1"
+              className="text-sm font-medium text-link hover:text-link/80 transition-colors py-1"
             >
               צפה בעוד {topLevel.length - 2}
             </button>

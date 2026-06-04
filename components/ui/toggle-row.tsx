@@ -30,8 +30,8 @@ export function ToggleRow({
         disabled={disabled}
         onClick={() => onChange(!checked)}
         className={cn(
-          "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:opacity-50",
-          checked ? "bg-primary" : "bg-border",
+          "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link/30 disabled:opacity-50",
+          checked ? "bg-link" : "bg-border",
         )}
       >
         <span

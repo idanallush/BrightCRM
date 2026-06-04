@@ -152,7 +152,7 @@ export function SingleComment({
             <button
               type="button"
               onClick={onReplyClick}
-              className="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
+              className="text-xs font-medium text-link hover:text-link/80 transition-colors"
             >
               השב
             </button>

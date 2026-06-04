@@ -31,6 +31,8 @@ const config: Config = {
       colors: {
         // Primary interactive dark
         primary: { DEFAULT: "#1A1A1A", hover: "#333333", pressed: "#111111" },
+        // Link blue — for clickable links, tags, toggles
+        link: { DEFAULT: "#3B82F6", hover: "#2563EB" },
         // Accent: Canary yellow (Miro brand)
         accent: { DEFAULT: "#FFD02F", hover: "#F5C518" },
         // Text — pure dark
@@ -57,7 +59,7 @@ const config: Config = {
         // Status colors — kept functional (Monday.com-style)
         st: {
           waiting: "#FDAB3D",
-          incoming: "#1A1A1A",
+          incoming: "#3B82F6",
           working: "#A25DDC",
           approval: "#FFCB00",
           manager: "#FF642E",
@@ -66,8 +68,8 @@ const config: Config = {
           // Light bg + matched dark text (for soft badge treatment)
           "waiting-bg": "#FFF3E0",
           "waiting-text": "#92400E",
-          "incoming-bg": "#F3F4F6",
-          "incoming-text": "#1A1A1A",
+          "incoming-bg": "#EFF6FF",
+          "incoming-text": "#1E40AF",
           "working-bg": "#F5F3FF",
           "working-text": "#5B21B6",
           "approval-bg": "#FFFBEB",

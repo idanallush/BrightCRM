@@ -102,7 +102,7 @@ export function TaskDetailPanel({
             )}
             {/* Recurrence badge */}
             {task.recurrence_rule && (
-              <div className="mt-1 flex items-center gap-1.5 text-xs text-primary">
+              <div className="mt-1 flex items-center gap-1.5 text-xs text-link">
                 <Repeat className="h-3.5 w-3.5" />
                 <span>{formatRecurrenceDescription(task.recurrence_rule as RecurrenceRule)}</span>
               </div>

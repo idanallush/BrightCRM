@@ -133,7 +133,7 @@ export function TaskCalendar({
                         >
                           <span className="flex-1 truncate font-medium text-ink">{t.title}</span>
                           {cc > 0 && (
-                            <span className="inline-flex items-center gap-0.5 text-[10px] text-primary">
+                            <span className="inline-flex items-center gap-0.5 text-[10px] text-link">
                               <MessageCircle className="h-2.5 w-2.5" />{cc}
                             </span>
                           )}

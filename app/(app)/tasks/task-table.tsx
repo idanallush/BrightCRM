@@ -102,7 +102,7 @@ export function TaskTable({
 
   const groups = [
     ...(watchedTasks.length > 0
-      ? [{ status: "__watched__", label: "במעקב", color: "#1A1A1A", isWatched: true, tasks: watchedTasks }]
+      ? [{ status: "__watched__", label: "במעקב", color: "#3B82F6", isWatched: true, tasks: watchedTasks }]
       : []),
     ...statusGroups,
   ];
@@ -155,7 +155,7 @@ export function TaskTable({
             checked={selectedIds.has(t.id)}
             onChange={(e) => { e.stopPropagation(); toggleOne(t.id); }}
             onClick={(e) => e.stopPropagation()}
-            className="h-4 w-4 cursor-pointer rounded border-border accent-primary"
+            className="h-4 w-4 cursor-pointer rounded border-border accent-link"
             aria-label={`בחר ${t.title}`}
           />
         </td>
@@ -250,7 +250,7 @@ export function TaskTable({
             <button
               type="button"
               onClick={(e) => { e.stopPropagation(); onRowClick(t); }}
-              className="flex items-center justify-center rounded-lg p-1 text-ink-muted opacity-40 transition-[color,background-color,opacity] duration-150 group-hover:opacity-100 group-hover:text-primary hover:bg-surface-soft focus-visible:outline-none"
+              className="flex items-center justify-center rounded-lg p-1 text-ink-muted opacity-40 transition-[color,background-color,opacity] duration-150 group-hover:opacity-100 group-hover:text-link hover:bg-surface-soft focus-visible:outline-none"
               aria-label="פתח משימה"
             >
               <ArrowUpLeft className="h-4 w-4" />
@@ -275,7 +275,7 @@ export function TaskTable({
                   checked={allSelected}
                   ref={(el) => { if (el) el.indeterminate = someSelected && !allSelected; }}
                   onChange={toggleAll}
-                  className="h-4 w-4 cursor-pointer rounded border-border accent-primary"
+                  className="h-4 w-4 cursor-pointer rounded border-border accent-link"
                   aria-label="בחר הכל"
                 />
               </th>
@@ -297,7 +297,7 @@ export function TaskTable({
                     <td colSpan={COL_COUNT}>
                       {(() => {
                         const light = group.isWatched
-                          ? { bg: "rgba(26,26,26,0.08)", text: "#1A1A1A", dot: "#1A1A1A" }
+                          ? { bg: "rgba(59,130,246,0.10)", text: "#3B82F6", dot: "#3B82F6" }
                           : (STATUS_LIGHT[group.status] ?? { bg: "#F7F7F8", text: "#1A1A1A", dot: "#C4C4C4" });
                         return (
                           <button

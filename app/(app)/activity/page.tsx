@@ -34,12 +34,12 @@ function ActivityEntry({ item }: { item: ActivityItem }) {
           {isComment ? (
             <>
               <span className="text-ink-secondary">הגיב/ה על</span>{" "}
-              <span className="font-medium text-primary">{item.task_title}</span>
+              <span className="font-medium text-link">{item.task_title}</span>
             </>
           ) : (
             <>
               <span className="text-ink-secondary">יצר/ה משימה</span>{" "}
-              <span className="font-medium text-primary">{item.task_title}</span>
+              <span className="font-medium text-link">{item.task_title}</span>
             </>
           )}
         </p>

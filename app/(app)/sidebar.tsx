@@ -21,11 +21,6 @@ const NAV_MAIN = [
   { href: "/chat", label: "צ'אט AI", Icon: Bot },
   { href: "/activity", label: "פעילות", Icon: Activity },
 ];
-const NAV_BOTTOM = [
-  { href: "/profile", label: "פרופיל", Icon: UserCircle },
-  { href: "/settings", label: "הגדרות", Icon: Settings },
-  { href: "/about", label: "אודות", Icon: Info },
-];
 
 export function Sidebar({ userLabel, userAvatarUrl }: { userLabel: string; userAvatarUrl?: string | null }) {
   const pathname = usePathname();
@@ -57,6 +52,7 @@ export function Sidebar({ userLabel, userAvatarUrl }: { userLabel: string; userA
 
   const content = (isMobile: boolean) => (
     <div className="flex h-full flex-col">
+      {/* Header: logo + notif bell + collapse */}
       <div className="flex h-16 shrink-0 items-center justify-between px-4">
         <Link href="/dashboard" className="flex items-center gap-2.5">
           <Logo size={collapsed && !isMobile ? "sm" : "md"} dark />
@@ -69,52 +65,64 @@ export function Sidebar({ userLabel, userAvatarUrl }: { userLabel: string; userA
           {isMobile && <button type="button" onClick={() => setMobileOpen(false)} className="rounded-xl p-2.5 text-white/40 hover:text-white/80"><X className="h-5 w-5" /></button>}
         </div>
       </div>
-      <nav className="mt-1 flex flex-col gap-0.5 px-3">{NAV_MAIN.map((item, i) => <NavLink key={item.href} {...item} isMobile={isMobile} index={i} />)}</nav>
 
-      {/* Quick actions */}
-      <div className={cn("mt-4 px-3", !isMobile && collapsed && "px-2")}>
-        <div className={cn(
-          "flex gap-2",
-          !isMobile && collapsed && "flex-col items-center gap-1.5",
-        )}>
-          <button
-            type="button"
-            onClick={() => router.push("/tasks?new=true")}
-            className={cn(
-              "group flex items-center gap-2 rounded-full transition-all duration-150",
-              !isMobile && collapsed
-                ? "h-8 w-8 justify-center bg-accent/15 hover:bg-accent/25"
-                : "flex-1 bg-accent/15 px-3 py-2 hover:bg-accent/25",
-            )}
-            title="הוספה מהירה"
-          >
-            <Plus className="h-4 w-4 shrink-0 text-accent" />
-            {(isMobile || !collapsed) && (
-              <span className="text-xs font-medium text-accent">הוספה מהירה</span>
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={() => window.dispatchEvent(new Event("open-feedback"))}
-            className={cn(
-              "group flex items-center gap-2 rounded-full transition-all duration-150",
-              !isMobile && collapsed
-                ? "h-8 w-8 justify-center bg-white/5 hover:bg-white/10"
-                : "bg-white/5 px-3 py-2 hover:bg-white/10",
-            )}
-            title="דיווח ומשוב"
-          >
-            <MessageSquarePlus className="h-4 w-4 shrink-0 text-white/50 group-hover:text-white/70" />
-            {(isMobile || !collapsed) && (
-              <span className="text-xs text-white/50 group-hover:text-white/70">משוב</span>
-            )}
-          </button>
-        </div>
+      {/* Main navigation */}
+      <nav className="mt-1 flex flex-col gap-0.5 px-3">
+        {NAV_MAIN.map((item, i) => <NavLink key={item.href} {...item} isMobile={isMobile} index={i} />)}
+      </nav>
+
+      {/* Spacer */}
+      <div className="flex-1" />
+
+      {/* Weekly stats */}
+      <SidebarWeeklyStats collapsed={collapsed && !isMobile} />
+
+      {/* "הוספה" button */}
+      <div className={cn("px-3", !isMobile && collapsed && "px-2")}>
+        <button
+          type="button"
+          onClick={() => router.push("/tasks?new=true")}
+          className={cn(
+            "flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-2.5 font-medium text-ink transition-colors hover:bg-accent/85",
+            !isMobile && collapsed && "px-0",
+          )}
+          title="הוספה"
+        >
+          <Plus className="h-4 w-4 shrink-0" />
+          {(isMobile || !collapsed) && <span className="text-sm">הוספה</span>}
+        </button>
       </div>
 
-      <div className="flex-1" />
-      <div className="flex flex-col gap-0.5 border-t border-sidebar-border px-3 pt-2 pb-1">{NAV_BOTTOM.map((item, i) => <NavLink key={item.href} {...item} isMobile={isMobile} index={NAV_MAIN.length + i} />)}</div>
-      <SidebarWeeklyStats collapsed={collapsed && !isMobile} />
+      {/* Small icons row */}
+      <div className={cn("flex items-center justify-center gap-1 px-3 pt-2", !isMobile && collapsed && "flex-col px-1")}>
+        {[
+          { href: "/profile", label: "פרופיל", Icon: UserCircle },
+          { href: "/settings", label: "הגדרות", Icon: Settings },
+          { href: "/about", label: "אודות", Icon: Info },
+        ].map(({ href, label, Icon }) => (
+          <Link
+            key={href}
+            href={href}
+            className={cn(
+              "rounded-lg p-2 text-white/40 transition-colors hover:bg-white/5 hover:text-white/80",
+              pathname === href && "text-white/80",
+            )}
+            title={label}
+          >
+            <Icon className="h-[18px] w-[18px]" />
+          </Link>
+        ))}
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new Event("open-feedback"))}
+          className="rounded-lg p-2 text-white/40 transition-colors hover:bg-white/5 hover:text-white/80"
+          title="דיווח ומשוב"
+        >
+          <MessageSquarePlus className="h-[18px] w-[18px]" />
+        </button>
+      </div>
+
+      {/* Profile + logout */}
       <div className="shrink-0 border-t border-sidebar-border p-3">
         <div className={cn("flex items-center gap-3 rounded-xl px-2 py-2", collapsed && !isMobile && "justify-center px-0")}>
           <Link href="/profile" className="flex min-w-0 flex-1 items-center gap-3 transition-opacity hover:opacity-80" title="פרופיל">

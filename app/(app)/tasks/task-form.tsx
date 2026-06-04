@@ -303,7 +303,7 @@ export function TaskForm({
                     <button key={m.id} type="button" onClick={() => toggleAssignee(m.id)}
                       className={cn(
                         "inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-caption transition-[color,background-color,opacity,box-shadow] duration-200",
-                        active ? "bg-primary text-white" : "border border-border bg-white text-ink hover:bg-surface",
+                        active ? "bg-link text-white" : "border border-border bg-white text-ink hover:bg-surface",
                       )}>
                       <span className={cn(
                         "flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-semibold",
@@ -413,7 +413,7 @@ function RecurrenceSection({
         className={cn(
           "flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition",
           isRecurring
-            ? "bg-primary/10 text-primary"
+            ? "bg-link/10 text-link"
             : "border border-border bg-white text-ink-muted hover:bg-surface",
         )}
       >
@@ -433,7 +433,7 @@ function RecurrenceSection({
                 className={cn(
                   "rounded-lg px-3 py-1.5 text-xs font-medium transition",
                   recurrenceType === rt.value
-                    ? "bg-primary text-white"
+                    ? "bg-link text-white"
                     : "bg-white text-ink border border-border hover:bg-surface",
                 )}
               >
@@ -453,7 +453,7 @@ function RecurrenceSection({
                   className={cn(
                     "flex h-8 w-8 items-center justify-center rounded-full text-xs font-medium transition",
                     recurrenceDay === i
-                      ? "bg-primary text-white"
+                      ? "bg-link text-white"
                       : "bg-white text-ink border border-border hover:bg-surface",
                   )}
                 >
@@ -560,7 +560,7 @@ function CollapsibleTextarea({
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="self-start text-xs font-medium text-primary hover:underline"
+          className="self-start text-xs font-medium text-link hover:underline"
         >
           {expanded ? "הצג פחות" : "קרא עוד"}
         </button>

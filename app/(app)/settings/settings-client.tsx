@@ -398,7 +398,7 @@ export function EmailLog({ logs }: { logs: EmailLogEntry[] }) {
         <button
           type="button"
           onClick={() => setShowAll((v) => !v)}
-          className="flex w-full items-center justify-center gap-1.5 border-t border-border px-4 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-surface"
+          className="flex w-full items-center justify-center gap-1.5 border-t border-border px-4 py-2.5 text-sm font-medium text-link transition-colors hover:bg-surface"
         >
           {showAll ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           {showAll ? "הצג פחות" : `הצג עוד ${logs.length - 10} מיילים`}

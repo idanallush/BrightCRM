@@ -78,7 +78,7 @@ export function TagSelector({
                   if (e.key === "Enter") { e.preventDefault(); commitEditing(); }
                   if (e.key === "Escape") cancelEditing();
                 }}
-                className="h-6 w-28 rounded-lg border border-border bg-surface px-2 text-xs outline-none focus:ring-2 focus:ring-primary"
+                className="h-6 w-28 rounded-lg border border-border bg-surface px-2 text-xs outline-none focus:ring-2 focus:ring-link"
               />
               <div className="flex flex-wrap gap-1">
                 {TAG_COLOR_OPTIONS.map((c) => (
@@ -95,7 +95,7 @@ export function TagSelector({
                 ))}
               </div>
               <div className="flex gap-1">
-                <button type="button" onClick={commitEditing} className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white hover:bg-primary-hover">
+                <button type="button" onClick={commitEditing} className="flex h-5 w-5 items-center justify-center rounded-full bg-link text-white hover:bg-link-hover">
                   <Check className="h-3 w-3" />
                 </button>
                 <button type="button" onClick={cancelEditing} className="flex h-5 w-5 items-center justify-center rounded-full text-ink-muted hover:bg-surface">
@@ -113,7 +113,7 @@ export function TagSelector({
               onClick={() => onToggle(tag.id)}
               className={cn(
                 "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-[color,background-color,box-shadow,opacity] duration-200",
-                active ? "ring-2 ring-primary ring-offset-1 shadow-sm" : "opacity-60 hover:opacity-100",
+                active ? "ring-2 ring-link ring-offset-1 shadow-sm" : "opacity-60 hover:opacity-100",
               )}
               style={{ backgroundColor: bg, color: "#1A1A1A" }}
             >
@@ -142,9 +142,9 @@ export function TagSelector({
               onChange={(e) => setNewName(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleAdd(); } if (e.key === "Escape") { setShowInput(false); setNewColor("#E0E0E6"); } }}
               placeholder="שם התגית..."
-              className="h-7 w-24 rounded-full border border-border bg-white px-2.5 text-xs outline-none focus:ring-2 focus:ring-primary"
+              className="h-7 w-24 rounded-full border border-border bg-white px-2.5 text-xs outline-none focus:ring-2 focus:ring-link"
             />
-            <button type="button" onClick={handleAdd} className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white hover:bg-primary-hover">
+            <button type="button" onClick={handleAdd} className="flex h-6 w-6 items-center justify-center rounded-full bg-link text-white hover:bg-link-hover">
               <Check className="h-3 w-3" />
             </button>
             <button type="button" onClick={() => { setShowInput(false); setNewName(""); setNewColor("#E0E0E6"); }} className="flex h-6 w-6 items-center justify-center rounded-full text-ink-muted hover:bg-surface">
@@ -159,7 +159,7 @@ export function TagSelector({
                 onClick={() => setNewColor(c)}
                 className={cn(
                   "h-5 w-5 rounded-full transition-[transform,box-shadow]",
-                  newColor === c ? "ring-2 ring-primary ring-offset-1" : "hover:scale-110",
+                  newColor === c ? "ring-2 ring-link ring-offset-1" : "hover:scale-110",
                 )}
                 style={{ backgroundColor: c }}
               />

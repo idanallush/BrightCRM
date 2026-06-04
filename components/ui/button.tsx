@@ -16,7 +16,7 @@ const buttonVariants = cva(
         ghost: "rounded-xl text-ink text-button hover:bg-surface",
         danger: "rounded-full bg-overdue text-white text-button shadow-elevation-1 hover:opacity-90 hover:-translate-y-px hover:shadow-elevation-2",
         dark: "rounded-full bg-ink text-white text-button shadow-elevation-1 hover:bg-ink-hover hover:-translate-y-px hover:shadow-elevation-2",
-        link: "bg-transparent text-primary p-0 text-body-sm hover:underline",
+        link: "bg-transparent text-link p-0 text-body-sm hover:underline",
       },
       size: {
         sm: "h-8 px-4 text-[13px]",

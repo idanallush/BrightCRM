@@ -122,7 +122,7 @@ export function CommentInput({
 
   return (
     <div className="relative">
-      <div className="rounded-xl border border-border bg-white transition-colors focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+      <div className="rounded-xl border border-border bg-white transition-colors focus-within:border-link focus-within:ring-2 focus-within:ring-link/20">
         <textarea
           ref={textareaRef}
           value={text}

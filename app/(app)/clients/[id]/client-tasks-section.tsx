@@ -20,7 +20,7 @@ export function ClientTasksSection({ tasks, clientId }: { tasks: TaskRow[]; clie
     <section className="flex flex-col gap-2">
       <div className="flex items-baseline justify-between">
         <h3 className="text-sm font-bold text-ink">משימות ({activeTasks.length} פעילות)</h3>
-        <Link href={`/tasks?client=${clientId}`} className="text-xs font-medium text-primary hover:underline">לכל המשימות</Link>
+        <Link href={`/tasks?client=${clientId}`} className="text-xs font-medium text-link hover:underline">לכל המשימות</Link>
       </div>
       {activeTasks.length === 0 && completedTasks.length === 0 ? (
         <div className="rounded-xl border border-border bg-white p-6 text-center text-sm text-ink-muted">אין משימות ללקוח.</div>
@@ -39,7 +39,7 @@ export function ClientTasksSection({ tasks, clientId }: { tasks: TaskRow[]; clie
                 <tbody>
                   {activeTasks.map((t) => (
                     <tr key={t.id} className="border-b border-border cursor-pointer transition-colors hover:bg-surface">
-                      <td className="px-4 py-2.5 font-medium"><Link href={`/tasks?task=${t.id}`} className="block transition-colors hover:text-primary">{t.title}</Link></td>
+                      <td className="px-4 py-2.5 font-medium"><Link href={`/tasks?task=${t.id}`} className="block transition-colors hover:text-link">{t.title}</Link></td>
                       <td className="px-4 py-2.5"><StatusCell status={t.status} /></td>
                       <td className="hidden px-4 py-2.5 text-ink-secondary sm:table-cell">{fmtDate(t.due_date)}</td>
                     </tr>
@@ -64,7 +64,7 @@ export function ClientTasksSection({ tasks, clientId }: { tasks: TaskRow[]; clie
                   <tbody>
                     {completedTasks.map((t) => (
                       <tr key={t.id} className="border-b border-border cursor-pointer transition-colors hover:bg-surface">
-                        <td className="px-4 py-2.5 font-medium text-ink-muted"><Link href={`/tasks?task=${t.id}`} className="block transition-colors hover:text-primary">{t.title}</Link></td>
+                        <td className="px-4 py-2.5 font-medium text-ink-muted"><Link href={`/tasks?task=${t.id}`} className="block transition-colors hover:text-link">{t.title}</Link></td>
                         <td className="px-4 py-2.5"><StatusCell status={t.status} /></td>
                         <td className="hidden px-4 py-2.5 text-ink-secondary sm:table-cell">{fmtDate(t.due_date)}</td>
                       </tr>
