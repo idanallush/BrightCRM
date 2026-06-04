@@ -123,40 +123,18 @@ export function CommentInput({
   return (
     <div className="relative">
       <div className="rounded-xl border border-border bg-white transition-colors focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
-        <div className="relative">
-          <textarea
-            ref={textareaRef}
-            value={text}
-            onChange={(e) => handleTextChange(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Escape" && showMentions) { setShowMentions(false); return; }
-              if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
-            }}
-            placeholder={placeholder ?? "כתוב עדכון... (@ לאזכור)"}
-            rows={compact ? 1 : 2}
-            className="w-full resize-none rounded-t-xl bg-transparent px-3 pt-3 pb-1.5 text-sm text-ink placeholder:text-ink-muted focus:outline-none"
-          />
-          {showDropdown && (
-            <div
-              className="absolute bottom-full left-0 right-0 z-50 mb-1 max-h-48 overflow-y-auto rounded-xl border border-border bg-white p-1 shadow-elevation-3"
-              onMouseDown={(e) => e.preventDefault()}
-            >
-              {filteredMembers.map((m) => (
-                <button
-                  key={m.id}
-                  type="button"
-                  onMouseDown={(e) => { e.preventDefault(); insertMention(m); }}
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-ink transition-colors hover:bg-surface"
-                >
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-surface text-[10px] font-semibold text-ink">
-                    {getInitials(m.full_name)}
-                  </span>
-                  {m.full_name}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        <textarea
+          ref={textareaRef}
+          value={text}
+          onChange={(e) => handleTextChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Escape" && showMentions) { setShowMentions(false); return; }
+            if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
+          }}
+          placeholder={placeholder ?? "כתוב עדכון... (@ לאזכור)"}
+          rows={compact ? 1 : 2}
+          className="w-full resize-none rounded-t-xl bg-transparent px-3 pt-3 pb-1.5 text-sm text-ink placeholder:text-ink-muted focus:outline-none"
+        />
 
         {/* Pending files preview */}
         {pendingFiles.length > 0 && (
@@ -248,6 +226,26 @@ export function CommentInput({
         onChange={(e) => { handleFileSelect(e.target.files); if (e.target) e.target.value = ""; }}
       />
 
+      {showDropdown && (
+        <div
+          className="absolute top-full left-0 right-0 z-[100] mt-1 max-h-52 overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-xl"
+          onMouseDown={(e) => e.preventDefault()}
+        >
+          {filteredMembers.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              onMouseDown={(e) => { e.preventDefault(); insertMention(m); }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-right text-sm text-ink transition-colors hover:bg-blue-50"
+            >
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface text-[10px] font-semibold text-ink">
+                {getInitials(m.full_name)}
+              </span>
+              {m.full_name}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
