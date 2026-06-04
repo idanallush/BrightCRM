@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { useState, useRef } from "react";
 import {
   MessageSquarePlus,
@@ -32,6 +33,13 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
 export function FeedbackButton() {
   const [open, setOpen] = useState(false);
+
+  // Listen for sidebar trigger
+  React.useEffect(() => {
+    function onOpen() { setOpen(true); }
+    window.addEventListener("open-feedback", onOpen);
+    return () => window.removeEventListener("open-feedback", onOpen);
+  }, []);
   const [category, setCategory] = useState<Category | null>(null);
   const [message, setMessage] = useState("");
   const [fileUrl, setFileUrl] = useState("");
@@ -129,7 +137,7 @@ export function FeedbackButton() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-40 end-5 z-40 flex h-12 flex-row-reverse items-center gap-2 rounded-full bg-primary px-4 text-white shadow-elevation-3 transition hover:scale-[1.03] md:bottom-20"
+        className="fixed bottom-40 end-5 z-40 flex h-12 flex-row-reverse items-center gap-2 rounded-full bg-primary px-4 text-white shadow-elevation-3 transition hover:scale-[1.03] md:hidden"
         aria-label="שליחת משוב"
       >
         <MessageSquarePlus className="h-5 w-5 shrink-0" />

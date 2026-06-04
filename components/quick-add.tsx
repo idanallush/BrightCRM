@@ -76,7 +76,7 @@ export function QuickAdd() {
   }
 
   return (
-    <div ref={wrapRef} className="fixed bottom-24 end-5 z-50 flex flex-col items-end gap-2 md:bottom-6">
+    <div ref={wrapRef} className="fixed bottom-24 end-5 z-50 flex flex-col items-end gap-2 md:hidden">
       <AnimatePresence>
         {/* Menu */}
         {mode === "menu" && (

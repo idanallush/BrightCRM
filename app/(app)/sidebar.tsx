@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, CheckSquare, Users, Bot, Settings, Info, ChevronsLeft, ChevronsRight, X, LogOut, UserCircle, Activity } from "lucide-react";
+import { LayoutDashboard, CheckSquare, Users, Bot, Settings, Info, ChevronsLeft, ChevronsRight, X, LogOut, UserCircle, Activity, Plus, MessageSquarePlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMobileMenu, useSidebarCollapsed } from "./shell-context";
 import { NotificationBell } from "@/components/notification-bell";
@@ -70,6 +70,37 @@ export function Sidebar({ userLabel, userAvatarUrl }: { userLabel: string; userA
         </div>
       </div>
       <nav className="mt-1 flex flex-col gap-0.5 px-3">{NAV_MAIN.map((item, i) => <NavLink key={item.href} {...item} isMobile={isMobile} index={i} />)}</nav>
+
+      {/* Quick actions */}
+      <div className={cn("mt-3 flex gap-1.5 px-3", !isMobile && collapsed && "flex-col items-center px-1")}>
+        <button
+          type="button"
+          onClick={() => router.push("/tasks?new=true")}
+          className={cn(
+            "flex items-center gap-2 rounded-xl px-3 py-2 text-body-sm transition-colors duration-150",
+            "text-white/60 hover:bg-accent/20 hover:text-accent",
+            !isMobile && collapsed && "justify-center px-0 py-2",
+          )}
+          title="הוספה מהירה"
+        >
+          <Plus className="h-[18px] w-[18px] shrink-0" />
+          {(isMobile || !collapsed) && <span>הוספה מהירה</span>}
+        </button>
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new Event("open-feedback"))}
+          className={cn(
+            "flex items-center gap-2 rounded-xl px-3 py-2 text-body-sm transition-colors duration-150",
+            "text-white/60 hover:bg-primary/20 hover:text-[#7B9EFF]",
+            !isMobile && collapsed && "justify-center px-0 py-2",
+          )}
+          title="דיווח ומשוב"
+        >
+          <MessageSquarePlus className="h-[18px] w-[18px] shrink-0" />
+          {(isMobile || !collapsed) && <span>דיווח ומשוב</span>}
+        </button>
+      </div>
+
       <div className="flex-1" />
       <div className="flex flex-col gap-0.5 border-t border-sidebar-border px-3 pt-2 pb-1">{NAV_BOTTOM.map((item, i) => <NavLink key={item.href} {...item} isMobile={isMobile} index={NAV_MAIN.length + i} />)}</div>
       <SidebarWeeklyStats collapsed={collapsed && !isMobile} />
