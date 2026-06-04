@@ -240,18 +240,18 @@ export function TasksClient({
       className="flex flex-col gap-4"
     >
       {/* Toolbar */}
-      <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-3 py-2 shadow-elevation-1">
+      <div className="flex items-center gap-2 rounded-2xl bg-[#1A1A1A] px-3 py-2 shadow-elevation-1">
         {/* New task button */}
         <Button onClick={() => setCreateOpen(true)} size="sm" className="shrink-0">
           <Plus className="h-4 w-4" /> <span className="hidden sm:inline">חדש</span>
         </Button>
 
-        <div className="h-5 w-px shrink-0 bg-border" />
+        <div className="h-5 w-px shrink-0 bg-[#333]" />
 
         {/* People filter */}
         <Select value={filters.assigneeId} onValueChange={(v) => updateFilter("assigneeId", v)}>
-          <SelectTrigger className="h-8 w-auto gap-1.5 border-0 bg-transparent px-2 text-caption shadow-none hover:bg-surface">
-            <Users className="h-4 w-4 text-ink-muted" />
+          <SelectTrigger className="h-8 w-auto gap-1.5 border-0 bg-transparent px-2 text-caption text-[#E5E7EB] shadow-none hover:bg-white/10">
+            <Users className="h-4 w-4 text-[#9CA3AF]" />
             <SelectValue placeholder="אנשים" />
           </SelectTrigger>
           <SelectContent>
@@ -262,9 +262,9 @@ export function TasksClient({
 
         {/* Date filter */}
         <Select value={filters.dateFilter} onValueChange={(v) => updateFilter("dateFilter", v)}>
-          <SelectTrigger className={cn("h-8 w-auto gap-1.5 border-0 bg-transparent px-2 text-caption shadow-none hover:bg-surface",
-            filters.dateFilter !== "__all__" && "bg-overdue-bg text-overdue-text hover:bg-overdue-bg")}>
-            <Calendar className="h-4 w-4" />
+          <SelectTrigger className={cn("h-8 w-auto gap-1.5 border-0 bg-transparent px-2 text-caption text-[#E5E7EB] shadow-none hover:bg-white/10",
+            filters.dateFilter !== "__all__" && "bg-overdue/20 text-overdue hover:bg-overdue/20")}>
+            <Calendar className="h-4 w-4 text-[#9CA3AF]" />
             <SelectValue placeholder="תאריכים" />
           </SelectTrigger>
           <SelectContent>
@@ -276,13 +276,13 @@ export function TasksClient({
           </SelectContent>
         </Select>
 
-        <div className="h-5 w-px shrink-0 bg-border" />
+        <div className="h-5 w-px shrink-0 bg-[#333]" />
 
         {/* Search */}
         <div className="relative min-w-0 flex-1 sm:max-w-[180px]">
-          <Search className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-muted" />
+          <Search className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#6B7280]" />
           <Input value={searchText} onChange={(e) => setSearchText(e.target.value)}
-            placeholder="חיפוש..." aria-label="חיפוש משימות" className="h-8 rounded-xl border-0 bg-transparent pr-8 text-caption shadow-none placeholder:text-ink-muted hover:bg-surface focus:bg-surface" />
+            placeholder="חיפוש..." aria-label="חיפוש משימות" className="h-8 rounded-xl border-0 bg-[#2A2A2A] pr-8 text-caption text-white shadow-none placeholder:text-[#6B7280] hover:bg-[#333] focus:bg-[#333]" />
         </div>
 
         {/* Filter: status + client + tags */}
@@ -295,11 +295,11 @@ export function TasksClient({
             updateFilter("status", v);
           }}
         >
-          <SelectTrigger className="h-8 w-auto gap-1.5 border-0 bg-transparent px-2 text-caption shadow-none hover:bg-surface">
-            <SlidersHorizontal className="h-4 w-4 text-ink-muted" />
+          <SelectTrigger className="h-8 w-auto gap-1.5 border-0 bg-transparent px-2 text-caption text-[#E5E7EB] shadow-none hover:bg-white/10">
+            <SlidersHorizontal className="h-4 w-4 text-[#9CA3AF]" />
             <span className="hidden sm:inline">סנן</span>
             {activeFilterCount > 0 && (
-              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-[#1A1A1A] px-1 text-[10px] font-bold text-white">{activeFilterCount}</span>
+              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-ink">{activeFilterCount}</span>
             )}
           </SelectTrigger>
           <SelectContent>
@@ -335,20 +335,20 @@ export function TasksClient({
           </SelectContent>
         </Select>
 
-        <div className="h-5 w-px shrink-0 bg-border" />
+        <div className="h-5 w-px shrink-0 bg-[#333]" />
 
         {/* View toggle */}
         <div className="inline-flex items-center gap-0.5">
           <button type="button" onClick={() => changeView("table")} aria-label="טבלה"
-            className={cn("rounded-lg p-1.5 transition-colors", view === "table" ? "bg-surface text-ink" : "text-ink-muted hover:text-ink")}>
+            className={cn("rounded-lg p-1.5 transition-colors", view === "table" ? "bg-white/15 text-white" : "text-[#9CA3AF] hover:text-white")}>
             <Rows3 className="h-4 w-4" />
           </button>
           <button type="button" onClick={() => changeView("kanban")} aria-label="קנבן"
-            className={cn("rounded-lg p-1.5 transition-colors", view === "kanban" ? "bg-surface text-ink" : "text-ink-muted hover:text-ink")}>
+            className={cn("rounded-lg p-1.5 transition-colors", view === "kanban" ? "bg-white/15 text-white" : "text-[#9CA3AF] hover:text-white")}>
             <LayoutGrid className="h-4 w-4" />
           </button>
           <button type="button" onClick={() => changeView("calendar")} aria-label="לוח שנה"
-            className={cn("rounded-lg p-1.5 transition-colors", view === "calendar" ? "bg-surface text-ink" : "text-ink-muted hover:text-ink")}>
+            className={cn("rounded-lg p-1.5 transition-colors", view === "calendar" ? "bg-white/15 text-white" : "text-[#9CA3AF] hover:text-white")}>
             <CalendarDays className="h-4 w-4" />
           </button>
         </div>
@@ -356,8 +356,8 @@ export function TasksClient({
         {/* Active filter clear */}
         {activeFilterCount > 0 && (
           <>
-            <div className="h-5 w-px shrink-0 bg-border" />
-            <button type="button" onClick={clearFilters} className="rounded-lg p-1.5 text-ink-muted transition-colors hover:bg-surface hover:text-ink" aria-label="נקה פילטרים">
+            <div className="h-5 w-px shrink-0 bg-[#333]" />
+            <button type="button" onClick={clearFilters} className="rounded-lg p-1.5 text-[#9CA3AF] transition-colors hover:bg-white/10 hover:text-white" aria-label="נקה פילטרים">
               <X className="h-4 w-4" />
             </button>
           </>

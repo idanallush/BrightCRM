@@ -125,17 +125,17 @@ export function ClientsClient({
       className="flex flex-col gap-4"
     >
       {/* Compact toolbar */}
-      <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-3 py-2 shadow-elevation-1">
+      <div className="flex items-center gap-2 rounded-2xl bg-[#1A1A1A] px-3 py-2 shadow-elevation-1">
         <Button onClick={() => setCreateOpen(true)} size="sm" className="shrink-0">
           <Plus className="h-4 w-4" /> <span className="hidden sm:inline">חדש</span>
         </Button>
 
-        <div className="h-5 w-px shrink-0 bg-border" />
+        <div className="h-5 w-px shrink-0 bg-[#333]" />
 
         {/* Manager filter */}
         <Select value={managerId} onValueChange={setManagerId}>
-          <SelectTrigger className="h-8 w-auto gap-1.5 border-0 bg-transparent px-2 text-caption shadow-none hover:bg-surface">
-            <Users className="h-4 w-4 text-ink-muted" />
+          <SelectTrigger className="h-8 w-auto gap-1.5 border-0 bg-transparent px-2 text-caption text-[#E5E7EB] shadow-none hover:bg-white/10">
+            <Users className="h-4 w-4 text-[#9CA3AF]" />
             <SelectValue placeholder="מנהל" />
           </SelectTrigger>
           <SelectContent>
@@ -144,13 +144,13 @@ export function ClientsClient({
           </SelectContent>
         </Select>
 
-        <div className="h-5 w-px shrink-0 bg-border" />
+        <div className="h-5 w-px shrink-0 bg-[#333]" />
 
         {/* Search */}
         <div className="relative min-w-0 flex-1 sm:max-w-[180px]">
-          <Search className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-muted" />
+          <Search className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#6B7280]" />
           <Input value={search} onChange={(e) => setSearch(e.target.value)}
-            placeholder="חיפוש..." aria-label="חיפוש לקוחות" className="h-8 rounded-xl border-0 bg-transparent pr-8 text-caption shadow-none placeholder:text-ink-muted hover:bg-surface focus:bg-surface" />
+            placeholder="חיפוש..." aria-label="חיפוש לקוחות" className="h-8 rounded-xl border-0 bg-[#2A2A2A] pr-8 text-caption text-white shadow-none placeholder:text-[#6B7280] hover:bg-[#333] focus:bg-[#333]" />
         </div>
 
         {/* Combined filter: health + onboarding */}
@@ -162,11 +162,11 @@ export function ClientsClient({
             setHealth(v); setOnboardingFilter(ALL);
           }}
         >
-          <SelectTrigger className="h-8 w-auto gap-1.5 border-0 bg-transparent px-2 text-caption shadow-none hover:bg-surface">
-            <SlidersHorizontal className="h-4 w-4 text-ink-muted" />
+          <SelectTrigger className="h-8 w-auto gap-1.5 border-0 bg-transparent px-2 text-caption text-[#E5E7EB] shadow-none hover:bg-white/10">
+            <SlidersHorizontal className="h-4 w-4 text-[#9CA3AF]" />
             <span className="hidden sm:inline">סנן</span>
             {activeFilterCount > 0 && (
-              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-[#1A1A1A] px-1 text-[10px] font-bold text-white">{activeFilterCount}</span>
+              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-bold text-ink">{activeFilterCount}</span>
             )}
           </SelectTrigger>
           <SelectContent>
@@ -188,13 +188,13 @@ export function ClientsClient({
         </Select>
 
         {/* Count badge */}
-        <span className="rounded-full bg-surface px-2.5 py-0.5 text-caption font-medium text-ink-secondary">{filtered.length}</span>
+        <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-caption font-medium text-[#E5E7EB]">{filtered.length}</span>
 
         {/* Clear filters */}
         {activeFilterCount > 0 && (
           <>
-            <div className="h-5 w-px shrink-0 bg-border" />
-            <button type="button" onClick={clearFilters} className="rounded-lg p-1.5 text-ink-muted transition-colors hover:bg-surface hover:text-ink" aria-label="נקה פילטרים">
+            <div className="h-5 w-px shrink-0 bg-[#333]" />
+            <button type="button" onClick={clearFilters} className="rounded-lg p-1.5 text-[#9CA3AF] transition-colors hover:bg-white/10 hover:text-white" aria-label="נקה פילטרים">
               <X className="h-4 w-4" />
             </button>
           </>
