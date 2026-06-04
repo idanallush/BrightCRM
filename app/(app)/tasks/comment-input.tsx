@@ -119,20 +119,18 @@ export function CommentInput({
 
   const canSend = (text.trim() || pendingFiles.length > 0) && !sending;
 
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  const [menuPos, setMenuPos] = React.useState<{ top: number; left: number } | null>(null);
+  const [menuPos, setMenuPos] = React.useState<{ top: number; left: number; width: number } | null>(null);
 
-  React.useEffect(() => {
-    if (showMentions && filteredMembers.length > 0 && containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      setMenuPos({ top: rect.top, left: rect.left });
-    } else {
-      setMenuPos(null);
-    }
-  }, [showMentions, filteredMembers.length]);
+  const showDropdown = showMentions && filteredMembers.length > 0;
+
+  React.useLayoutEffect(() => {
+    if (!showDropdown || !textareaRef.current) { setMenuPos(null); return; }
+    const rect = textareaRef.current.getBoundingClientRect();
+    setMenuPos({ top: rect.top, left: rect.left, width: rect.width });
+  }, [showDropdown, text]);
 
   return (
-    <div className="relative" ref={containerRef}>
+    <div className="relative">
       <div className="rounded-xl border border-border bg-white transition-colors focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
         <textarea
           ref={textareaRef}
@@ -236,16 +234,17 @@ export function CommentInput({
         onChange={(e) => { handleFileSelect(e.target.files); if (e.target) e.target.value = ""; }}
       />
 
-      {showMentions && filteredMembers.length > 0 && menuPos && createPortal(
+      {showDropdown && menuPos && createPortal(
         <div
-          className="fixed z-[200] w-52 rounded-xl border border-border bg-white p-1 shadow-elevation-3"
-          style={{ top: menuPos.top, left: menuPos.left, transform: "translateY(-100%) translateY(-4px)" }}
+          className="fixed z-[9999] w-52 rounded-xl border border-border bg-white p-1 shadow-elevation-3"
+          style={{ top: menuPos.top - 4, left: menuPos.left, transform: "translateY(-100%)" }}
+          onMouseDown={(e) => e.preventDefault()}
         >
           {filteredMembers.map((m) => (
             <button
               key={m.id}
               type="button"
-              onClick={() => insertMention(m)}
+              onMouseDown={(e) => { e.preventDefault(); insertMention(m); }}
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-ink transition-colors hover:bg-surface"
             >
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-surface text-[10px] font-semibold text-ink">
