@@ -153,8 +153,9 @@ export function QuickAdd() {
 
       <Hint label="יצירה מהירה" side="top" delay={400}>
         <motion.button type="button" onClick={() => setMode((m) => m === "closed" ? "menu" : "closed")} aria-label="יצירה מהירה" whileTap={{ scale: 0.93 }}
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-accent text-ink shadow-elevation-2 transition-colors hover:bg-accent/85">
-          <Plus className={cn("h-5 w-5 transition-transform duration-150", mode !== "closed" && "rotate-45")} strokeWidth={2.5} />
+          className="flex h-12 flex-row-reverse items-center gap-2 rounded-full bg-accent px-4 text-ink shadow-elevation-2 transition-colors hover:bg-accent/85">
+          <Plus className={cn("h-5 w-5 shrink-0 transition-transform duration-150", mode !== "closed" && "rotate-45")} strokeWidth={2.5} />
+          <span className="hidden text-sm font-medium md:inline">הוספה מהירה</span>
         </motion.button>
       </Hint>
     </div>
