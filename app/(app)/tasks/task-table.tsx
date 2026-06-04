@@ -83,13 +83,15 @@ export function TaskTable({
         })
     : [];
 
+  const watchedIds = new Set(watchedTasks.map((t) => t.id));
+
   const statusGroups = STATUS_ORDER.map((status) => ({
     status,
     label: STATUS_GROUP_LABELS[status],
     color: STATUS_COLORS[status] ?? "#C4C4C4",
     isWatched: false,
     tasks: activeTasks
-      .filter((t) => t.status === status || (status === "נכנס לעבודה" && t.status === "בעבודה"))
+      .filter((t) => !watchedIds.has(t.id) && (t.status === status || (status === "נכנס לעבודה" && t.status === "בעבודה")))
       .sort((a, b) => {
         if (a.due_date && b.due_date) return a.due_date.localeCompare(b.due_date);
         if (a.due_date) return -1;
