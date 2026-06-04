@@ -17,14 +17,14 @@ export function DashboardSearch() {
 
   return (
     <form onSubmit={onSubmit} className="relative hidden sm:block">
-      <Search className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" />
+      <Search className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-muted" />
       <input
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="חיפוש..."
         aria-label="חיפוש משימות ולקוחות"
-        className="h-9 w-44 rounded-xl border border-border bg-surface pe-3 ps-9 text-sm text-ink placeholder:text-ink-muted transition-colors focus:border-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20"
+        className="h-8 w-36 rounded-xl border-0 bg-transparent pe-3 ps-8 text-caption text-ink placeholder:text-ink-muted transition-colors hover:bg-surface focus:bg-surface focus:outline-none"
       />
     </form>
   );

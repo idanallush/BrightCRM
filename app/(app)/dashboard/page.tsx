@@ -129,26 +129,25 @@ async function DashboardContent() {
 
   return (
     <AnimatedDashboard>
-      {/* Welcome header */}
+      {/* Compact toolbar */}
       <AnimatedSection>
-      <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-elevation-1">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border px-5 py-5">
-          <div>
-            <h1 className="text-xl font-bold text-ink">שלום, {firstName}</h1>
-            <p className="mt-0.5 text-sm text-ink-secondary">{formatHebrewDate()}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <DashboardSearch />
-            <Button asChild>
-              <Link href="/tasks?new=true">
-                <Plus className="h-4 w-4" /> משימה חדשה
-              </Link>
-            </Button>
-          </div>
-        </div>
-        <div className="flex items-center gap-6 px-5 py-3 text-sm">
+      <div className="flex items-center gap-2 rounded-2xl border border-border bg-white px-3 py-2 shadow-elevation-1">
+        <Button asChild size="sm">
+          <Link href="/tasks?new=true">
+            <Plus className="h-4 w-4" /> <span className="hidden sm:inline">חדש</span>
+          </Link>
+        </Button>
+
+        <div className="h-5 w-px shrink-0 bg-border" />
+
+        <span className="text-sm font-bold text-ink">שלום, {firstName}</span>
+        <span className="hidden text-caption text-ink-muted sm:inline">{formatHebrewDate()}</span>
+
+        <div className="h-5 w-px shrink-0 bg-border" />
+
+        <div className="flex items-center gap-4 text-caption">
           <span className="text-ink-secondary">
-            יש לך <span className="font-semibold text-ink">{myTasks.length}</span> משימות פתוחות
+            <span className="font-semibold text-ink">{myTasks.length}</span> פתוחות
           </span>
           {counts.overdueTasks > 0 && (
             <span className="text-overdue">
@@ -156,10 +155,14 @@ async function DashboardContent() {
               <span className="font-semibold">{counts.overdueTasks}</span> באיחור
             </span>
           )}
-          <span className="text-ink-secondary">
-            סה״כ <span className="font-semibold text-ink">{totalActive}</span> משימות פעילות
+          <span className="hidden text-ink-secondary sm:inline">
+            סה״כ <span className="font-semibold text-ink">{totalActive}</span> פעילות
           </span>
         </div>
+
+        <div className="flex-1" />
+
+        <DashboardSearch />
       </div>
       </AnimatedSection>
 
@@ -244,6 +247,7 @@ async function DashboardContent() {
                     <th className="px-4 py-2.5 text-right font-medium">משימה</th>
                     <th className="hidden px-4 py-2.5 text-right font-medium sm:table-cell">לקוח</th>
                     <th className="px-4 py-2.5 text-center font-medium">סטטוס</th>
+                    <th className="hidden px-4 py-2.5 text-right font-medium lg:table-cell">נפתח</th>
                     <th className="px-4 py-2.5 text-right font-medium">דדליין</th>
                     <th className="w-10 px-2" />
                   </tr>
@@ -263,6 +267,7 @@ async function DashboardContent() {
                         </td>
                         <td className="hidden px-4 py-3 text-ink-secondary sm:table-cell">{t.client_name ?? "כללי"}</td>
                         <td className="px-4 py-3 text-center"><StatusCell status={t.status} /></td>
+                        <td className="hidden px-4 py-3 text-ink-muted lg:table-cell">{new Date(t.created_at).toLocaleDateString("he-IL", { day: "numeric", month: "short" })}</td>
                         <td className={`px-4 py-3 ${overdue ? "font-medium text-overdue" : "text-ink-secondary"}`}>{fmtDate(t.due_date)}</td>
                         <td className="relative z-10 px-2 py-3 text-center">
                           <MarkDoneButton taskId={t.id} />

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Trash2, ClipboardList, Paperclip, Repeat } from "lucide-react";
+import { Trash2, ClipboardList, Paperclip, Repeat, CalendarPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toaster";
@@ -113,6 +113,11 @@ export function TaskDetailPanel({
                 נוצרה ממשימה חוזרת
               </p>
             )}
+            {/* Opened date */}
+            <div className="mt-1 flex items-center gap-1.5 text-xs text-ink-muted">
+              <CalendarPlus className="h-3.5 w-3.5" />
+              <span>נפתחה {new Date(task.created_at).toLocaleDateString("he-IL", { day: "numeric", month: "long", year: "numeric" })}</span>
+            </div>
           </div>
         </div>
 

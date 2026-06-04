@@ -694,7 +694,7 @@ export async function getMyTasks(userEmail: string) {
   // Filter at DB level via inner join on task_assignees
   const { data: assignedRows, error: assignError } = await sb
     .from("task_assignees")
-    .select("task:tasks!inner(id,title,status,due_date,client:clients(name))")
+    .select("task:tasks!inner(id,title,status,due_date,created_at,client:clients(name))")
     .eq("member_id", member.id);
   if (assignError) {
     console.error('[getMyTasks] assigned tasks query failed:', assignError);
@@ -704,7 +704,7 @@ export async function getMyTasks(userEmail: string) {
   const openStatuses = new Set(["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח"]);
   return asRows(assignedRows)
     .map((r) => {
-      const task = r.task as { id?: string; title?: string; status?: string; due_date?: string | null; client?: { name?: string } | null } | null;
+      const task = r.task as { id?: string; title?: string; status?: string; due_date?: string | null; created_at?: string; client?: { name?: string } | null } | null;
       return task;
     })
     .filter((t): t is NonNullable<typeof t> => !!t && openStatuses.has(t.status ?? ""))
@@ -713,6 +713,7 @@ export async function getMyTasks(userEmail: string) {
       title: t.title as string,
       status: t.status as string,
       due_date: (t.due_date as string | null) ?? null,
+      created_at: t.created_at as string,
       client_name: t.client?.name ?? null,
     }))
     .sort((a, b) => {

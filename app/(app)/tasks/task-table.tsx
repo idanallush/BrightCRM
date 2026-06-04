@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ArrowUpLeft, ChevronDown, ChevronUp, AlertTriangle, MessageCircle, EyeOff, Eye, Repeat } from "lucide-react";
+import { ArrowUpLeft, ChevronDown, ChevronUp, AlertTriangle, MessageCircle, EyeOff, Eye, Repeat, CalendarPlus } from "lucide-react";
 import { UserChip } from "@/components/user-hover-card";
 import { AvatarStack } from "@/components/user-avatar";
 import { Hint } from "@/components/ui/tooltip";
@@ -221,6 +221,10 @@ export function TaskTable({
             </div>
           )}
         </td>
+        {/* Opened date */}
+        <td className="hidden px-4 py-2.5 align-middle text-ink-muted xl:table-cell">
+          {new Date(t.created_at).toLocaleDateString("he-IL", { day: "numeric", month: "short" })}
+        </td>
         {/* Deadline / Completion date */}
         <td className="px-4 py-2.5 align-middle">
           {DONE_STATUSES.includes(t.status) ? (
@@ -257,7 +261,7 @@ export function TaskTable({
     );
   }
 
-  const COL_COUNT = 7;
+  const COL_COUNT = 8;
 
   return (
     <div className="flex flex-col gap-4">
@@ -278,6 +282,7 @@ export function TaskTable({
               <th className="px-4 py-2.5 text-right font-medium">משימה</th>
               <th className="hidden px-4 py-2.5 text-right font-medium md:table-cell">לקוח</th>
               <th className="hidden px-4 py-2.5 text-right font-medium lg:table-cell">אחראי</th>
+              <th className="hidden px-4 py-2.5 text-right font-medium xl:table-cell">נפתח</th>
               <th className="px-4 py-2.5 text-right font-medium">דדליין</th>
               <th className="px-4 py-2.5 text-right font-medium">סטטוס</th>
               <th className="w-8 px-2 ps-0" />
@@ -357,6 +362,7 @@ export function TaskTable({
                   <th className="px-4 py-2.5 text-right font-medium">משימה</th>
                   <th className="hidden px-4 py-2.5 text-right font-medium md:table-cell">לקוח</th>
                   <th className="hidden px-4 py-2.5 text-right font-medium lg:table-cell">אחראי</th>
+                  <th className="hidden px-4 py-2.5 text-right font-medium xl:table-cell">נפתח</th>
                   <th className="px-4 py-2.5 text-right font-medium">דדליין</th>
                   <th className="px-4 py-2.5 text-right font-medium">סטטוס</th>
                   <th className="w-8 px-2 ps-0" />
