@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { Send, Paperclip, AtSign, File as FileIcon, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/tooltip";
@@ -118,8 +119,20 @@ export function CommentInput({
 
   const canSend = (text.trim() || pendingFiles.length > 0) && !sending;
 
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [menuPos, setMenuPos] = React.useState<{ top: number; left: number } | null>(null);
+
+  React.useEffect(() => {
+    if (showMentions && filteredMembers.length > 0 && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      setMenuPos({ top: rect.top, left: rect.left });
+    } else {
+      setMenuPos(null);
+    }
+  }, [showMentions, filteredMembers.length]);
+
   return (
-    <div className="relative">
+    <div className="relative" ref={containerRef}>
       <div className="rounded-xl border border-border bg-white transition-colors focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
         <textarea
           ref={textareaRef}
@@ -223,8 +236,11 @@ export function CommentInput({
         onChange={(e) => { handleFileSelect(e.target.files); if (e.target) e.target.value = ""; }}
       />
 
-      {showMentions && filteredMembers.length > 0 && (
-        <div className="absolute bottom-full mb-1 start-0 z-10 w-52 rounded-xl border border-border bg-white p-1 shadow-elevation-3">
+      {showMentions && filteredMembers.length > 0 && menuPos && createPortal(
+        <div
+          className="fixed z-[200] w-52 rounded-xl border border-border bg-white p-1 shadow-elevation-3"
+          style={{ top: menuPos.top, left: menuPos.left, transform: "translateY(-100%) translateY(-4px)" }}
+        >
           {filteredMembers.map((m) => (
             <button
               key={m.id}
@@ -238,7 +254,8 @@ export function CommentInput({
               {m.full_name}
             </button>
           ))}
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );
