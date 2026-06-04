@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, LayoutGrid, Rows3, CalendarDays, AlertTriangle, Search, Tag as TagIcon, X, Trash2, ArrowRightLeft, SlidersHorizontal, Users, Calendar } from "lucide-react";
+import { Plus, LayoutGrid, Rows3, CalendarDays, Search, Tag as TagIcon, X, Trash2, ArrowRightLeft, SlidersHorizontal, Users, Calendar } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,7 +46,7 @@ export function TasksClient({
   tags: Tag[];
   commentCounts: Record<string, number>;
   currentMemberId: string | null;
-  initialFilters: { status: string; clientId: string; assigneeId: string; overdue: boolean };
+  initialFilters: { status: string; clientId: string; assigneeId: string; dateFilter: string };
   initialOpenTaskId: string | null;
 }) {
   const router = useRouter();
@@ -116,16 +116,40 @@ export function TasksClient({
       const q = searchText.toLowerCase();
       result = result.filter((t) => t.title.toLowerCase().includes(q) || t.client?.name?.toLowerCase().includes(q));
     }
+    if (filters.dateFilter !== "__all__") {
+      const today = new Date().toISOString().slice(0, 10);
+      const endOfWeek = (() => {
+        const d = new Date();
+        const day = d.getDay();
+        const diff = day === 6 ? 1 : (6 - day); // Saturday = end of Israeli week
+        d.setDate(d.getDate() + diff);
+        return d.toISOString().slice(0, 10);
+      })();
+      switch (filters.dateFilter) {
+        case "overdue":
+          result = result.filter((t) => t.due_date && t.due_date < today && t.status !== "בוצע");
+          break;
+        case "today":
+          result = result.filter((t) => t.due_date === today);
+          break;
+        case "this_week":
+          result = result.filter((t) => t.due_date && t.due_date >= today && t.due_date <= endOfWeek);
+          break;
+        case "no_date":
+          result = result.filter((t) => !t.due_date);
+          break;
+      }
+    }
     return result;
-  }, [tasks, searchText, tagFilter]);
+  }, [tasks, searchText, tagFilter, filters.dateFilter]);
 
   const activeFilterCount =
     (filters.status !== "__all__" ? 1 : 0) + (filters.clientId !== "__all__" ? 1 : 0) +
-    (filters.assigneeId !== "__all__" ? 1 : 0) + (filters.overdue ? 1 : 0) +
+    (filters.assigneeId !== "__all__" ? 1 : 0) + (filters.dateFilter !== "__all__" ? 1 : 0) +
     (tagFilter !== "__all__" ? 1 : 0);
 
   function clearFilters() {
-    setFilters({ status: "__all__", clientId: "__all__", assigneeId: "__all__", overdue: false });
+    setFilters({ status: "__all__", clientId: "__all__", assigneeId: "__all__", dateFilter: "__all__" });
     setTagFilter("__all__");
     setSearchText("");
     router.push("/tasks");
@@ -140,7 +164,7 @@ export function TasksClient({
     if (next.status && next.status !== "__all__") params.set("status", next.status);
     if (next.clientId && next.clientId !== "__all__") params.set("client", next.clientId);
     if (next.assigneeId && next.assigneeId !== "__all__") params.set("assignee", next.assigneeId);
-    if (next.overdue) params.set("overdue", "true");
+    if (next.dateFilter && next.dateFilter !== "__all__") params.set("date", next.dateFilter);
     router.push(params.toString() ? `/tasks?${params}` : "/tasks");
   }
 
@@ -236,14 +260,21 @@ export function TasksClient({
           </SelectContent>
         </Select>
 
-        {/* Overdue / date filter */}
-        <button type="button" onClick={() => updateFilter("overdue", !filters.overdue)}
-          className={cn("flex h-8 items-center gap-1.5 rounded-xl px-2 text-caption transition-colors",
-            filters.overdue ? "bg-overdue-bg text-overdue-text" : "text-ink-secondary hover:bg-surface")}>
-          <Calendar className="h-4 w-4" />
-          <span className="hidden sm:inline">תאריכים</span>
-          {filters.overdue && <span className="h-1.5 w-1.5 rounded-full bg-overdue" />}
-        </button>
+        {/* Date filter */}
+        <Select value={filters.dateFilter} onValueChange={(v) => updateFilter("dateFilter", v)}>
+          <SelectTrigger className={cn("h-8 w-auto gap-1.5 border-0 bg-transparent px-2 text-caption shadow-none hover:bg-surface",
+            filters.dateFilter !== "__all__" && "bg-overdue-bg text-overdue-text hover:bg-overdue-bg")}>
+            <Calendar className="h-4 w-4" />
+            <SelectValue placeholder="תאריכים" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all__">כל התאריכים</SelectItem>
+            <SelectItem value="overdue">באיחור</SelectItem>
+            <SelectItem value="today">היום</SelectItem>
+            <SelectItem value="this_week">השבוע</SelectItem>
+            <SelectItem value="no_date">ללא דדליין</SelectItem>
+          </SelectContent>
+        </Select>
 
         <div className="h-5 w-px shrink-0 bg-border" />
 

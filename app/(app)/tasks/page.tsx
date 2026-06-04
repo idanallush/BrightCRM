@@ -29,6 +29,7 @@ export default function TasksPage({
     status?: string;
     client?: string;
     assignee?: string;
+    date?: string;
     overdue?: string;
     task?: string;
   };
@@ -47,6 +48,7 @@ async function TasksContent({
     status?: string;
     client?: string;
     assignee?: string;
+    date?: string;
     overdue?: string;
     task?: string;
   };
@@ -54,7 +56,7 @@ async function TasksContent({
   const status = searchParams.status;
   const clientId = searchParams.client;
   const assigneeId = searchParams.assignee;
-  const overdue = searchParams.overdue === "true";
+  const dateFilter = searchParams.date ?? (searchParams.overdue === "true" ? "overdue" : "__all__");
 
   // Resolve current user's member ID for default filter
   const sb = createClient();
@@ -80,7 +82,7 @@ async function TasksContent({
 
   try {
     [tasks, clients, team, commentCounts, tags] = await Promise.all([
-      getTasks({ status, clientId: clientId ?? undefined, assigneeId: effectiveAssigneeId, overdue }),
+      getTasks({ status, clientId: clientId ?? undefined, assigneeId: effectiveAssigneeId }),
       getClients(),
       getTeam(),
       getCommentCountsByTask(),
@@ -102,7 +104,7 @@ async function TasksContent({
         status: status ?? "__all__",
         clientId: clientId ?? "__all__",
         assigneeId: effectiveAssigneeId ?? "__all__",
-        overdue,
+        dateFilter,
       }}
       initialOpenTaskId={searchParams.task ?? null}
     />
