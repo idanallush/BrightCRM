@@ -3,6 +3,7 @@
 import { Menu } from "lucide-react";
 import { GlobalSearch } from "@/components/global-search";
 import { NotificationBell } from "@/components/notification-bell";
+import { WeeklyMotivator } from "@/components/weekly-motivator";
 import { useMobileMenu } from "./shell-context";
 
 export function Header() {
@@ -14,6 +15,7 @@ export function Header() {
         <Menu className="h-5 w-5" />
       </button>
       <div className="min-w-0 flex-1"><GlobalSearch /></div>
+      <WeeklyMotivator />
       <div className="md:hidden"><NotificationBell /></div>
     </header>
   );
