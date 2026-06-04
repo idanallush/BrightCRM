@@ -154,6 +154,7 @@ export function TasksClient({
     setConfirmingDelete(false);
     const params = new URLSearchParams(searchParams.toString());
     params.delete("task");
+    params.delete("comment");
     router.replace(params.toString() ? `/tasks?${params}` : "/tasks", { scroll: false });
     setTimeout(() => {
       setEditing(null);
@@ -449,7 +450,7 @@ export function TasksClient({
       <Sheet open={sheetOpen} onOpenChange={(open) => !open && closeSheet()}>
         <SheetContent side="left" className="flex flex-col gap-0 p-0 sm:max-w-[960px]">
           <SheetTitle className="sr-only">{editing?.title ?? "פרטי משימה"}</SheetTitle>
-          {editing && <TaskDetailPanel key={editing.id} task={editing} clients={clients} team={team} tags={tags} onClose={closeSheet} onDelete={onDelete} confirmingDelete={confirmingDelete} setConfirmingDelete={setConfirmingDelete} onTitleSaved={(t) => setEditing((prev) => prev ? { ...prev, title: t } : prev)} taskViews={taskViews[editing.id] ?? []} teamSize={team.length} />}
+          {editing && <TaskDetailPanel key={editing.id} task={editing} clients={clients} team={team} tags={tags} onClose={closeSheet} onDelete={onDelete} confirmingDelete={confirmingDelete} setConfirmingDelete={setConfirmingDelete} onTitleSaved={(t) => setEditing((prev) => prev ? { ...prev, title: t } : prev)} taskViews={taskViews[editing.id] ?? []} teamSize={team.length} focusCommentId={searchParams.get("comment")} />}
         </SheetContent>
       </Sheet>
     </motion.div>

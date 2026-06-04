@@ -315,7 +315,7 @@ export function TaskForm({
 
 function ClientLogoInline({ client }: { client?: Client }) {
   if (!client) return null;
-  return <ClientLogo logoUrl={client.logo_url} name={client.name} size="sm" />;
+  return <ClientLogo logoUrl={client.logo_url} logoStoragePath={client.logo_storage_path} name={client.name} size="sm" />;
 }
 
 // Description input that caps height + shows a fade and "read more" toggle when the text is long.

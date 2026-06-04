@@ -18,6 +18,7 @@ export type ClientInput = {
   cms_url: string | null;
   analytics_url: string | null;
   logo_url: string | null;
+  logo_storage_path: string | null;
   brief: string | null;
   onboarding_status: "בתהליך קליטה" | "באוויר" | "בהשהייה" | null;
   onboarding_date: string | null;
@@ -45,6 +46,7 @@ function clean(input: ClientInput): ClientInput {
     cms_url: input.cms_url?.trim() || null,
     analytics_url: input.analytics_url?.trim() || null,
     logo_url: input.logo_url?.trim() || null,
+    logo_storage_path: input.logo_storage_path?.trim() || null,
     brief: input.brief?.trim() || null,
     onboarding_date: input.onboarding_date?.trim() || null,
     competitors: input.competitors?.trim() || null,
@@ -78,6 +80,56 @@ export async function updateClientRow(id: string, input: ClientInput) {
   revalidatePath(`/clients/${id}`);
   revalidatePath("/dashboard");
   return { ok: true as const };
+}
+
+const LOGO_BUCKET = "attachments";
+const LOGO_MAX_BYTES = 2 * 1024 * 1024;
+const LOGO_ALLOWED = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
+
+export async function uploadClientLogo(clientId: string, formData: FormData) {
+  const file = formData.get("file") as File | null;
+  if (!file) return { error: "לא נשלח קובץ" };
+  if (file.size > LOGO_MAX_BYTES) return { error: "הקובץ גדול מ-2MB" };
+  if (!LOGO_ALLOWED.includes(file.type))
+    return { error: "סוג קובץ לא נתמך. נדרש PNG, JPEG, WebP או SVG." };
+
+  const sb = createClient();
+  const {
+    data: { user },
+  } = await sb.auth.getUser();
+  if (!user) return { error: "לא מאומת" };
+
+  // Delete old logo if exists
+  const { data: existing } = await sb
+    .from("clients")
+    .select("logo_storage_path")
+    .eq("id", clientId)
+    .single();
+  if (existing?.logo_storage_path) {
+    await sb.storage.from(LOGO_BUCKET).remove([existing.logo_storage_path]);
+  }
+
+  const ext = file.name.includes(".")
+    ? file.name.slice(file.name.lastIndexOf(".")).toLowerCase()
+    : ".png";
+  const path = `client/${clientId}/logo${ext}`;
+
+  const { error: upErr } = await sb.storage
+    .from(LOGO_BUCKET)
+    .upload(path, file, { contentType: file.type, upsert: true });
+  if (upErr) return { error: `העלאה נכשלה: ${upErr.message}` };
+
+  const { error: updErr } = await sb
+    .from("clients")
+    .update({ logo_storage_path: path })
+    .eq("id", clientId);
+  if (updErr) return { error: updErr.message };
+
+  revalidatePath("/clients");
+  revalidatePath(`/clients/${clientId}`);
+  revalidatePath("/tasks");
+  revalidatePath("/dashboard");
+  return { ok: true as const, path };
 }
 
 export async function deleteClientRow(id: string) {

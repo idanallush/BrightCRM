@@ -16,8 +16,10 @@ import { toast } from "@/components/ui/toaster";
 import {
   createClientRow,
   updateClientRow,
+  uploadClientLogo,
   type ClientInput,
 } from "./actions";
+import { Upload } from "lucide-react";
 import type { Client, TeamMember } from "@/lib/data";
 
 const HEALTH_OPTIONS: { value: ClientInput["health"]; label: string }[] = [
@@ -56,6 +58,8 @@ export function ClientForm({
 }) {
   const router = useRouter();
   const [pending, setPending] = React.useState(false);
+  const [logoPreview, setLogoPreview] = React.useState<string | null>(null);
+  const [uploadingLogo, setUploadingLogo] = React.useState(false);
 
   const [form, setForm] = React.useState<ClientInput>({
     name: client?.name ?? "",
@@ -72,6 +76,7 @@ export function ClientForm({
     cms_url: client?.cms_url ?? "",
     analytics_url: client?.analytics_url ?? "",
     logo_url: client?.logo_url ?? "",
+    logo_storage_path: client?.logo_storage_path ?? null,
     brief: client?.brief ?? "",
     onboarding_status: client?.onboarding_status ?? null,
     onboarding_date: client?.onboarding_date ?? "",
@@ -199,13 +204,74 @@ export function ClientForm({
             placeholder="20,000 ₪ / 30k-50k $ / טקסט חופשי"
           />
         </Field>
-        <Field label="לוגו (URL)">
-          <Input
-            dir="ltr"
-            value={form.logo_url ?? ""}
-            onChange={(e) => set("logo_url", e.target.value)}
-            placeholder="https://example.com/logo.png"
-          />
+        <Field label="לוגו">
+          <div className="flex flex-col gap-2">
+            {/* Preview */}
+            {(logoPreview || form.logo_storage_path || form.logo_url) && (
+              <div className="flex items-center gap-3">
+                <img
+                  src={logoPreview || form.logo_url || ""}
+                  alt="תצוגה מקדימה"
+                  className="h-12 w-12 rounded-lg border border-border object-contain bg-white"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
+                />
+                {(logoPreview || form.logo_storage_path) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLogoPreview(null);
+                      set("logo_storage_path", null);
+                    }}
+                    className="text-xs text-overdue hover:underline"
+                  >
+                    הסר
+                  </button>
+                )}
+              </div>
+            )}
+            {/* Upload button */}
+            <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-border px-3 py-2.5 text-sm text-ink-secondary transition-colors hover:border-primary hover:bg-surface">
+              <Upload className="h-4 w-4" />
+              <span>{uploadingLogo ? "מעלה..." : "העלאת לוגו"}</span>
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                className="hidden"
+                disabled={uploadingLogo || !client}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file || !client) return;
+                  setLogoPreview(URL.createObjectURL(file));
+                  setUploadingLogo(true);
+                  const fd = new FormData();
+                  fd.append("file", file);
+                  const res = await uploadClientLogo(client.id, fd);
+                  setUploadingLogo(false);
+                  if ("error" in res) {
+                    toast.error(res.error);
+                    setLogoPreview(null);
+                    return;
+                  }
+                  set("logo_storage_path", res.path);
+                  toast.success("הלוגו הועלה");
+                }}
+              />
+            </label>
+            {!client && (
+              <p className="text-xs text-ink-muted">
+                שמור את הלקוח קודם כדי להעלות לוגו
+              </p>
+            )}
+            {/* URL fallback */}
+            <Input
+              dir="ltr"
+              value={form.logo_url ?? ""}
+              onChange={(e) => set("logo_url", e.target.value)}
+              placeholder="או הדבק URL: https://example.com/logo.png"
+            />
+          </div>
         </Field>
       </Section>
 

@@ -17,7 +17,7 @@ import type { Comment } from "./single-comment";
 
 type TaskView = { member_id: string; full_name: string; avatar_url: string | null; last_seen_at: string };
 
-export function TaskComments({ taskId, team }: { taskId: string; team: TeamMember[] }) {
+export function TaskComments({ taskId, team, focusCommentId }: { taskId: string; team: TeamMember[]; focusCommentId?: string | null }) {
   const [comments, setComments] = React.useState<Comment[]>([]);
   const [memberId, setMemberId] = React.useState<string | null>(null);
   const [views, setViews] = React.useState<TaskView[]>([]);
@@ -27,6 +27,8 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
   const [attachmentMap, setAttachmentMap] = React.useState<Record<string, CommentAttachment[]>>({});
   const [thumbMap, setThumbMap] = React.useState<Record<string, string>>({});
   const [expanded, setExpanded] = React.useState(false);
+  const [highlightId, setHighlightId] = React.useState<string | null>(null);
+  const didScrollRef = React.useRef(false);
 
   // Fetch current user's team member ID
   React.useEffect(() => {
@@ -75,6 +77,27 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
   }, [taskId]);
 
   React.useEffect(() => { fetchComments(); }, [fetchComments]);
+
+  // Scroll to target comment (specific or latest) after comments load
+  React.useEffect(() => {
+    if (didScrollRef.current || comments.length === 0) return;
+    // Show all comments first so the target is in the DOM
+    if (!showAll && comments.filter(c => !c.parent_id).length > 2) {
+      setShowAll(true);
+      return; // will re-run once showAll is true
+    }
+    didScrollRef.current = true;
+    const targetId = focusCommentId || comments[comments.length - 1]?.id;
+    if (!targetId) return;
+    requestAnimationFrame(() => {
+      const el = document.querySelector(`[data-comment-id="${targetId}"]`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        setHighlightId(targetId);
+        setTimeout(() => setHighlightId(null), 2500);
+      }
+    });
+  }, [comments, focusCommentId, showAll]);
 
   // Fetch who has viewed this task
   React.useEffect(() => {
@@ -163,7 +186,7 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
             const showReplies = replies.length > 0 && isExpanded;
 
             return (
-              <div key={c.id} className="flex flex-col py-3 first:pt-0 last:pb-0">
+              <div key={c.id} data-comment-id={c.id} className={`flex flex-col py-3 first:pt-0 last:pb-0 rounded-lg ${highlightId === c.id ? "animate-highlight" : ""}`}>
                 <SingleComment
                   comment={c}
                   team={team}
@@ -196,18 +219,19 @@ export function TaskComments({ taskId, team }: { taskId: string; team: TeamMembe
                 {showReplies && (
                   <div className="ms-10 mt-2 flex flex-col gap-3 border-e-2 border-primary/20 pe-3">
                     {replies.map((r) => (
-                      <SingleComment
-                        key={r.id}
-                        comment={r}
-                        team={team}
-                        attachments={attachmentMap[r.id] ?? []}
-                        thumbs={thumbMap}
-                        isReply
-                        currentUserId={memberId}
-                        onEdited={fetchComments}
-                        onDeleted={fetchComments}
-                        seenBy={views.filter(v => v.last_seen_at >= r.created_at && v.member_id !== r.author_id)}
-                      />
+                      <div key={r.id} data-comment-id={r.id} className={`rounded-lg ${highlightId === r.id ? "animate-highlight" : ""}`}>
+                        <SingleComment
+                          comment={r}
+                          team={team}
+                          attachments={attachmentMap[r.id] ?? []}
+                          thumbs={thumbMap}
+                          isReply
+                          currentUserId={memberId}
+                          onEdited={fetchComments}
+                          onDeleted={fetchComments}
+                          seenBy={views.filter(v => v.last_seen_at >= r.created_at && v.member_id !== r.author_id)}
+                        />
+                      </div>
                     ))}
                   </div>
                 )}

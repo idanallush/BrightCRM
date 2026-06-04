@@ -7,7 +7,7 @@ import { cn, timeAgo } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 
-type Notification = { id: string; type: string; task_id: string | null; content: string; read: boolean; created_at: string };
+type Notification = { id: string; type: string; task_id: string | null; comment_id: string | null; content: string; read: boolean; created_at: string };
 
 const TYPE_ICON: Record<string, React.ReactNode> = {
   mention: <AtSign className="h-3.5 w-3.5" />, status_change: <ArrowLeftRight className="h-3.5 w-3.5" />,
@@ -28,7 +28,7 @@ export function NotificationBell({ dark = false }: { dark?: boolean }) {
     const sb = createClient();
     const { data: { user } } = await sb.auth.getUser(); if (!user?.email) return;
     const { data: member } = await sb.from("team_members").select("id").eq("email", user.email).maybeSingle(); if (!member) return;
-    const { data } = await sb.from("notifications").select("id, type, task_id, content, read, created_at").eq("user_id", member.id).order("created_at", { ascending: false }).limit(10);
+    const { data } = await sb.from("notifications").select("id, type, task_id, comment_id, content, read, created_at").eq("user_id", member.id).order("created_at", { ascending: false }).limit(10);
     if (data) { const mapped = data as Notification[]; setNotifications(mapped); setUnreadCount(mapped.filter((n) => !n.read).length); }
   }
 
@@ -58,7 +58,7 @@ export function NotificationBell({ dark = false }: { dark?: boolean }) {
             <div className="max-h-72 overflow-y-auto">
               {notifications.length === 0 ? <div className="p-4 text-center text-caption text-ink-muted">אין התראות</div> :
                 notifications.map((n) => (
-                  <button key={n.id} type="button" onClick={() => { setOpen(false); if (n.task_id) router.push(`/tasks?task=${n.task_id}`); }}
+                  <button key={n.id} type="button" onClick={() => { setOpen(false); if (n.task_id) router.push(`/tasks?task=${n.task_id}${n.comment_id ? `&comment=${n.comment_id}` : ""}`); }}
                     className={cn("flex w-full items-start gap-2.5 px-3 py-2.5 text-right transition-colors hover:bg-surface", !n.read && "bg-surface")}>
                     <div className="mt-0.5 shrink-0 text-ink-muted">{TYPE_ICON[n.type] ?? <Bell className="h-3.5 w-3.5" />}</div>
                     <div className="min-w-0 flex-1">

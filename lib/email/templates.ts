@@ -11,8 +11,9 @@ function escapeHtml(str: string | null | undefined): string {
     .replace(/'/g, "&#39;");
 }
 
-function taskUrl(taskId: string) {
-  return `${BASE_URL}/tasks?task=${taskId}&assignee=__all__`;
+function taskUrl(taskId: string, commentId?: string) {
+  const base = `${BASE_URL}/tasks?task=${taskId}&assignee=__all__`;
+  return commentId ? `${base}&comment=${commentId}` : base;
 }
 
 function wrap(body: string) {
@@ -98,7 +99,7 @@ export function newTaskEmail(
 export function newCommentEmail(
   task: TaskInfo,
   client: ClientInfo,
-  comment: { content: string },
+  comment: { content: string; id?: string },
   author: PersonInfo,
 ) {
   const body = `
@@ -109,7 +110,7 @@ export function newCommentEmail(
   ${escapeHtml(comment.content)}
 </div>
 <div style="margin-top:20px;">
-  <a href="${taskUrl(task.id)}" style="display:inline-block;padding:10px 24px;background:#4262FF;color:#fff;text-decoration:none;border-radius:20px;font-size:14px;">פתח משימה</a>
+  <a href="${taskUrl(task.id, comment.id)}" style="display:inline-block;padding:10px 24px;background:#4262FF;color:#fff;text-decoration:none;border-radius:20px;font-size:14px;">פתח משימה</a>
 </div>`;
 
   return {
@@ -121,7 +122,7 @@ export function newCommentEmail(
 export function mentionEmail(
   task: TaskInfo,
   client: ClientInfo,
-  comment: { content: string },
+  comment: { content: string; id?: string },
   author: PersonInfo,
   mentionedUser: PersonInfo,
 ) {
@@ -134,7 +135,7 @@ export function mentionEmail(
   ${escapeHtml(comment.content)}
 </div>
 <div style="margin-top:20px;">
-  <a href="${taskUrl(task.id)}" style="display:inline-block;padding:10px 24px;background:#4262FF;color:#fff;text-decoration:none;border-radius:20px;font-size:14px;">פתח משימה</a>
+  <a href="${taskUrl(task.id, comment.id)}" style="display:inline-block;padding:10px 24px;background:#4262FF;color:#fff;text-decoration:none;border-radius:20px;font-size:14px;">פתח משימה</a>
 </div>`;
 
   return {

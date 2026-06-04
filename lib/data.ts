@@ -39,6 +39,7 @@ export type Client = {
   analytics_url: string | null;
   health: "בריא" | "אסטרטגיה צריכה" | "קריטי" | null;
   logo_url: string | null;
+  logo_storage_path: string | null;
   brief: string | null;
   onboarding_status: "בתהליך קליטה" | "באוויר" | "בהשהייה" | null;
   onboarding_date: string | null;
@@ -156,7 +157,7 @@ export async function getTasks(filters?: {
 }
 
 const CLIENT_COLS =
-  "id,name,contact_name,account_manager_id,phone,email,website_url,budget_note,drive_url,facebook_ads_url,google_ads_url,cms_url,analytics_url,health,logo_url,brief,onboarding_status,onboarding_date,competitors,target_audience,core_message,campaign_goal,differentiation,digital_assets,previous_campaigns";
+  "id,name,contact_name,account_manager_id,phone,email,website_url,budget_note,drive_url,facebook_ads_url,google_ads_url,cms_url,analytics_url,health,logo_url,logo_storage_path,brief,onboarding_status,onboarding_date,competitors,target_audience,core_message,campaign_goal,differentiation,digital_assets,previous_campaigns";
 
 export async function getClients(): Promise<Client[]> {
   const sb = createClient();
@@ -596,6 +597,7 @@ export type ActivityItem =
   | {
       type: "comment";
       id: string;
+      comment_id: string;
       task_id: string;
       task_title: string;
       content: string;
@@ -652,6 +654,7 @@ export async function getRecentActivity(limit = 50): Promise<ActivityItem[]> {
     return {
       type: "comment" as const,
       id: `comment-${r.id}`,
+      comment_id: r.id as string,
       task_id: task?.id ?? (r.task_id as string),
       task_title: task?.title ?? "משימה",
       content: r.content as string,
@@ -769,11 +772,11 @@ export async function getCommentCountsByTask(): Promise<Record<string, number>> 
 }
 
 export async function getClientsWithOpenTaskCounts(): Promise<
-  { id: string; name: string; health: string | null; logo_url: string | null; open_count: number }[]
+  { id: string; name: string; health: string | null; logo_url: string | null; logo_storage_path: string | null; open_count: number }[]
 > {
   const sb = createClient();
   const [clientsRes, countsData] = await Promise.all([
-    sb.from("clients").select("id,name,health,logo_url").order("name"),
+    sb.from("clients").select("id,name,health,logo_url,logo_storage_path").order("name"),
     sb.rpc("get_open_task_counts_by_client"),
   ]);
   if (clientsRes.error) {
@@ -794,6 +797,7 @@ export async function getClientsWithOpenTaskCounts(): Promise<
       name: c.name,
       health: c.health ?? null,
       logo_url: c.logo_url ?? null,
+      logo_storage_path: c.logo_storage_path ?? null,
       open_count: counts[c.id] ?? 0,
     }))
     .filter((c) => c.open_count > 0)

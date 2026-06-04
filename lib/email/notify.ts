@@ -185,8 +185,8 @@ export async function notifyNewComment(commentId: string) {
     const isMentioned = mentionIds.has(m.id);
 
     const { subject, html } = isMentioned
-      ? mentionEmail(taskInfo, client, { content: comment.content }, author, m)
-      : newCommentEmail(taskInfo, client, { content: comment.content }, author);
+      ? mentionEmail(taskInfo, client, { content: comment.content, id: comment.id }, author, m)
+      : newCommentEmail(taskInfo, client, { content: comment.content, id: comment.id }, author);
 
     emailPromises.push(
       sendEmail([m.email], subject, html, { type: isMentioned ? "mention" : "comment", referenceId: comment.task_id })

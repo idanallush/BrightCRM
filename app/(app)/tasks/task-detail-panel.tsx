@@ -14,7 +14,7 @@ import { updateTask, type TaskInput, type TaskViewRecord } from "./actions";
 import type { Client, Tag, TaskWithRelations, TeamMember } from "@/lib/data";
 
 export function TaskDetailPanel({
-  task, clients, team, tags, onClose, onDelete, confirmingDelete, setConfirmingDelete, onTitleSaved, taskViews, teamSize,
+  task, clients, team, tags, onClose, onDelete, confirmingDelete, setConfirmingDelete, onTitleSaved, taskViews, teamSize, focusCommentId,
 }: {
   task: TaskWithRelations;
   clients: Client[];
@@ -27,6 +27,7 @@ export function TaskDetailPanel({
   onTitleSaved: (title: string) => void;
   taskViews: TaskViewRecord[];
   teamSize: number;
+  focusCommentId?: string | null;
 }) {
   const router = useRouter();
   const [fileCount, setFileCount] = React.useState<number | null>(null);
@@ -179,7 +180,7 @@ export function TaskDetailPanel({
           <div className="flex-1 overflow-y-auto">
             {/* Comments section */}
             <div className="px-5 pb-4 pt-3 md:px-6">
-              <TaskComments taskId={task.id} team={team} />
+              <TaskComments taskId={task.id} team={team} focusCommentId={focusCommentId} />
             </div>
 
             {/* Files section */}

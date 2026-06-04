@@ -94,7 +94,7 @@ export function ClientsClient({
         className="cursor-pointer border-b border-border transition-colors duration-150 hover:bg-surface">
         <td className="px-4 py-3 font-medium text-ink">
           <div className="flex items-center gap-2.5">
-            <ClientLogo logoUrl={c.logo_url} name={c.name} size="md" />
+            <ClientLogo logoUrl={c.logo_url} logoStoragePath={c.logo_storage_path} name={c.name} size="md" />
             {c.name}
           </div>
         </td>

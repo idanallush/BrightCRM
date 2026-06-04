@@ -366,7 +366,7 @@ async function DashboardContent() {
             {clientsOpen.map((c) => (
                 <Link key={c.id} href={`/clients/${c.id}`}
                   className="flex flex-col items-center gap-1.5 bg-white px-3 py-4 transition-colors hover:bg-surface">
-                  <ClientLogo logoUrl={c.logo_url} name={c.name} size="lg" />
+                  <ClientLogo logoUrl={c.logo_url} logoStoragePath={c.logo_storage_path} name={c.name} size="lg" />
                   <span className="max-w-full truncate text-center text-sm font-medium text-ink">{c.name}</span>
                   <span className="rounded-full bg-surface px-2.5 py-0.5 text-caption font-semibold text-ink-secondary">
                     {c.open_count} משימות

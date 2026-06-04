@@ -314,6 +314,7 @@ export async function addComment(
       user_id: userId,
       type: "mention" as const,
       task_id: taskId,
+      comment_id: data.id,
       from_user_id: authorId,
       content: `${authorName} הזכיר/ה אותך בתגובה`,
     }));

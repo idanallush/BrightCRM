@@ -14,10 +14,13 @@ function SourceIcon({ source }: { source: string }) {
 
 function ActivityEntry({ item }: { item: ActivityItem }) {
   const isComment = item.type === "comment";
+  const href = isComment
+    ? `/tasks?task=${item.task_id}&comment=${item.comment_id}`
+    : `/tasks?task=${item.task_id}`;
 
   return (
     <Link
-      href={`/tasks?task=${item.task_id}`}
+      href={href}
       className="flex gap-3 rounded-2xl border border-border bg-white px-4 py-3.5 shadow-elevation-1 transition-shadow hover:shadow-elevation-2"
     >
       <UserAvatar

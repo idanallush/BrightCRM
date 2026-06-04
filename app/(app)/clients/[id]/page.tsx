@@ -67,7 +67,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
             <Link href="/clients" className="inline-flex items-center gap-1.5 text-caption text-ink-secondary transition-colors hover:text-ink">
               <ArrowRight className="h-4 w-4" /> חזרה
             </Link>
-            <ClientLogo logoUrl={client.logo_url} name={client.name} size="md" />
+            <ClientLogo logoUrl={client.logo_url} logoStoragePath={client.logo_storage_path} name={client.name} size="md" />
             <h1 className="text-base font-bold text-ink">{client.name}</h1>
             {healthV && client.health && <Badge variant={healthV}>{client.health}</Badge>}
             {manager && <UserChip member={manager} size="xs" />}

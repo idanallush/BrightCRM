@@ -29,4 +29,12 @@
     background-size: 200% 100%;
     animation: shimmer 1.5s ease-in-out infinite;
   }
+  .animate-highlight {
+    animation: highlight-fade 2s ease-out forwards;
+  }
+}
+
+@keyframes highlight-fade {
+  0% { background-color: rgb(219 234 254); }
+  100% { background-color: transparent; }
 }
