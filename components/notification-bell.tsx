@@ -58,9 +58,10 @@ export function NotificationBell({ dark = false }: { dark?: boolean }) {
             <div className="max-h-72 overflow-y-auto">
               {notifications.length === 0 ? <div className="p-4 text-center text-caption text-ink-muted">אין התראות</div> :
                 notifications.map((n) => (
-                  <button key={n.id} type="button" onClick={() => { setOpen(false); if (n.task_id) router.push(`/tasks?task=${n.task_id}${n.comment_id ? `&comment=${n.comment_id}` : ""}`); }}
+                  <button key={n.id} type="button" onClick={() => { setOpen(false); if (n.task_id) router.push(`/tasks?task=${n.task_id}&assignee=__all__${n.comment_id ? `&comment=${n.comment_id}` : ""}`); }}
                     className={cn("flex w-full items-start gap-2.5 px-3 py-2.5 text-right transition-colors hover:bg-surface", !n.read && "bg-surface")}>
                     <div className="mt-0.5 shrink-0 text-ink-muted">{TYPE_ICON[n.type] ?? <Bell className="h-3.5 w-3.5" />}</div>
+
                     <div className="min-w-0 flex-1">
                       <p className={cn("text-caption", n.read ? "text-ink-secondary" : "font-medium text-ink")}>{n.content}</p>
                       <span className="text-[11px] text-ink-muted">{timeAgo(n.created_at)}</span>

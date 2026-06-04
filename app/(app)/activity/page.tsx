@@ -15,8 +15,8 @@ function SourceIcon({ source }: { source: string }) {
 function ActivityEntry({ item }: { item: ActivityItem }) {
   const isComment = item.type === "comment";
   const href = isComment
-    ? `/tasks?task=${item.task_id}&comment=${item.comment_id}`
-    : `/tasks?task=${item.task_id}`;
+    ? `/tasks?task=${item.task_id}&assignee=__all__&comment=${item.comment_id}`
+    : `/tasks?task=${item.task_id}&assignee=__all__`;
 
   return (
     <Link

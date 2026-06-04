@@ -2,11 +2,13 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Trash2, ClipboardList, Paperclip, Eye } from "lucide-react";
+import { Trash2, ClipboardList, Paperclip } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toaster";
 import { UserChip } from "@/components/user-hover-card";
+import { UserAvatar } from "@/components/user-avatar";
+import { timeAgo } from "@/lib/utils";
 import { TaskForm } from "./task-form";
 import { TaskAttachments } from "./task-attachments";
 import { TaskComments } from "./task-comments";
@@ -133,32 +135,41 @@ export function TaskDetailPanel({
               </React.Fragment>
             ));
           })()}
-          {/* Seen-by indicator */}
-          {(() => {
-            const seenAfterUpdate = taskViews.filter((v) => v.last_seen_at >= (task.updated_at ?? task.created_at));
-            if (seenAfterUpdate.length === 0) return null;
-            return (
-              <>
-                <div className="h-8 w-px bg-border" />
-                <div className="flex items-center gap-2.5" title={`נצפה ע״י: ${seenAfterUpdate.map(v => v.full_name).join(", ")}`}>
-                  <div className="flex flex-col items-end">
-                    <span className="text-[11px] text-ink-muted">נצפה</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="flex -space-x-1.5 space-x-reverse">
-                      {seenAfterUpdate.slice(0, 3).map((v) => (
-                        <UserChip key={v.member_id} member={{ full_name: v.full_name, avatar_url: v.avatar_url }} size="xs" />
-                      ))}
-                    </div>
-                    {seenAfterUpdate.length > 3 && (
-                      <span className="text-xs font-medium text-ink-muted">+{seenAfterUpdate.length - 3}</span>
-                    )}
-                    <Eye className="h-3.5 w-3.5 text-ink-muted" />
+          {/* Seen-by indicator — all viewers */}
+          {taskViews.length > 0 && (
+            <>
+              <div className="h-8 w-px bg-border" />
+              <div className="group/seen relative flex items-center gap-2.5">
+                <div className="flex flex-col items-end">
+                  <span className="text-[11px] text-ink-muted">נצפה</span>
+                </div>
+                <div className="flex -space-x-2 space-x-reverse">
+                  {taskViews.slice(0, 4).map((v) => (
+                    <UserAvatar key={v.member_id} name={v.full_name} avatarUrl={v.avatar_url} size="xs" ring />
+                  ))}
+                  {taskViews.length > 4 && (
+                    <span className="relative inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface-soft text-[10px] font-semibold text-ink-secondary ring-2 ring-white">
+                      +{taskViews.length - 4}
+                    </span>
+                  )}
+                </div>
+                {/* Tooltip on hover */}
+                <div className="pointer-events-none absolute start-0 top-full z-50 mt-2 w-48 rounded-xl border border-border bg-white p-2.5 opacity-0 shadow-elevation-3 transition-opacity group-hover/seen:pointer-events-auto group-hover/seen:opacity-100">
+                  <div className="flex flex-col gap-1.5">
+                    {taskViews.map((v) => (
+                      <div key={v.member_id} className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5">
+                          <UserAvatar name={v.full_name} avatarUrl={v.avatar_url} size="xs" />
+                          <span className="text-xs font-medium text-ink">{v.full_name}</span>
+                        </div>
+                        <span className="text-[10px] text-ink-muted">{timeAgo(v.last_seen_at)}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              </>
-            );
-          })()}
+              </div>
+            </>
+          )}
         </div>
       </div>
 

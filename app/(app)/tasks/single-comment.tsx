@@ -1,12 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { Pencil, Trash2, Check, Loader2, Eye } from "lucide-react";
+import { Pencil, Trash2, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toaster";
 import { updateComment, deleteComment } from "./actions";
 import type { CommentAttachment } from "./actions";
-import { UserAvatar } from "@/components/user-avatar";
+import { UserAvatar, AvatarStack } from "@/components/user-avatar";
 import { timeAgo } from "@/lib/utils";
 import type { TeamMember } from "@/lib/data";
 import { CommentAttachmentList, renderContentWithMentions } from "./comment-helpers";
@@ -162,11 +162,10 @@ export function SingleComment({
             ) : null}
             {seenBy && seenBy.length > 0 && (
               <span
-                className="inline-flex items-center gap-1 text-[11px] text-ink-muted cursor-default"
+                className="inline-flex items-center gap-1 cursor-default"
                 title={`נצפה ע״י: ${seenBy.map(s => s.full_name).join(", ")}`}
               >
-                <Eye className="h-3 w-3" />
-                {seenBy.length}
+                <AvatarStack people={seenBy.map(s => ({ full_name: s.full_name, avatar_url: s.avatar_url }))} size="xs" max={3} />
               </span>
             )}
           </div>

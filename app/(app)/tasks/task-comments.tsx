@@ -81,14 +81,24 @@ export function TaskComments({ taskId, team, focusCommentId }: { taskId: string;
   // Scroll to target comment (specific or latest) after comments load
   React.useEffect(() => {
     if (didScrollRef.current || comments.length === 0) return;
+
+    const targetId = focusCommentId || comments[comments.length - 1]?.id;
+    if (!targetId) return;
+
     // Show all comments first so the target is in the DOM
     if (!showAll && comments.filter(c => !c.parent_id).length > 2) {
       setShowAll(true);
-      return; // will re-run once showAll is true
+      return;
     }
+
+    // If target is a reply, expand its parent thread so the element renders
+    const targetComment = comments.find(c => c.id === targetId);
+    if (targetComment?.parent_id && !expandedThreads.has(targetComment.parent_id)) {
+      setExpandedThreads(prev => new Set(prev).add(targetComment.parent_id!));
+      return;
+    }
+
     didScrollRef.current = true;
-    const targetId = focusCommentId || comments[comments.length - 1]?.id;
-    if (!targetId) return;
     requestAnimationFrame(() => {
       const el = document.querySelector(`[data-comment-id="${targetId}"]`);
       if (el) {
@@ -97,7 +107,7 @@ export function TaskComments({ taskId, team, focusCommentId }: { taskId: string;
         setTimeout(() => setHighlightId(null), 2500);
       }
     });
-  }, [comments, focusCommentId, showAll]);
+  }, [comments, focusCommentId, showAll, expandedThreads]);
 
   // Fetch who has viewed this task
   React.useEffect(() => {
