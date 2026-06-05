@@ -163,12 +163,12 @@ async function DashboardContent() {
 
       {/* Stat strip — סקירה */}
       <AnimatedSection>
-      <div className="overflow-x-auto rounded-2xl bg-[#1A1A1A] shadow-elevation-1">
-        <div className="flex min-w-max items-stretch divide-x divide-x-reverse divide-[#333]">
+      <div className="overflow-x-auto rounded-2xl border border-border bg-white shadow-elevation-1">
+        <div className="flex min-w-max items-stretch divide-x divide-x-reverse divide-border">
           {/* Header */}
           <div className="flex shrink-0 items-center gap-2.5 px-5 py-4">
-            <LayoutDashboard className="h-5 w-5 text-[#9CA3AF]" />
-            <span className="text-base font-bold text-white">סקירה</span>
+            <LayoutDashboard className="h-5 w-5 text-ink-secondary" />
+            <span className="text-base font-bold text-ink">סקירה</span>
           </div>
           {/* Stat items */}
           {STAT_CARDS.map((card) => {
@@ -176,17 +176,17 @@ async function DashboardContent() {
             const trend = trends[card.trendKey];
             const isNegativeMeaning = card.key === "overdue";
             const trendIsGood = isNegativeMeaning ? trend.delta <= 0 : trend.delta >= 0;
-            const trendColor = trend.delta === 0 ? "text-[#6B7280]" : trendIsGood ? "text-success" : "text-overdue";
+            const trendColor = trend.delta === 0 ? "text-ink-muted" : trendIsGood ? "text-success" : "text-overdue";
             const periodLabel = trend.period === "day" ? "מאתמול" : "השבוע";
             return (
-              <Link key={card.key} href={card.href} className="flex shrink-0 items-center gap-3 px-5 py-4 transition-colors hover:bg-white/5">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ backgroundColor: card.color + "25" }}>
+              <Link key={card.key} href={card.href} className="flex shrink-0 items-center gap-3 px-5 py-4 transition-colors hover:bg-surface">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ backgroundColor: card.color + "15" }}>
                   <card.Icon className="h-5 w-5" style={{ color: card.color }} />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-caption text-[#9CA3AF]">{card.label}</span>
+                  <span className="text-caption text-ink-muted">{card.label}</span>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-white"><AnimatedNumber value={value} /></span>
+                    <span className="text-2xl font-bold text-ink"><AnimatedNumber value={value} /></span>
                     {trend.delta !== 0 && (
                       <span className={`flex items-center gap-0.5 text-caption ${trendColor}`}>
                         {trend.delta > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
@@ -199,13 +199,13 @@ async function DashboardContent() {
             );
           })}
           {/* Watching */}
-          <Link href="/tasks" className="flex shrink-0 items-center gap-3 px-5 py-4 transition-colors hover:bg-white/5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
-              <Eye className="h-5 w-5 text-[#9CA3AF]" />
+          <Link href="/tasks" className="flex shrink-0 items-center gap-3 px-5 py-4 transition-colors hover:bg-surface">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-surface">
+              <Eye className="h-5 w-5 text-ink-secondary" />
             </div>
             <div className="flex flex-col">
-              <span className="text-caption text-[#9CA3AF]">אני עוקב</span>
-              <span className="text-2xl font-bold text-white"><AnimatedNumber value={counts.watching} /></span>
+              <span className="text-caption text-ink-muted">אני עוקב</span>
+              <span className="text-2xl font-bold text-ink"><AnimatedNumber value={counts.watching} /></span>
             </div>
           </Link>
         </div>
