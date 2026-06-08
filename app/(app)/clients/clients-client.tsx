@@ -57,7 +57,7 @@ export function ClientsClient({
   const filtered = React.useMemo(() => {
     return clients.filter((c) => {
       if (health !== ALL && c.health !== health) return false;
-      if (managerId !== ALL && c.account_manager_id !== managerId) return false;
+      if (managerId !== ALL && !c.account_managers.some((m) => m.id === managerId)) return false;
       if (onboardingFilter !== ALL) {
         if (onboardingFilter === "none" && c.onboarding_status !== null) return false;
         if (onboardingFilter !== "none" && c.onboarding_status !== onboardingFilter) return false;
@@ -72,7 +72,7 @@ export function ClientsClient({
     const mine: typeof filtered = [];
     const others: typeof filtered = [];
     for (const c of filtered) {
-      if (c.account_manager_id === currentMemberId) mine.push(c); else others.push(c);
+      if (c.account_managers.some((m) => m.id === currentMemberId)) mine.push(c); else others.push(c);
     }
     return { myClients: mine, otherClients: others };
   }, [filtered, currentMemberId]);
@@ -82,7 +82,7 @@ export function ClientsClient({
 
   function renderCard(c: (typeof clients)[0]) {
     const openCount = openTaskCounts[c.id] ?? 0;
-    const managerMember = team.find((m) => m.id === c.account_manager_id);
+    const managers = c.account_managers ?? [];
     const links = [
       c.website_url && { url: c.website_url, icon: <Globe className="h-3.5 w-3.5" />, label: "אתר" },
       c.drive_url && { url: c.drive_url, icon: <GoogleDriveIcon className="h-3.5 w-3.5" />, label: "Drive" },
@@ -100,9 +100,16 @@ export function ClientsClient({
             <span className="rounded-full bg-surface px-2 py-0.5 text-[11px] font-medium text-[#1A1A1A]">{openCount} משימות</span>
           )}
         </div>
-        {managerMember && (
-          <div className="mt-auto pt-1">
-            <UserChip member={managerMember} size="xs" />
+        {managers.length > 0 && (
+          <div className="mt-auto flex flex-wrap items-center justify-center gap-1 pt-1">
+            {managers.slice(0, 2).map((m) => (
+              <UserChip key={m.id} member={m as import("@/components/user-hover-card").HoverMember} size="xs" />
+            ))}
+            {managers.length > 2 && (
+              <span className="rounded-full bg-surface px-1.5 py-0.5 text-[10px] font-medium text-ink-secondary">
+                +{managers.length - 2}
+              </span>
+            )}
           </div>
         )}
         {links.length > 0 && (

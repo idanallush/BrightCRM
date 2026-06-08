@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 export type ClientInput = {
   name: string;
   contact_name: string | null;
-  account_manager_id: string | null;
+  account_manager_ids: string[];
   phone: string | null;
   email: string | null;
   website_url: string | null;
@@ -31,9 +31,10 @@ export type ClientInput = {
   previous_campaigns: string[];
 };
 
-function clean(input: ClientInput): ClientInput {
+function clean(input: ClientInput) {
+  const { account_manager_ids: _, ...rest } = input;
   return {
-    ...input,
+    ...rest,
     name: input.name.trim(),
     contact_name: input.contact_name?.trim() || null,
     phone: input.phone?.trim() || null,
@@ -59,6 +60,16 @@ function clean(input: ClientInput): ClientInput {
   };
 }
 
+async function syncAccountManagers(sb: ReturnType<typeof createClient>, clientId: string, managerIds: string[]) {
+  await sb.from("client_account_managers").delete().eq("client_id", clientId);
+  if (managerIds.length > 0) {
+    const rows = managerIds.map((mid) => ({ client_id: clientId, member_id: mid }));
+    const { error } = await sb.from("client_account_managers").insert(rows);
+    if (error) return error.message;
+  }
+  return null;
+}
+
 export async function createClientRow(input: ClientInput) {
   const sb = createClient();
   const { data, error } = await sb
@@ -67,6 +78,8 @@ export async function createClientRow(input: ClientInput) {
     .select("id")
     .single();
   if (error) return { error: error.message };
+  const syncErr = await syncAccountManagers(sb, data.id, input.account_manager_ids);
+  if (syncErr) return { error: syncErr };
   revalidatePath("/clients");
   revalidatePath("/dashboard");
   return { ok: true as const, id: data.id as string };
@@ -76,6 +89,8 @@ export async function updateClientRow(id: string, input: ClientInput) {
   const sb = createClient();
   const { error } = await sb.from("clients").update(clean(input)).eq("id", id);
   if (error) return { error: error.message };
+  const syncErr = await syncAccountManagers(sb, id, input.account_manager_ids);
+  if (syncErr) return { error: syncErr };
   revalidatePath("/clients");
   revalidatePath(`/clients/${id}`);
   revalidatePath("/dashboard");

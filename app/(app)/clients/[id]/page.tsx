@@ -46,7 +46,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
     }),
   );
 
-  const manager = team.find((m) => m.id === client.account_manager_id);
+  const managers = client.account_managers ?? [];
   const healthV = healthVariant(client.health);
 
   const externalLinks: LinkDef[] = [];
@@ -70,7 +70,9 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
             <ClientLogo logoUrl={client.logo_url} logoStoragePath={client.logo_storage_path} name={client.name} size="md" />
             <h1 className="text-base font-bold text-ink">{client.name}</h1>
             {healthV && client.health && <Badge variant={healthV}>{client.health}</Badge>}
-            {manager && <UserChip member={manager} size="xs" />}
+            {managers.map((m) => (
+              <UserChip key={m.id} member={m as import("@/components/user-hover-card").HoverMember} size="xs" />
+            ))}
           </div>
           <div className="flex items-center gap-2">
             <DeleteClientButton client={client} />
@@ -98,14 +100,18 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
               </div>
             </div>
           )}
-          {manager && (
+          {managers.length > 0 && (
             <div className="flex items-center gap-2.5">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-surface">
                 <User className="h-4 w-4 text-ink-secondary" />
               </div>
               <div>
-                <div className="text-[11px] text-ink-muted">מנהל לקוח</div>
-                <UserChip member={manager} size="sm" withName />
+                <div className="text-[11px] text-ink-muted">{managers.length > 1 ? "מנהלי לקוח" : "מנהל לקוח"}</div>
+                <div className="flex flex-wrap gap-1">
+                  {managers.map((m) => (
+                    <UserChip key={m.id} member={m as import("@/components/user-hover-card").HoverMember} size="sm" withName />
+                  ))}
+                </div>
               </div>
             </div>
           )}

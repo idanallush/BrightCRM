@@ -23,11 +23,15 @@ export function GlobalAddDialogs() {
     if (!openDialog || loaded) return;
     const sb = createClient();
     Promise.all([
-      sb.from("clients").select("*").order("name"),
+      sb.from("clients").select("*,client_account_managers(member_id,team_members(id,full_name))").order("name"),
       sb.from("team_members").select("*").order("full_name"),
       sb.from("tags").select("*").order("name"),
     ]).then(([c, t, tg]) => {
-      setClients((c.data ?? []) as Client[]);
+      setClients((c.data ?? []).map((row: Record<string, unknown>) => ({
+        ...row,
+        account_managers: ((row.client_account_managers as { team_members: { id: string; full_name: string } }[]) ?? [])
+          .map((cam) => cam.team_members).filter(Boolean),
+      })) as Client[]);
       setTeam((t.data ?? []) as TeamMember[]);
       setTags((tg.data ?? []) as Tag[]);
       setLoaded(true);

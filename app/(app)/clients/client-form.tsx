@@ -64,7 +64,7 @@ export function ClientForm({
   const [form, setForm] = React.useState<ClientInput>({
     name: client?.name ?? "",
     contact_name: client?.contact_name ?? "",
-    account_manager_id: client?.account_manager_id ?? null,
+    account_manager_ids: client?.account_managers?.map((m) => m.id) ?? [],
     phone: client?.phone ?? "",
     email: client?.email ?? "",
     website_url: client?.website_url ?? "",
@@ -157,25 +157,54 @@ export function ClientForm({
           />
         </Field>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="מנהל לקוח">
-            <Select
-              value={form.account_manager_id ?? NONE}
-              onValueChange={(v) =>
-                set("account_manager_id", v === NONE ? null : v)
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="ללא" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={NONE}>ללא</SelectItem>
-                {team.map((m) => (
-                  <SelectItem key={m.id} value={m.id}>
-                    {m.full_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <Field label="מנהלי לקוח">
+            <div className="flex flex-col gap-2">
+              {form.account_manager_ids.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {form.account_manager_ids.map((mid) => {
+                    const m = team.find((t) => t.id === mid);
+                    return (
+                      <span
+                        key={mid}
+                        className="inline-flex items-center gap-1 rounded-full bg-surface px-2 py-0.5 text-xs font-medium text-ink"
+                      >
+                        {m?.full_name ?? "?"}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            set("account_manager_ids", form.account_manager_ids.filter((id) => id !== mid))
+                          }
+                          className="text-ink-muted hover:text-ink"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+              <Select
+                value=""
+                onValueChange={(v) => {
+                  if (v && !form.account_manager_ids.includes(v)) {
+                    set("account_manager_ids", [...form.account_manager_ids, v]);
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="הוסף מנהל..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {team
+                    .filter((m) => !form.account_manager_ids.includes(m.id))
+                    .map((m) => (
+                      <SelectItem key={m.id} value={m.id}>
+                        {m.full_name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
           </Field>
           <Field label="בריאות">
             <Select

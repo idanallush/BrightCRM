@@ -30,7 +30,6 @@ export type Client = {
   id: string;
   name: string;
   contact_name: string | null;
-  account_manager_id: string | null;
   phone: string | null;
   email: string | null;
   website_url: string | null;
@@ -53,7 +52,16 @@ export type Client = {
   differentiation: string | null;
   digital_assets: string[];
   previous_campaigns: string[];
+  account_managers: { id: string; full_name: string }[];
 };
+
+type JunctionManagerRow = { team_members: { id: string; full_name: string } | null };
+
+function extractManagers(row: { client_account_managers?: unknown }): { id: string; full_name: string }[] {
+  return ((row.client_account_managers ?? []) as JunctionManagerRow[])
+    .map((cam) => cam.team_members)
+    .filter((m): m is { id: string; full_name: string } => m !== null);
+}
 
 export type Campaign = {
   id: string;
@@ -163,24 +171,34 @@ export async function getTasks(filters?: {
 }
 
 const CLIENT_COLS =
-  "id,name,contact_name,account_manager_id,phone,email,website_url,budget_note,drive_url,facebook_ads_url,google_ads_url,cms_url,analytics_url,health,logo_url,logo_storage_path,brief,onboarding_status,onboarding_date,competitors,target_audience,core_message,campaign_goal,differentiation,digital_assets,previous_campaigns";
+  "id,name,contact_name,phone,email,website_url,budget_note,drive_url,facebook_ads_url,google_ads_url,cms_url,analytics_url,health,logo_url,logo_storage_path,brief,onboarding_status,onboarding_date,competitors,target_audience,core_message,campaign_goal,differentiation,digital_assets,previous_campaigns";
 
 export async function getClients(): Promise<Client[]> {
   const sb = createClient();
-  const { data, error } = await sb.from("clients").select(CLIENT_COLS).order("name");
+  const { data, error } = await sb
+    .from("clients")
+    .select(`${CLIENT_COLS},client_account_managers(member_id,team_members(id,full_name))`)
+    .order("name");
   if (error) throw error;
-  return (data ?? []) as unknown as Client[];
+  return asRows(data).map((c) => ({
+    ...(c as unknown as Omit<Client, "account_managers">),
+    account_managers: extractManagers(c as { client_account_managers?: unknown }),
+  }));
 }
 
 export async function getClient(id: string): Promise<Client | null> {
   const sb = createClient();
   const { data, error } = await sb
     .from("clients")
-    .select(CLIENT_COLS)
+    .select(`${CLIENT_COLS},client_account_managers(member_id,team_members(id,full_name))`)
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;
-  return (data as unknown as Client | null) ?? null;
+  if (!data) return null;
+  return {
+    ...(data as unknown as Omit<Client, "account_managers">),
+    account_managers: extractManagers(data as { client_account_managers?: unknown }),
+  };
 }
 
 export async function getClientsWithManager(): Promise<
@@ -190,14 +208,18 @@ export async function getClientsWithManager(): Promise<
   const { data, error } = await sb
     .from("clients")
     .select(
-      `${CLIENT_COLS},manager:team_members!clients_account_manager_id_fkey(full_name)`,
+      `${CLIENT_COLS},client_account_managers(member_id,team_members(id,full_name))`,
     )
     .order("name");
   if (error) throw error;
-  return asRows(data).map((c) => ({
-    ...(c as unknown as Client),
-    manager_name: (c.manager as { full_name?: string } | null)?.full_name ?? null,
-  }));
+  return asRows(data).map((c) => {
+    const managers = extractManagers(c as { client_account_managers?: unknown });
+    return {
+      ...(c as unknown as Omit<Client, "account_managers">),
+      account_managers: managers,
+      manager_name: managers[0]?.full_name ?? null,
+    };
+  });
 }
 
 export async function getCampaignsByClient(clientId: string) {
@@ -825,17 +847,20 @@ export async function getCriticalClients() {
   const sb = createClient();
   const { data, error } = await sb
     .from("clients")
-    .select("id,name,health,manager:team_members!clients_account_manager_id_fkey(full_name)")
+    .select("id,name,health,client_account_managers(member_id,team_members(id,full_name))")
     .eq("health", "קריטי")
     .order("name");
   if (error) {
     console.error('[getCriticalClients] failed:', error);
     throw error;
   }
-  return asRows(data).map((r) => ({
-    id: r.id as string,
-    name: r.name as string,
-    health: r.health as string,
-    manager: (r.manager as { full_name: string } | null) ?? null,
-  }));
+  return asRows(data).map((r) => {
+    const managers = extractManagers(r as { client_account_managers?: unknown });
+    return {
+      id: r.id as string,
+      name: r.name as string,
+      health: r.health as string,
+      manager: managers[0] ?? null,
+    };
+  });
 }
