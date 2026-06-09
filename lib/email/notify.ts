@@ -5,6 +5,7 @@ import {
   newCommentEmail,
   mentionEmail,
   overdueEmail,
+  reminderEmail,
 } from "./templates";
 
 type NotifyMember = {
@@ -254,6 +255,62 @@ export async function notifyOverdueByEmail() {
         sent++;
       } catch (err) {
         console.error(`[Notify] overdue email to ${assignee.email} failed:`, err);
+      }
+    }
+  }
+
+  return { sent };
+}
+
+export async function notifyTodayReminders() {
+  const db = createAdminClient();
+  const today = new Date().toISOString().split("T")[0];
+
+  const { data: reminders } = await db
+    .from("reminders")
+    .select("id, title, description, scope, created_by_id, creator:team_members!reminders_created_by_id_fkey(full_name)")
+    .eq("reminder_date", today)
+    .eq("is_completed", false);
+
+  if (!reminders || reminders.length === 0) return { sent: 0 };
+
+  const { data: members } = await db
+    .from("team_members")
+    .select("id, full_name, email, notify_email")
+    .eq("active", true);
+
+  if (!members || members.length === 0) return { sent: 0 };
+
+  let sent = 0;
+
+  for (const row of reminders as Record<string, unknown>[]) {
+    const creator = row.creator as { full_name?: string } | null;
+    const reminderInfo = {
+      id: row.id as string,
+      title: row.title as string,
+      description: row.description as string | null,
+      scope: row.scope as string,
+      created_by_name: creator?.full_name ?? "המערכת",
+    };
+
+    const { subject, html } = reminderEmail(reminderInfo);
+
+    let recipients: string[];
+    if (reminderInfo.scope === "personal") {
+      const creatorMember = members.find((m) => m.id === (row.created_by_id as string));
+      recipients = creatorMember?.email ? [creatorMember.email] : [];
+    } else {
+      recipients = members
+        .filter((m) => m.email && m.notify_email !== false)
+        .map((m) => m.email!);
+    }
+
+    for (const email of recipients) {
+      try {
+        await sendEmail([email], subject, html, { type: "reminder", referenceId: row.id as string });
+        sent++;
+      } catch (err) {
+        console.error(`[Notify] reminder email to ${email} failed:`, err);
       }
     }
   }

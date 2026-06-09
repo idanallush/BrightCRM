@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, CheckSquare, Users, Bot, Settings, Info, ChevronsLeft, ChevronsRight, X, LogOut, UserCircle, Activity, Plus, MessageSquarePlus, UserPlus, ListTodo } from "lucide-react";
+import { LayoutDashboard, CheckSquare, Users, Bot, Settings, Info, ChevronsLeft, ChevronsRight, X, LogOut, UserCircle, Activity, Plus, MessageSquarePlus, UserPlus, ListTodo, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMobileMenu, useSidebarCollapsed, useGlobalDialog } from "./shell-context";
 import { NotificationBell } from "@/components/notification-bell";
@@ -19,6 +19,7 @@ const NAV_MAIN = [
   { href: "/tasks", label: "משימות", Icon: CheckSquare },
   { href: "/clients", label: "לקוחות", Icon: Users },
   { href: "/chat", label: "צ'אט AI", Icon: Bot },
+  { href: "/reminders", label: "תזכורות", Icon: Bell },
   { href: "/activity", label: "פעילות", Icon: Activity },
 ];
 

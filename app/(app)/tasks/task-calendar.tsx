@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ChevronRight, ChevronLeft, AlertTriangle, MessageCircle } from "lucide-react";
+import { ChevronRight, ChevronLeft, AlertTriangle, MessageCircle, Bell } from "lucide-react";
 import { STATUS_COLORS } from "@/components/ui/badge";
 import type { TaskWithRelations } from "@/lib/data";
 
@@ -20,14 +20,25 @@ function getFirstDayOfWeek(year: number, month: number) {
   return new Date(year, month, 1).getDay();
 }
 
+export type CalendarReminder = {
+  id: string;
+  title: string;
+  scope: "personal" | "team";
+  is_completed: boolean;
+};
+
 export function TaskCalendar({
   tasks,
   commentCounts,
   onTaskClick,
+  reminders,
+  onReminderClick,
 }: {
   tasks: TaskWithRelations[];
   commentCounts: Record<string, number>;
   onTaskClick: (t: TaskWithRelations) => void;
+  reminders?: Record<string, CalendarReminder[]>;
+  onReminderClick?: (r: CalendarReminder) => void;
 }) {
   const today = new Date();
   const [year, setYear] = React.useState(today.getFullYear());
@@ -110,6 +121,9 @@ export function TaskCalendar({
               const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
               const isToday = dateStr === todayStr;
               const dayTasks = tasksByDate[dateStr] ?? [];
+              const dayReminders = (reminders?.[dateStr] ?? []).filter((r) => !r.is_completed);
+              const totalItems = dayTasks.length + dayReminders.length;
+              const maxShow = 3;
 
               return (
                 <div key={di} className="relative min-h-[100px] border-l border-border p-1.5 first:border-l-0">
@@ -119,7 +133,8 @@ export function TaskCalendar({
                     {day}
                   </div>
                   <div className="flex flex-col gap-0.5">
-                    {dayTasks.slice(0, 3).map((t) => {
+                    {/* Tasks */}
+                    {dayTasks.slice(0, maxShow).map((t) => {
                       const color = STATUS_COLORS[t.status] ?? "#C4C4C4";
                       const overdue = t.due_date && t.due_date < todayStr && t.status !== "בוצע";
                       const cc = commentCounts[t.id] ?? 0;
@@ -141,8 +156,24 @@ export function TaskCalendar({
                         </button>
                       );
                     })}
-                    {dayTasks.length > 3 && (
-                      <span className="px-1.5 text-[10px] text-ink-muted">+{dayTasks.length - 3} נוספות</span>
+                    {/* Reminders */}
+                    {dayReminders.slice(0, Math.max(0, maxShow - dayTasks.length)).map((r) => (
+                      <button
+                        key={`rem-${r.id}`}
+                        type="button"
+                        onClick={() => onReminderClick?.(r)}
+                        className="flex items-center gap-1 rounded px-1.5 py-0.5 text-right text-[11px] leading-tight transition-colors hover:bg-amber-50"
+                        style={{ borderRight: "3px solid #F59E0B" }}
+                      >
+                        <Bell className="h-2.5 w-2.5 shrink-0 text-amber-500" />
+                        <span className="flex-1 truncate font-medium text-amber-800">{r.title}</span>
+                        <span className="shrink-0 rounded-full bg-amber-100 px-1 text-[9px] font-medium text-amber-700">
+                          {r.scope === "team" ? "צוות" : "אישי"}
+                        </span>
+                      </button>
+                    ))}
+                    {totalItems > maxShow && (
+                      <span className="px-1.5 text-[10px] text-ink-muted">+{totalItems - maxShow} נוספות</span>
                     )}
                   </div>
                 </div>

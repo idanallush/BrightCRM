@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email/resend";
 import { morningDigestEmail } from "@/lib/email/templates";
+import { notifyTodayReminders } from "@/lib/email/notify";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,14 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const result = await sendMorningDigests();
+    const [digestResult, reminderResult] = await Promise.all([
+      sendMorningDigests(),
+      notifyTodayReminders().catch((err) => {
+        console.error("[Cron] Reminder notifications failed:", err);
+        return { sent: 0 };
+      }),
+    ]);
+    const result = { digest: digestResult, reminders: reminderResult };
     console.log("[Cron] Morning digest:", result);
     return NextResponse.json(result);
   } catch (err) {

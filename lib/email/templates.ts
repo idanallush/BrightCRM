@@ -173,6 +173,37 @@ export function overdueEmail(
   };
 }
 
+type ReminderInfo = {
+  id: string;
+  title: string;
+  description: string | null;
+  scope: string;
+  created_by_name: string;
+};
+
+export function reminderEmail(reminder: ReminderInfo) {
+  const scopeBadge = reminder.scope === "team"
+    ? `<span style="display:inline-block;padding:2px 10px;border-radius:12px;background:#DCE4FF;color:#1A1A1A;font-size:13px;">צוות</span>`
+    : `<span style="display:inline-block;padding:2px 10px;border-radius:12px;background:#EDE0FF;color:#1A1A1A;font-size:13px;">אישי</span>`;
+
+  const body = `
+<h2 style="color:#1A1A1A;margin:0 0 16px;">🔔 תזכורת</h2>
+<table style="width:100%;border-collapse:collapse;font-size:14px;">
+  <tr><td style="padding:8px 0;color:#666;width:100px;">כותרת:</td><td style="padding:8px 0;font-weight:600;">${escapeHtml(reminder.title)}</td></tr>
+  ${reminder.description ? `<tr><td style="padding:8px 0;color:#666;">תיאור:</td><td style="padding:8px 0;">${escapeHtml(reminder.description)}</td></tr>` : ""}
+  <tr><td style="padding:8px 0;color:#666;">נוצרה ע"י:</td><td style="padding:8px 0;">${escapeHtml(reminder.created_by_name)}</td></tr>
+  <tr><td style="padding:8px 0;color:#666;">סוג:</td><td style="padding:8px 0;">${scopeBadge}</td></tr>
+</table>
+<div style="margin-top:20px;">
+  <a href="${BASE_URL}/reminders" style="display:inline-block;padding:10px 24px;background:#1A1A1A;color:#fff;text-decoration:none;border-radius:20px;font-size:14px;">פתח תזכורות</a>
+</div>`;
+
+  return {
+    subject: `🔔 תזכורת: ${escapeHtml(reminder.title)}`,
+    html: wrap(body),
+  };
+}
+
 type DigestTask = {
   id: string;
   title: string;

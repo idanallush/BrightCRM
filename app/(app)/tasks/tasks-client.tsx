@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/empty-state";
 import { TaskTable } from "./task-table";
 import { TaskKanban } from "./task-kanban";
-import { TaskCalendar } from "./task-calendar";
+import { TaskCalendar, type CalendarReminder } from "./task-calendar";
 import { TaskForm } from "./task-form";
 import { TaskDetailPanel } from "./task-detail-panel";
 import { deleteTask, bulkUpdateStatus, bulkUpdateAssignees, bulkDeleteTasks, recordTaskView, getTaskViewsBulk, type TaskViewRecord } from "./actions";
@@ -62,12 +62,32 @@ export function TasksClient({
   const [bulkLoading, setBulkLoading] = React.useState(false);
   const [confirmBulkDelete, setConfirmBulkDelete] = React.useState(false);
   const [taskViews, setTaskViews] = React.useState<Record<string, TaskViewRecord[]>>({});
+  const [calendarReminders, setCalendarReminders] = React.useState<Record<string, CalendarReminder[]>>({});
 
   // Fetch task views
   React.useEffect(() => {
     const ids = tasks.map((t) => t.id);
     if (ids.length > 0) getTaskViewsBulk(ids).then(setTaskViews);
   }, [tasks]);
+
+  // Fetch reminders for calendar view
+  React.useEffect(() => {
+    if (view !== "calendar") return;
+    async function fetchReminders() {
+      try {
+        const res = await fetch("/api/reminders?scope=all");
+        if (!res.ok) return;
+        const data = await res.json() as { id: string; title: string; reminder_date: string; scope: "personal" | "team"; is_completed: boolean }[];
+        const map: Record<string, CalendarReminder[]> = {};
+        for (const r of data) {
+          if (!map[r.reminder_date]) map[r.reminder_date] = [];
+          map[r.reminder_date].push({ id: r.id, title: r.title, scope: r.scope, is_completed: r.is_completed });
+        }
+        setCalendarReminders(map);
+      } catch { /* non-critical */ }
+    }
+    fetchReminders();
+  }, [view]);
 
   // Record view when opening a task
   const openTask = React.useCallback((t: TaskWithRelations) => {
@@ -466,7 +486,7 @@ export function TasksClient({
         </motion.div>
       ) : (
         <motion.div key="calendar" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-          <TaskCalendar tasks={filteredTasks} commentCounts={commentCounts} onTaskClick={openTask} />
+          <TaskCalendar tasks={filteredTasks} commentCounts={commentCounts} onTaskClick={openTask} reminders={calendarReminders} onReminderClick={() => router.push("/reminders")} />
         </motion.div>
       )}
       </AnimatePresence>

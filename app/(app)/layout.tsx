@@ -11,6 +11,7 @@ import { MobileNav } from "@/components/mobile-nav";
 import { FeedbackButton } from "@/components/feedback-button";
 import { AppShellContent } from "./app-shell-content";
 import { GlobalAddDialogs } from "@/components/global-add-dialogs";
+import { RemindersBanner } from "@/components/reminders-banner";
 
 export default async function AppLayout({
   children,
@@ -42,6 +43,7 @@ export default async function AppLayout({
           <Sidebar userLabel={userLabel} userAvatarUrl={userAvatarUrl} />
           <AppShellContent>
             <MobileTopBar />
+            <RemindersBanner />
             <main className="mx-auto w-full max-w-7xl flex-1 p-4 pb-20 md:p-6 md:pb-6">
               {children}
             </main>
