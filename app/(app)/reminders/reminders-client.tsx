@@ -26,6 +26,11 @@ import { toast } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/empty-state";
 
+export type ReminderRecipient = {
+  id: string;
+  full_name: string;
+};
+
 export type Reminder = {
   id: string;
   title: string;
@@ -38,6 +43,7 @@ export type Reminder = {
   updated_at: string;
   created_by_id: string | null;
   created_by_name: string | null;
+  recipients: ReminderRecipient[];
 };
 
 type TeamMember = {
@@ -89,6 +95,7 @@ export function RemindersClient({
   const [formScope, setFormScope] = React.useState<"personal" | "team">(
     "personal",
   );
+  const [formRecipientIds, setFormRecipientIds] = React.useState<string[]>([]);
 
   // Sync when server data changes
   React.useEffect(() => {
@@ -132,6 +139,7 @@ export function RemindersClient({
     setFormDescription("");
     setFormDate("");
     setFormScope("personal");
+    setFormRecipientIds([]);
     setDialogOpen(true);
   }
 
@@ -141,6 +149,7 @@ export function RemindersClient({
     setFormDescription(reminder.description ?? "");
     setFormDate(reminder.reminder_date);
     setFormScope(reminder.scope);
+    setFormRecipientIds(reminder.recipients.map((r) => r.id));
     setDialogOpen(true);
   }
 
@@ -163,6 +172,7 @@ export function RemindersClient({
             description: formDescription || null,
             reminder_date: formDate,
             scope: formScope,
+            recipient_ids: formScope === "team" ? formRecipientIds : [],
           }),
         });
         if (!res.ok) {
@@ -180,6 +190,7 @@ export function RemindersClient({
             description: formDescription || null,
             reminder_date: formDate,
             scope: formScope,
+            recipient_ids: formScope === "team" ? formRecipientIds : undefined,
           }),
         });
         if (!res.ok) {
@@ -385,12 +396,18 @@ export function RemindersClient({
                       {reminder.description}
                     </p>
                   )}
-                  <div className="mt-1.5 flex items-center gap-2 text-caption text-ink-muted">
+                  <div className="mt-1.5 flex flex-wrap items-center gap-2 text-caption text-ink-muted">
                     <span>{formatDate(reminder.reminder_date)}</span>
                     {reminder.created_by_name && (
                       <>
                         <span className="text-[#D1D5DB]">&middot;</span>
                         <span>{reminder.created_by_name}</span>
+                      </>
+                    )}
+                    {reminder.recipients.length > 0 && (
+                      <>
+                        <span className="text-[#D1D5DB]">&middot;</span>
+                        <span>{reminder.recipients.map((r) => r.full_name).join(", ")}</span>
                       </>
                     )}
                   </div>
@@ -539,6 +556,42 @@ export function RemindersClient({
                 </button>
               </div>
             </div>
+
+            {/* Recipients picker (team scope only) */}
+            {formScope === "team" && (
+              <div className="flex flex-col gap-1.5">
+                <label className="text-body-sm font-medium text-ink">
+                  נמענים
+                  <span className="me-1 text-caption text-ink-muted font-normal">(ריק = כל הצוות)</span>
+                </label>
+                <div className="flex flex-wrap gap-1.5">
+                  {team.map((m) => {
+                    const selected = formRecipientIds.includes(m.id);
+                    return (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => {
+                          setFormRecipientIds((prev) =>
+                            selected
+                              ? prev.filter((id) => id !== m.id)
+                              : [...prev, m.id],
+                          );
+                        }}
+                        className={cn(
+                          "rounded-full px-3 py-1 text-caption font-medium transition-colors",
+                          selected
+                            ? "bg-link text-white"
+                            : "border border-border bg-white text-ink hover:bg-surface",
+                        )}
+                      >
+                        {m.full_name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Save button */}
             <Button

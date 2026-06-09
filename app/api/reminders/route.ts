@@ -57,10 +57,27 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  const reminderIds = (data ?? []).map((r) => (r as Record<string, unknown>).id as string);
+  let recipientMap: Record<string, { id: string; full_name: string }[]> = {};
+  if (reminderIds.length > 0) {
+    const { data: recips } = await sb
+      .from("reminder_recipients")
+      .select("reminder_id, member:team_members!reminder_recipients_member_id_fkey(id, full_name)")
+      .in("reminder_id", reminderIds);
+    for (const row of (recips ?? []) as Record<string, unknown>[]) {
+      const rid = row.reminder_id as string;
+      const m = row.member as { id: string; full_name: string } | null;
+      if (!m) continue;
+      if (!recipientMap[rid]) recipientMap[rid] = [];
+      recipientMap[rid].push(m);
+    }
+  }
+
   const reminders = ((data ?? []) as Record<string, unknown>[]).map((r) => {
     const creator = r.creator as { id?: string; full_name?: string } | null;
+    const id = r.id as string;
     return {
-      id: r.id as string,
+      id,
       title: r.title as string,
       description: r.description as string | null,
       reminder_date: r.reminder_date as string,
@@ -71,6 +88,7 @@ export async function GET(request: NextRequest) {
       updated_at: r.updated_at as string,
       created_by_id: creator?.id ?? null,
       created_by_name: creator?.full_name ?? null,
+      recipients: recipientMap[id] ?? [],
     };
   });
 
@@ -108,6 +126,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "תאריך חסר" }, { status: 400 });
   }
 
+  const scope = body.scope === "team" ? "team" : "personal";
+
   const { data: reminder, error } = await sb
     .from("reminders")
     .insert({
@@ -115,7 +135,7 @@ export async function POST(request: NextRequest) {
       description: body.description?.trim() || null,
       reminder_date: reminderDate,
       reminder_time: body.reminder_time || null,
-      scope: body.scope === "team" ? "team" : "personal",
+      scope,
       created_by_id: member.id,
     })
     .select("id")
@@ -123,6 +143,15 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  const recipientIds: string[] | undefined = body.recipient_ids;
+  if (scope === "team" && recipientIds && recipientIds.length > 0) {
+    const rows = recipientIds.map((mid: string) => ({
+      reminder_id: reminder.id,
+      member_id: mid,
+    }));
+    await sb.from("reminder_recipients").insert(rows);
   }
 
   return NextResponse.json({ id: reminder.id }, { status: 201 });

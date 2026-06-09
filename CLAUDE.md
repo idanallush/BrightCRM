@@ -97,7 +97,7 @@ Example: `tasks/page.tsx` (server, fetches) → `tasks/tasks-client.tsx` (client
 
 ## סכמת DB — טבלאות מפתח
 
-`clients`, `team_members`, `tasks`, `task_assignees`, `task_comments`, `notifications`, `notification_log`, `campaigns`, `tags`, `task_tags`, `attachments`, `comment_attachments`, `reminders`
+`clients`, `team_members`, `tasks`, `task_assignees`, `task_comments`, `notifications`, `notification_log`, `campaigns`, `tags`, `task_tags`, `attachments`, `comment_attachments`, `reminders`, `reminder_recipients`
 
 **סטטוס משימה (5 ערכים מוגדרים ב-CHECK constraint):**
 `מחכה לטיפול` → `נכנס לעבודה` → `בעבודה` → `אישור לקוח` → `בוצע`
@@ -111,12 +111,14 @@ Example: `tasks/page.tsx` (server, fetches) → `tasks/tasks-client.tsx` (client
 
 תזכורות אישיות או צוותיות עם תאריך. API routes ב-`app/api/reminders/`.
 
-- `scope`: `personal` (רק היוצר רואה) | `team` (כל הצוות)
+- `scope`: `personal` (רק היוצר רואה) | `team` (כל הצוות, או נמענים ספציפיים)
 - `reminder_date`: תאריך התזכורת, `reminder_time`: שעה (אופציונלי, לשימוש עתידי)
 - `is_completed`: סימון כבוצע
 - `created_by_id` → `team_members(id)`
-- Email notifications: נשלחות דרך morning digest cron (`notifyTodayReminders()`)
-- Today endpoint: `GET /api/reminders/today` — תזכורות פעילות להיום (לבאנר בממשק)
+- `reminder_recipients`: junction table (`reminder_id`, `member_id`) — נמענים ספציפיים לתזכורת צוותית. ריק = כל הצוות.
+- Email notifications: נשלחות דרך morning digest cron (`notifyTodayReminders()`), recipient-aware
+- Today endpoint: `GET /api/reminders/today` — תזכורות פעילות להיום (לבאנר בממשק), מסנן לפי נמענים
+- Dashboard widget: `components/dashboard/upcoming-reminders.tsx` — 5 תזכורות קרובות עם popup לרשימה מלאה
 
 ## Design system
 

@@ -83,14 +83,31 @@ async function RemindersContent({
     console.error("Reminders fetch failed:", error);
   }
 
+  const reminderIds = (remindersRaw ?? []).map((r) => (r as Record<string, unknown>).id as string);
+  let recipientMap: Record<string, { id: string; full_name: string }[]> = {};
+  if (reminderIds.length > 0) {
+    const { data: recips } = await sb
+      .from("reminder_recipients")
+      .select("reminder_id, member:team_members!reminder_recipients_member_id_fkey(id, full_name)")
+      .in("reminder_id", reminderIds);
+    for (const row of (recips ?? []) as Record<string, unknown>[]) {
+      const rid = row.reminder_id as string;
+      const m = row.member as { id: string; full_name: string } | null;
+      if (!m) continue;
+      if (!recipientMap[rid]) recipientMap[rid] = [];
+      recipientMap[rid].push(m);
+    }
+  }
+
   const reminders = ((remindersRaw ?? []) as Record<string, unknown>[]).map(
     (r) => {
       const creator = r.creator as {
         id?: string;
         full_name?: string;
       } | null;
+      const id = r.id as string;
       return {
-        id: r.id as string,
+        id,
         title: r.title as string,
         description: r.description as string | null,
         reminder_date: r.reminder_date as string,
@@ -101,6 +118,7 @@ async function RemindersContent({
         updated_at: r.updated_at as string,
         created_by_id: creator?.id ?? null,
         created_by_name: creator?.full_name ?? null,
+        recipients: recipientMap[id] ?? [],
       };
     },
   );

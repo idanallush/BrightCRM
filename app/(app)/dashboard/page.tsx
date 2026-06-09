@@ -18,6 +18,7 @@ import {
   AnimatedDashboard, AnimatedSection, AnimatedNumber,
 } from "@/components/dashboard/animated-layout";
 import { MyTasksSection } from "@/components/dashboard/my-tasks-section";
+import { UpcomingReminders } from "@/components/dashboard/upcoming-reminders";
 import { ClientLogo } from "@/components/client-logo";
 import { getInitials, timeAgo } from "@/lib/utils";
 
@@ -86,6 +87,70 @@ async function DashboardContent() {
       .eq("email", userEmail)
       .maybeSingle();
     currentMemberId = memberRow?.id ?? undefined;
+  }
+
+  // Fetch upcoming reminders for widget
+  const israelToday = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Jerusalem" });
+  let upcomingReminders: { id: string; title: string; reminder_date: string; scope: "personal" | "team"; is_completed: boolean }[] = [];
+  try {
+    let rq = sb
+      .from("reminders")
+      .select("id, title, reminder_date, scope, is_completed")
+      .eq("is_completed", false)
+      .gte("reminder_date", israelToday)
+      .order("reminder_date", { ascending: true })
+      .limit(20);
+
+    if (currentMemberId) {
+      rq = rq.or(`and(scope.eq.personal,created_by_id.eq.${currentMemberId}),scope.eq.team`);
+    } else {
+      rq = rq.eq("scope", "team");
+    }
+
+    const { data: remData } = await rq;
+
+    if (remData && currentMemberId) {
+      const teamIds = (remData as Record<string, unknown>[])
+        .filter((r) => r.scope === "team")
+        .map((r) => r.id as string);
+
+      let recipientMap: Record<string, string[]> = {};
+      if (teamIds.length > 0) {
+        const { data: recips } = await sb
+          .from("reminder_recipients")
+          .select("reminder_id, member_id")
+          .in("reminder_id", teamIds);
+        for (const row of (recips ?? []) as { reminder_id: string; member_id: string }[]) {
+          if (!recipientMap[row.reminder_id]) recipientMap[row.reminder_id] = [];
+          recipientMap[row.reminder_id].push(row.member_id);
+        }
+      }
+
+      upcomingReminders = (remData as Record<string, unknown>[])
+        .filter((r) => {
+          if (r.scope !== "team") return true;
+          const specific = recipientMap[r.id as string];
+          if (!specific || specific.length === 0) return true;
+          return specific.includes(currentMemberId!);
+        })
+        .map((r) => ({
+          id: r.id as string,
+          title: r.title as string,
+          reminder_date: r.reminder_date as string,
+          scope: r.scope as "personal" | "team",
+          is_completed: r.is_completed as boolean,
+        }));
+    } else if (remData) {
+      upcomingReminders = (remData as Record<string, unknown>[]).map((r) => ({
+        id: r.id as string,
+        title: r.title as string,
+        reminder_date: r.reminder_date as string,
+        scope: r.scope as "personal" | "team",
+        is_completed: r.is_completed as boolean,
+      }));
+    }
+  } catch (err) {
+    console.error("Upcoming reminders fetch failed:", err);
   }
 
   let counts: DashboardCounts = { incoming: 0, working: 0, awaitingApproval: 0, overdueTasks: 0, watching: 0 };
@@ -288,6 +353,9 @@ async function DashboardContent() {
               </div>
             )}
           </div>
+
+          {/* Upcoming reminders */}
+          <UpcomingReminders reminders={upcomingReminders} />
 
         </div>
       </div>

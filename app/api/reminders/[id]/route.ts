@@ -22,6 +22,14 @@ export async function GET(
 
   const creator = (data as Record<string, unknown>).creator as { id?: string; full_name?: string } | null;
 
+  const { data: recips } = await sb
+    .from("reminder_recipients")
+    .select("member:team_members!reminder_recipients_member_id_fkey(id, full_name)")
+    .eq("reminder_id", id);
+  const recipients = ((recips ?? []) as Record<string, unknown>[])
+    .map((row) => row.member as { id: string; full_name: string } | null)
+    .filter(Boolean);
+
   return NextResponse.json({
     id: data.id,
     title: data.title,
@@ -34,6 +42,7 @@ export async function GET(
     updated_at: data.updated_at,
     created_by_id: creator?.id ?? null,
     created_by_name: creator?.full_name ?? null,
+    recipients,
   });
 }
 
@@ -74,6 +83,18 @@ export async function PATCH(
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  if (body.recipient_ids !== undefined) {
+    await sb.from("reminder_recipients").delete().eq("reminder_id", id);
+    const recipientIds: string[] = body.recipient_ids ?? [];
+    if (recipientIds.length > 0) {
+      const rows = recipientIds.map((mid: string) => ({
+        reminder_id: id,
+        member_id: mid,
+      }));
+      await sb.from("reminder_recipients").insert(rows);
+    }
   }
 
   return NextResponse.json({ id: data.id });

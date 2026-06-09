@@ -300,9 +300,21 @@ export async function notifyTodayReminders() {
       const creatorMember = members.find((m) => m.id === (row.created_by_id as string));
       recipients = creatorMember?.email ? [creatorMember.email] : [];
     } else {
-      recipients = members
-        .filter((m) => m.email && m.notify_email !== false)
-        .map((m) => m.email!);
+      const { data: specificRecips } = await db
+        .from("reminder_recipients")
+        .select("member_id")
+        .eq("reminder_id", row.id as string);
+      const specificIds = (specificRecips ?? []).map((r) => (r as { member_id: string }).member_id);
+
+      if (specificIds.length > 0) {
+        recipients = members
+          .filter((m) => specificIds.includes(m.id) && m.email && m.notify_email !== false)
+          .map((m) => m.email!);
+      } else {
+        recipients = members
+          .filter((m) => m.email && m.notify_email !== false)
+          .map((m) => m.email!);
+      }
     }
 
     for (const email of recipients) {
