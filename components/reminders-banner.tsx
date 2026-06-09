@@ -148,7 +148,10 @@ export function RemindersBanner() {
                     >
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-medium text-amber-900">
+                          <span className="rounded-md bg-amber-200 px-1.5 py-0.5 text-[11px] font-bold text-amber-900">
+                            היום
+                          </span>
+                          <span className="font-semibold text-amber-900">
                             {reminder.title}
                           </span>
                           <span

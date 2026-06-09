@@ -264,7 +264,7 @@ export async function notifyOverdueByEmail() {
 
 export async function notifyTodayReminders() {
   const db = createAdminClient();
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Jerusalem" });
 
   const { data: reminders } = await db
     .from("reminders")

@@ -19,9 +19,29 @@ function formatShortDate(dateStr: string) {
   return d.toLocaleDateString("he-IL", { day: "numeric", month: "short" });
 }
 
-function isToday(dateStr: string) {
-  return dateStr === new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Jerusalem" });
+function getIsraelToday() {
+  return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Jerusalem" });
 }
+
+function getIsraelTomorrow() {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return d.toLocaleDateString("en-CA", { timeZone: "Asia/Jerusalem" });
+}
+
+function getDateInfo(dateStr: string): { text: string; style: "amber" | "blue" | "gray" } {
+  const today = getIsraelToday();
+  const tomorrow = getIsraelTomorrow();
+  if (dateStr === today) return { text: `היום · ${formatShortDate(dateStr)}`, style: "amber" };
+  if (dateStr === tomorrow) return { text: `מחר · ${formatShortDate(dateStr)}`, style: "blue" };
+  return { text: formatShortDate(dateStr), style: "gray" };
+}
+
+const DATE_STYLES = {
+  amber: "bg-amber-100 text-amber-800 font-bold",
+  blue: "bg-blue-100 text-blue-800 font-bold",
+  gray: "bg-surface text-ink-muted font-medium",
+} as const;
 
 export function UpcomingReminders({ reminders }: { reminders: UpcomingReminder[] }) {
   const [popupOpen, setPopupOpen] = React.useState(false);
@@ -106,7 +126,7 @@ function ReminderRow({
   reminder: UpcomingReminder;
   onToggle: (id: string) => void;
 }) {
-  const today = isToday(reminder.reminder_date);
+  const dateInfo = getDateInfo(reminder.reminder_date);
   return (
     <div className="flex items-center gap-2.5 px-4 py-3">
       <button
@@ -130,11 +150,8 @@ function ReminderRow({
           {reminder.title}
         </span>
       </div>
-      <span className={cn(
-        "shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium",
-        today ? "bg-amber-100 text-amber-800" : "bg-surface text-ink-muted",
-      )}>
-        {today ? "היום" : formatShortDate(reminder.reminder_date)}
+      <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[11px]", DATE_STYLES[dateInfo.style])}>
+        {dateInfo.text}
       </span>
       <span className={cn(
         "shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium",

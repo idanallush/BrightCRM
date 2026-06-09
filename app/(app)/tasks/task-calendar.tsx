@@ -162,12 +162,12 @@ export function TaskCalendar({
                         key={`rem-${r.id}`}
                         type="button"
                         onClick={() => onReminderClick?.(r)}
-                        className="flex items-center gap-1 rounded px-1.5 py-0.5 text-right text-[11px] leading-tight transition-colors hover:bg-amber-50"
+                        className="flex items-center gap-1 rounded bg-amber-50/50 px-1.5 py-0.5 text-right text-[11px] leading-tight transition-colors hover:bg-amber-100"
                         style={{ borderRight: "3px solid #F59E0B" }}
                       >
                         <Bell className="h-2.5 w-2.5 shrink-0 text-amber-500" />
-                        <span className="flex-1 truncate font-medium text-amber-800">{r.title}</span>
-                        <span className="shrink-0 rounded-full bg-amber-100 px-1 text-[9px] font-medium text-amber-700">
+                        <span className="flex-1 truncate font-bold text-amber-800">{r.title}</span>
+                        <span className="shrink-0 rounded-full bg-amber-200 px-1 text-[9px] font-bold text-amber-800">
                           {r.scope === "team" ? "צוות" : "אישי"}
                         </span>
                       </button>

@@ -65,6 +65,33 @@ function formatDate(dateStr: string) {
   });
 }
 
+const HEB_MONTHS_SHORT = [
+  "ינו׳", "פבר׳", "מרץ", "אפר׳", "מאי", "יוני",
+  "יולי", "אוג׳", "ספט׳", "אוק׳", "נוב׳", "דצמ׳",
+];
+
+function getDateParts(dateStr: string) {
+  const d = new Date(dateStr);
+  return {
+    day: d.getDate(),
+    month: HEB_MONTHS_SHORT[d.getMonth()],
+    year: d.getFullYear(),
+  };
+}
+
+function getRelativeLabel(dateStr: string): { label: string; color: "amber" | "blue" | "gray" } | null {
+  const israelToday = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Jerusalem" });
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowStr = tomorrow.toLocaleDateString("en-CA", { timeZone: "Asia/Jerusalem" });
+
+  if (dateStr === israelToday) return { label: "היום", color: "amber" };
+  if (dateStr === tomorrowStr) return { label: "מחר", color: "blue" };
+  const diff = Math.floor((new Date(dateStr).getTime() - new Date(israelToday).getTime()) / 86400000);
+  if (diff < 0) return { label: "עבר", color: "amber" };
+  return null;
+}
+
 export function RemindersClient({
   reminders: initialReminders,
   team,
@@ -351,11 +378,34 @@ export function RemindersClient({
                   reminder.is_completed && "opacity-60",
                 )}
               >
+                {/* Date block */}
+                {(() => {
+                  const { day, month } = getDateParts(reminder.reminder_date);
+                  const rel = getRelativeLabel(reminder.reminder_date);
+                  const bgColor = rel?.color === "amber" ? "bg-amber-50 border-amber-200" : rel?.color === "blue" ? "bg-blue-50 border-blue-200" : "bg-surface border-border";
+                  const dayColor = rel?.color === "amber" ? "text-amber-700" : rel?.color === "blue" ? "text-blue-700" : "text-ink";
+                  const monthColor = rel?.color === "amber" ? "text-amber-600" : rel?.color === "blue" ? "text-blue-600" : "text-ink-secondary";
+                  return (
+                    <div className={cn("flex w-14 shrink-0 flex-col items-center justify-center rounded-xl border py-1.5", bgColor)}>
+                      <span className={cn("text-xl font-bold leading-tight", dayColor)}>{day}</span>
+                      <span className={cn("text-[11px] font-medium leading-tight", monthColor)}>{month}</span>
+                      {rel && (
+                        <span className={cn(
+                          "mt-0.5 rounded-full px-1.5 text-[9px] font-bold",
+                          rel.color === "amber" ? "bg-amber-200 text-amber-800" : "bg-blue-200 text-blue-800",
+                        )}>
+                          {rel.label}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })()}
+
                 {/* Checkbox */}
                 <button
                   onClick={() => toggleComplete(reminder)}
                   className={cn(
-                    "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+                    "mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
                     reminder.is_completed
                       ? "border-green-500 bg-green-500 text-white"
                       : "border-[#D1D5DB] hover:border-[#9CA3AF]",
@@ -397,12 +447,8 @@ export function RemindersClient({
                     </p>
                   )}
                   <div className="mt-1.5 flex flex-wrap items-center gap-2 text-caption text-ink-muted">
-                    <span>{formatDate(reminder.reminder_date)}</span>
                     {reminder.created_by_name && (
-                      <>
-                        <span className="text-[#D1D5DB]">&middot;</span>
-                        <span>{reminder.created_by_name}</span>
-                      </>
+                      <span>{reminder.created_by_name}</span>
                     )}
                     {reminder.recipients.length > 0 && (
                       <>
