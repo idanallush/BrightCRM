@@ -103,6 +103,7 @@ export function StatusDropdown({ taskId, status, onUpdated }: { taskId: string; 
         >
           {ALL_STATUSES.map((s) => {
             const sBg = STATUS_BG[s] ?? "bg-st-cancelled";
+            const sText = STATUS_TEXT[s] ?? "text-white";
             const sLabel = STATUS_LABELS[s] ?? s;
             return (
               <button
@@ -111,8 +112,9 @@ export function StatusDropdown({ taskId, status, onUpdated }: { taskId: string; 
                 onClick={() => pick(s)}
                 className={`flex w-full items-center gap-2 px-3 py-2 text-right text-sm transition-colors hover:bg-surface ${s === current ? "font-semibold" : ""}`}
               >
-                <span className={`inline-block h-3 w-3 rounded-full ${sBg}`} />
-                <span className="text-ink">{sLabel}</span>
+                <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${sBg} ${sText}`}>
+                  {sLabel}
+                </span>
               </button>
             );
           })}

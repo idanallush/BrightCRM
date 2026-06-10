@@ -104,12 +104,17 @@ export function TaskTable({
       }),
   })).filter((g) => g.tasks.length > 0);
 
-  const groups = [
-    ...(watchedTasks.length > 0
-      ? [{ status: "__watched__", label: "במעקב", color: "#3B82F6", isWatched: true, tasks: watchedTasks }]
-      : []),
-    ...statusGroups,
-  ];
+  // Insert "במעקב" group right after "נכנס לעבודה"
+  const watchedGroup = watchedTasks.length > 0
+    ? { status: "__watched__", label: "במעקב", color: "#7C3AED", isWatched: true, tasks: watchedTasks }
+    : null;
+
+  const groups = (() => {
+    if (!watchedGroup) return statusGroups;
+    const idx = statusGroups.findIndex((g) => g.status === "נכנס לעבודה");
+    const insertAt = idx >= 0 ? idx + 1 : 0;
+    return [...statusGroups.slice(0, insertAt), watchedGroup, ...statusGroups.slice(insertAt)];
+  })();
 
   const allVisibleIds = activeTasks.map((t) => t.id);
   const allSelected = allVisibleIds.length > 0 && allVisibleIds.every((id) => selectedIds.has(id));
@@ -301,7 +306,7 @@ export function TaskTable({
                     <td colSpan={COL_COUNT}>
                       {(() => {
                         const light = group.isWatched
-                          ? { bg: "rgba(59,130,246,0.10)", text: "#3B82F6", dot: "#3B82F6" }
+                          ? { bg: "rgba(124,58,237,0.10)", text: "#7C3AED", dot: "#7C3AED" }
                           : (STATUS_LIGHT[group.status] ?? { bg: "#F7F7F8", text: "#1A1A1A", dot: "#C4C4C4" });
                         return (
                           <button
