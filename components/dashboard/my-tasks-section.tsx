@@ -20,6 +20,7 @@ const TABS = [
   { key: "__all__", label: "הכל" },
   { key: "waiting", label: "ממתין" },
   { key: "working", label: "בעבודה" },
+  { key: "vendor", label: "ספק חיצוני" },
 ];
 
 function fmtDate(iso: string | null): string {
@@ -40,7 +41,9 @@ export function MyTasksSection({
     if (tab === "__all__") return tasks;
     if (tab === "waiting") return tasks.filter((t) => t.status === "מחכה לטיפול");
     if (tab === "working")
-      return tasks.filter((t) => t.status === "נכנס לעבודה" || t.status === "בעבודה");
+      return tasks.filter((t) => t.status === "נכנס לעבודה" || t.status === "בעבודה סטודיו");
+    if (tab === "vendor")
+      return tasks.filter((t) => t.status === "בעבודה ספק חיצוני");
     return tasks;
   }, [tasks, tab]);
 

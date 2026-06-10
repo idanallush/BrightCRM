@@ -10,6 +10,8 @@ import { relativeDate } from "@/lib/utils";
 const COLUMNS = [
   { key: "מחכה לטיפול", label: "ממתין" },
   { key: "נכנס לעבודה", label: "נכנס לעבודה" },
+  { key: "בעבודה סטודיו", label: "בעבודה סטודיו" },
+  { key: "בעבודה ספק חיצוני", label: "ספק חיצוני" },
   { key: "אישור לקוח", label: "אישור לקוח" },
 ];
 
@@ -21,11 +23,11 @@ export function TaskKanban({
   onCardClick: (t: TaskWithRelations) => void;
 }) {
   function byStatus(key: string) {
-    return tasks.filter((t) => t.status === key || (key === "נכנס לעבודה" && t.status === "בעבודה"));
+    return tasks.filter((t) => t.status === key);
   }
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
       {COLUMNS.map((col) => {
         const colTasks = byStatus(col.key);
         const light = STATUS_LIGHT[col.key] ?? { bg: "#F7F7F8", text: "#1A1A1A", dot: "#C4C4C4" };

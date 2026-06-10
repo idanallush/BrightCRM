@@ -3,17 +3,19 @@ import { cn } from "@/lib/utils";
 
 // Status cell colors — light bg with matched dark text
 const STATUS_CELL: Record<string, { bg: string; text: string }> = {
-  "מחכה לטיפול": { bg: "bg-st-waiting-bg",  text: "text-st-waiting-text" },
-  "נכנס לעבודה": { bg: "bg-st-incoming-bg", text: "text-st-incoming-text" },
-  "בעבודה":      { bg: "bg-st-working-bg",  text: "text-st-working-text" },
-  "אישור לקוח":  { bg: "bg-st-approval-bg", text: "text-st-approval-text" },
-  "בוצע":        { bg: "bg-st-done-bg",     text: "text-st-done-text" },
+  "מחכה לטיפול":      { bg: "bg-st-waiting-bg",  text: "text-st-waiting-text" },
+  "נכנס לעבודה":      { bg: "bg-st-incoming-bg", text: "text-st-incoming-text" },
+  "בעבודה סטודיו":    { bg: "bg-st-studio-bg",   text: "text-st-studio-text" },
+  "בעבודה ספק חיצוני": { bg: "bg-st-vendor-bg",   text: "text-st-vendor-text" },
+  "אישור לקוח":       { bg: "bg-st-approval-bg", text: "text-st-approval-text" },
+  "בוצע":             { bg: "bg-st-done-bg",     text: "text-st-done-text" },
 };
 
 const STATUS_LABELS: Record<string, string> = {
   "מחכה לטיפול": "ממתין",
   "נכנס לעבודה": "נכנס לעבודה",
-  "בעבודה": "בעבודה",
+  "בעבודה סטודיו": "בעבודה סטודיו",
+  "בעבודה ספק חיצוני": "בעבודה ספק חיצוני",
   "אישור לקוח": "אישור לקוח",
   "בוצע": "בוצע",
 };
@@ -55,12 +57,13 @@ export function HealthCell({ health, className }: { health: string; className?: 
 export const StatusBadge = StatusCell;
 export const HealthBadge = HealthCell;
 
-type Variant = "waiting" | "incoming" | "working" | "approval" | "manager" | "done" | "cancelled" | "overdue" | "neutral" | "good" | "warning" | "danger";
+type Variant = "waiting" | "incoming" | "studio" | "vendor" | "approval" | "manager" | "done" | "cancelled" | "overdue" | "neutral" | "good" | "warning" | "danger";
 
 const VARIANT_CELL: Record<Variant, { bg: string; text: string }> = {
   waiting:   { bg: "bg-st-waiting-bg",  text: "text-st-waiting-text" },
   incoming:  { bg: "bg-st-incoming-bg", text: "text-st-incoming-text" },
-  working:   { bg: "bg-st-working-bg",  text: "text-st-working-text" },
+  studio:    { bg: "bg-st-studio-bg",   text: "text-st-studio-text" },
+  vendor:    { bg: "bg-st-vendor-bg",   text: "text-st-vendor-text" },
   approval:  { bg: "bg-st-approval-bg", text: "text-st-approval-text" },
   manager:   { bg: "bg-st-manager",     text: "text-white" },
   done:      { bg: "bg-st-done-bg",     text: "text-st-done-text" },
@@ -87,7 +90,8 @@ export function Badge({ variant = "neutral", className, ...props }: { variant?: 
 export function statusVariant(status: string): Variant {
   if (status === "מחכה לטיפול") return "waiting";
   if (status === "נכנס לעבודה") return "incoming";
-  if (status === "בעבודה") return "working";
+  if (status === "בעבודה סטודיו") return "studio";
+  if (status === "בעבודה ספק חיצוני") return "vendor";
   if (status === "אישור לקוח") return "approval";
   if (status === "בוצע") return "done";
   return "neutral";
@@ -105,16 +109,18 @@ export function healthVariant(health: string | null): Variant | null {
 export const STATUS_COLORS: Record<string, string> = {
   "מחכה לטיפול": "#FDAB3D",
   "נכנס לעבודה": "#3B82F6",
-  "בעבודה": "#A25DDC",
-  "אישור לקוח": "#FFCB00",
+  "בעבודה סטודיו": "#A25DDC",
+  "בעבודה ספק חיצוני": "#14B8A6",
+  "אישור לקוח": "#F472B6",
   "בוצע": "#00C875",
 };
 
 /** Light background + dark text pairs for Studio Light treatment */
 export const STATUS_LIGHT: Record<string, { bg: string; text: string; dot: string }> = {
-  "מחכה לטיפול": { bg: "#FFF3E0", text: "#92400E", dot: "#FDAB3D" },
-  "נכנס לעבודה": { bg: "#EFF6FF", text: "#1E40AF", dot: "#3B82F6" },
-  "בעבודה":      { bg: "#F5F3FF", text: "#5B21B6", dot: "#A25DDC" },
-  "אישור לקוח":  { bg: "#FFFBEB", text: "#78350F", dot: "#FFCB00" },
-  "בוצע":        { bg: "#ECFDF5", text: "#065F46", dot: "#00C875" },
+  "מחכה לטיפול":      { bg: "#FFF3E0", text: "#92400E", dot: "#FDAB3D" },
+  "נכנס לעבודה":      { bg: "#EFF6FF", text: "#1E40AF", dot: "#3B82F6" },
+  "בעבודה סטודיו":    { bg: "#F5F3FF", text: "#5B21B6", dot: "#A25DDC" },
+  "בעבודה ספק חיצוני": { bg: "#F0FDFA", text: "#115E59", dot: "#14B8A6" },
+  "אישור לקוח":       { bg: "#FDF2F8", text: "#9D174D", dot: "#F472B6" },
+  "בוצע":             { bg: "#ECFDF5", text: "#065F46", dot: "#00C875" },
 };

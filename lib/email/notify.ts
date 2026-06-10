@@ -208,7 +208,7 @@ export async function notifyOverdueByEmail() {
        clients(name),
        task_assignees!inner(member:team_members!inner(id, full_name, email))`,
     )
-    .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה"])
+    .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה סטודיו", "בעבודה ספק חיצוני"])
     .lt("due_date", today);
 
   if (!rows || rows.length === 0) return { sent: 0 };

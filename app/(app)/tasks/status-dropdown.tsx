@@ -6,27 +6,33 @@ import { ChevronDown } from "lucide-react";
 import { updateTaskStatus } from "./actions";
 import { toast } from "@/components/ui/toaster";
 
-const ALL_STATUSES = ["מחכה לטיפול", "נכנס לעבודה", "אישור לקוח", "בוצע"] as const;
+const ALL_STATUSES = ["מחכה לטיפול", "נכנס לעבודה", "בעבודה סטודיו", "בעבודה ספק חיצוני", "אישור לקוח", "בוצע"] as const;
 
 export const STATUS_LABELS: Record<string, string> = {
   "מחכה לטיפול": "ממתין",
   "נכנס לעבודה": "נכנס לעבודה",
+  "בעבודה סטודיו": "בעבודה סטודיו",
+  "בעבודה ספק חיצוני": "בעבודה ספק חיצוני",
   "אישור לקוח": "אישור לקוח",
   "בוצע": "בוצע",
 };
 
 export const STATUS_BG: Record<string, string> = {
-  "מחכה לטיפול": "bg-st-waiting-bg",
-  "נכנס לעבודה": "bg-st-incoming-bg",
-  "אישור לקוח":  "bg-st-approval-bg",
-  "בוצע":        "bg-st-done-bg",
+  "מחכה לטיפול":      "bg-st-waiting-bg",
+  "נכנס לעבודה":      "bg-st-incoming-bg",
+  "בעבודה סטודיו":    "bg-st-studio-bg",
+  "בעבודה ספק חיצוני": "bg-st-vendor-bg",
+  "אישור לקוח":       "bg-st-approval-bg",
+  "בוצע":             "bg-st-done-bg",
 };
 
 export const STATUS_TEXT: Record<string, string> = {
-  "מחכה לטיפול": "text-st-waiting-text",
-  "נכנס לעבודה": "text-st-incoming-text",
-  "אישור לקוח":  "text-st-approval-text",
-  "בוצע":        "text-st-done-text",
+  "מחכה לטיפול":      "text-st-waiting-text",
+  "נכנס לעבודה":      "text-st-incoming-text",
+  "בעבודה סטודיו":    "text-st-studio-text",
+  "בעבודה ספק חיצוני": "text-st-vendor-text",
+  "אישור לקוח":       "text-st-approval-text",
+  "בוצע":             "text-st-done-text",
 };
 
 export function StatusDropdown({ taskId, status, onUpdated }: { taskId: string; status: string; onUpdated: () => void }) {

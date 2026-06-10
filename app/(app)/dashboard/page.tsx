@@ -39,8 +39,8 @@ function getFirstName(label: string): string {
 
 const STAT_CARDS = [
   { key: "waiting", trendKey: "waiting" as const, label: "ממתינות לטיפול", color: "#FDAB3D", Icon: Inbox, href: "/tasks?status=מחכה לטיפול" },
-  { key: "working", trendKey: "working" as const, label: "בעבודה", color: "#A25DDC", Icon: ListChecks, href: "/tasks?status=נכנס לעבודה,בעבודה" },
-  { key: "approval", trendKey: "approval" as const, label: "באישור לקוח", color: "#FFCB00", Icon: CheckCircle2, href: "/tasks?status=אישור לקוח" },
+  { key: "working", trendKey: "working" as const, label: "בעבודה", color: "#A25DDC", Icon: ListChecks, href: "/tasks?status=נכנס לעבודה,בעבודה סטודיו,בעבודה ספק חיצוני" },
+  { key: "approval", trendKey: "approval" as const, label: "באישור לקוח", color: "#F472B6", Icon: CheckCircle2, href: "/tasks?status=אישור לקוח" },
   { key: "overdue", trendKey: "overdue" as const, label: "באיחור", color: "#E2445C", Icon: AlertTriangle, href: "/tasks?overdue=true" },
 ] as const;
 

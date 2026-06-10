@@ -30,12 +30,16 @@ const DONE_STATUSES = ["בוצע"];
 const STATUS_ORDER = [
   "מחכה לטיפול",
   "נכנס לעבודה",
+  "בעבודה סטודיו",
+  "בעבודה ספק חיצוני",
   "אישור לקוח",
 ];
 
 const STATUS_GROUP_LABELS: Record<string, string> = {
   "מחכה לטיפול": "ממתין",
   "נכנס לעבודה": "נכנס לעבודה",
+  "בעבודה סטודיו": "בעבודה סטודיו",
+  "בעבודה ספק חיצוני": "בעבודה ספק חיצוני",
   "אישור לקוח": "אישור לקוח",
 };
 
@@ -91,7 +95,7 @@ export function TaskTable({
     color: STATUS_COLORS[status] ?? "#C4C4C4",
     isWatched: false,
     tasks: activeTasks
-      .filter((t) => !watchedIds.has(t.id) && (t.status === status || (status === "נכנס לעבודה" && t.status === "בעבודה")))
+      .filter((t) => !watchedIds.has(t.id) && t.status === status)
       .sort((a, b) => {
         if (a.due_date && b.due_date) return a.due_date.localeCompare(b.due_date);
         if (a.due_date) return -1;

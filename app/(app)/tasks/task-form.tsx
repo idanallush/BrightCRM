@@ -23,6 +23,8 @@ import type { RecurrenceRule } from "@/lib/recurring";
 const STATUS_OPTIONS: { value: TaskInput["status"]; label: string }[] = [
   { value: "מחכה לטיפול", label: "ממתין" },
   { value: "נכנס לעבודה", label: "נכנס לעבודה" },
+  { value: "בעבודה סטודיו", label: "בעבודה סטודיו" },
+  { value: "בעבודה ספק חיצוני", label: "בעבודה ספק חיצוני" },
   { value: "אישור לקוח", label: "אישור לקוח" },
   { value: "בוצע", label: "בוצע" },
 ];

@@ -35,7 +35,7 @@ type ClientRow = {
   health: string | null;
 };
 
-const ACTIVE_STATUSES = ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח"];
+const ACTIVE_STATUSES = ["מחכה לטיפול", "נכנס לעבודה", "בעבודה סטודיו", "בעבודה ספק חיצוני", "אישור לקוח"];
 
 async function getMemberId(email: string): Promise<string | null> {
   const db = createAdminClient();

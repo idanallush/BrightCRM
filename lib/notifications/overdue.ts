@@ -31,7 +31,7 @@ export async function checkAndNotifyOverdue() {
       )
     `,
     )
-    .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה"])
+    .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה סטודיו", "בעבודה ספק חיצוני"])
     .lt("due_date", today);
 
   if (error) {

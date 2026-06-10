@@ -72,7 +72,7 @@ async function sendMorningDigests() {
       .filter(
         (t): t is TaskJoin =>
           t !== null &&
-          ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח"].includes(
+          ["מחכה לטיפול", "נכנס לעבודה", "בעבודה סטודיו", "בעבודה ספק חיצוני", "אישור לקוח"].includes(
             t.status,
           ),
       );

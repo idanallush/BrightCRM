@@ -35,12 +35,12 @@ function statusBadge(status: string) {
   const colors: Record<string, string> = {
     "מחכה לטיפול": "#FFD02F",
     "נכנס לעבודה": "#DCE4FF",
-    "בעבודה": "#1A1A1A",
-    "אישור לקוח": "#EDE0FF",
+    "בעבודה סטודיו": "#F5F3FF",
+    "בעבודה ספק חיצוני": "#F0FDFA",
+    "אישור לקוח": "#FDF2F8",
     "בוצע": "#D0F0E8",
   };
   const textColors: Record<string, string> = {
-    "בעבודה": "#fff",
   };
   const bg = colors[status] || "#E0E0E6";
   const color = textColors[status] || "#1A1A1A";

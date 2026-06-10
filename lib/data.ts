@@ -13,7 +13,7 @@ export type Task = {
   title: string;
   client_id: string | null;
   description: string | null;
-  status: "מחכה לטיפול" | "נכנס לעבודה" | "בעבודה" | "אישור לקוח" | "בוצע";
+  status: "מחכה לטיפול" | "נכנס לעבודה" | "בעבודה סטודיו" | "בעבודה ספק חיצוני" | "אישור לקוח" | "בוצע";
   start_date: string;
   due_date: string | null;
   created_by_id: string | null;
@@ -127,7 +127,7 @@ export async function getTasks(filters?: {
   }
   if (filters?.overdue) {
     const today = new Date().toISOString().slice(0, 10);
-    q = q.in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה"]).lt("due_date", today);
+    q = q.in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה סטודיו", "בעבודה ספק חיצוני"]).lt("due_date", today);
   }
 
   const { data, error } = await q;
@@ -418,10 +418,10 @@ export async function getDashboardCounts(memberId?: string): Promise<DashboardCo
 
   const [incoming, working, approval, overdue] = await Promise.all([
     qBase().eq("status", "מחכה לטיפול"),
-    qBase().in("status", ["נכנס לעבודה", "בעבודה"]),
+    qBase().in("status", ["נכנס לעבודה", "בעבודה סטודיו", "בעבודה ספק חיצוני"]),
     qBase().eq("status", "אישור לקוח"),
     qBase()
-      .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח"])
+      .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה סטודיו", "בעבודה ספק חיצוני", "אישור לקוח"])
       .lt("due_date", today),
   ]);
   if (incoming.error) { console.error('[getDashboardCounts] incoming query failed:', incoming.error); throw incoming.error; }
@@ -455,7 +455,7 @@ export async function getWatchingCount(memberId: string): Promise<number> {
     .from("tasks")
     .select("*", { count: "exact", head: true })
     .in("id", taskIds)
-    .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח"]);
+    .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה סטודיו", "בעבודה ספק חיצוני", "אישור לקוח"]);
   if (countError) {
     console.error('[getWatchingCount] count query failed:', countError);
     throw countError;
@@ -482,7 +482,7 @@ export async function getWatchedTasks(memberId: string) {
     .from("tasks")
     .select("id,title,status,due_date,client:clients(name)")
     .in("id", taskIds)
-    .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח"])
+    .in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה סטודיו", "בעבודה ספק חיצוני", "אישור לקוח"])
     .order("due_date", { ascending: true, nullsFirst: false });
   if (error) {
     console.error('[getWatchedTasks] tasks query failed:', error);
@@ -516,12 +516,12 @@ export async function getDashboardTrends(): Promise<{
   const [waitNew, waitOld, workNew, workOld, apprNew, apprOld, overdueNew, overdueOld] = await Promise.all([
     sb.from("tasks").select("*", { count: "exact", head: true }).eq("status", "מחכה לטיפול"),
     sb.from("tasks").select("*", { count: "exact", head: true }).eq("status", "מחכה לטיפול").lt("created_at", startOfToday),
-    sb.from("tasks").select("*", { count: "exact", head: true }).eq("status", "בעבודה"),
-    sb.from("tasks").select("*", { count: "exact", head: true }).eq("status", "בעבודה").lt("updated_at", startOfWeek),
+    sb.from("tasks").select("*", { count: "exact", head: true }).in("status", ["בעבודה סטודיו", "בעבודה ספק חיצוני"]),
+    sb.from("tasks").select("*", { count: "exact", head: true }).in("status", ["בעבודה סטודיו", "בעבודה ספק חיצוני"]).lt("updated_at", startOfWeek),
     sb.from("tasks").select("*", { count: "exact", head: true }).in("status", ["אישור לקוח"]),
     sb.from("tasks").select("*", { count: "exact", head: true }).in("status", ["אישור לקוח"]).lt("updated_at", startOfToday),
-    sb.from("tasks").select("*", { count: "exact", head: true }).in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה"]).lt("due_date", now.toISOString().slice(0, 10)),
-    sb.from("tasks").select("*", { count: "exact", head: true }).in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה"]).lt("due_date", now.toISOString().slice(0, 10)).lt("updated_at", startOfWeek),
+    sb.from("tasks").select("*", { count: "exact", head: true }).in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה סטודיו", "בעבודה ספק חיצוני"]).lt("due_date", now.toISOString().slice(0, 10)),
+    sb.from("tasks").select("*", { count: "exact", head: true }).in("status", ["מחכה לטיפול", "נכנס לעבודה", "בעבודה סטודיו", "בעבודה ספק חיצוני"]).lt("due_date", now.toISOString().slice(0, 10)).lt("updated_at", startOfWeek),
   ]);
   if (waitNew.error) { console.error('[getDashboardTrends] waitNew query failed:', waitNew.error); throw waitNew.error; }
   if (waitOld.error) { console.error('[getDashboardTrends] waitOld query failed:', waitOld.error); throw waitOld.error; }
@@ -723,7 +723,7 @@ export async function getMyTasks(userEmail: string) {
     throw assignError;
   }
 
-  const openStatuses = new Set(["מחכה לטיפול", "נכנס לעבודה", "בעבודה", "אישור לקוח"]);
+  const openStatuses = new Set(["מחכה לטיפול", "נכנס לעבודה", "בעבודה סטודיו", "בעבודה ספק חיצוני", "אישור לקוח"]);
   return asRows(assignedRows)
     .map((r) => {
       const task = r.task as { id?: string; title?: string; status?: string; due_date?: string | null; created_at?: string; client?: { name?: string } | null } | null;
