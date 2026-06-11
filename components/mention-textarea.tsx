@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { AtSign } from "lucide-react";
-import { Hint } from "@/components/ui/tooltip";
 import { cn, getInitials } from "@/lib/utils";
 import type { TeamMember } from "@/lib/data";
 
@@ -24,24 +23,24 @@ export function MentionTextarea({
   id?: string;
 }) {
   const [showMentions, setShowMentions] = React.useState(false);
-  const [mentionAtPos, setMentionAtPos] = React.useState(-1);
+  const [mentionAtPos, setMentionAtPos] = React.useState<number | null>(null);
+  const [focused, setFocused] = React.useState(false);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
-  function handleTextChange(val: string) {
+  function handleChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    const val = e.target.value;
+    const cursor = e.target.selectionStart;
     onChange(val);
-    const cursor = textareaRef.current?.selectionStart ?? val.length;
+
     const before = val.slice(0, cursor);
-    const lastAt = before.lastIndexOf("@");
-    if (lastAt >= 0 && (lastAt === 0 || before[lastAt - 1] === " " || before[lastAt - 1] === "\n")) {
-      const query = before.slice(lastAt + 1);
-      if (!query.includes(" ") && !query.includes("\n")) {
-        setMentionAtPos(lastAt);
-        setShowMentions(true);
-        return;
-      }
+    const atMatch = before.match(/@([^\s@]*)$/);
+    if (atMatch) {
+      setMentionAtPos(before.length - atMatch[0].length);
+      setShowMentions(true);
+    } else {
+      setShowMentions(false);
+      setMentionAtPos(null);
     }
-    setShowMentions(false);
-    setMentionAtPos(-1);
   }
 
   function triggerMention() {
@@ -49,7 +48,7 @@ export function MentionTextarea({
     const pos = ta ? ta.selectionStart : value.length;
     const before = value.slice(0, pos);
     const after = value.slice(pos);
-    const needsSpace = before.length > 0 && before[before.length - 1] !== " " && before[before.length - 1] !== "\n";
+    const needsSpace = before.length > 0 && before[before.length - 1] !== " ";
     const insert = needsSpace ? " @" : "@";
     const next = before + insert + after;
     onChange(next);
@@ -64,60 +63,71 @@ export function MentionTextarea({
   }
 
   function insertMention(member: TeamMember) {
-    const mention = `@${member.full_name} `;
+    if (mentionAtPos === null) return;
     const before = value.slice(0, mentionAtPos);
     const afterAt = value.slice(mentionAtPos);
-    const rest = afterAt.replace(/^@\S*/, "");
-    const next = before + mention + rest;
+    const restMatch = afterAt.match(/^@[^\s]*/);
+    const restStart = mentionAtPos + (restMatch ? restMatch[0].length : 1);
+    const after = value.slice(restStart);
+    const mention = `@${member.full_name} `;
+    const next = before + mention + after;
     onChange(next);
     setShowMentions(false);
-    setMentionAtPos(-1);
-    const ta = textareaRef.current;
-    const caret = before.length + mention.length;
+    setMentionAtPos(null);
     requestAnimationFrame(() => {
-      ta?.focus();
-      ta?.setSelectionRange(caret, caret);
+      const caret = (before + mention).length;
+      textareaRef.current?.focus();
+      textareaRef.current?.setSelectionRange(caret, caret);
     });
   }
 
-  const mentionQuery = mentionAtPos >= 0 ? value.slice(mentionAtPos + 1, textareaRef.current?.selectionStart ?? value.length).toLowerCase() : "";
+  const mentionQuery =
+    showMentions && mentionAtPos !== null
+      ? value.slice(mentionAtPos + 1, textareaRef.current?.selectionStart ?? value.length).toLowerCase()
+      : "";
+
   const filteredMembers = showMentions
     ? team.filter((m) => m.full_name.toLowerCase().includes(mentionQuery))
     : [];
+
   const showDropdown = showMentions && filteredMembers.length > 0;
 
   return (
     <div className="relative">
-      <div className="group">
-        <textarea
-          ref={textareaRef}
-          id={id}
-          value={value}
-          onChange={(e) => handleTextChange(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Escape" && showMentions) {
-              setShowMentions(false);
-            }
+      <textarea
+        ref={textareaRef}
+        id={id}
+        value={value}
+        onChange={handleChange}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        onKeyDown={(e) => {
+          if (e.key === "Escape" && showMentions) {
+            setShowMentions(false);
+            setMentionAtPos(null);
+          }
+        }}
+        placeholder={placeholder}
+        rows={rows}
+        className={cn(
+          "w-full rounded-lg border border-border bg-white p-3 text-body-sm text-ink placeholder:text-ink-muted transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20",
+          className,
+        )}
+      />
+
+      {focused && (
+        <button
+          type="button"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            triggerMention();
           }}
-          placeholder={placeholder}
-          rows={rows}
-          className={cn(
-            "w-full rounded-lg border border-border bg-white p-3 text-body-sm text-ink placeholder:text-ink-muted transition-colors focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20",
-            className,
-          )}
-        />
-        <div className="absolute bottom-2 start-2 opacity-0 transition-opacity group-focus-within:opacity-100">
-          <Hint label="תייג מישהו (@)">
-            <button
-              type="button"
-              onClick={triggerMention}
-              className="flex h-7 w-7 items-center justify-center rounded-md text-ink-muted transition-colors hover:bg-surface hover:text-ink"
-            >
-              <AtSign className="h-3.5 w-3.5" />
-            </button>
-          </Hint>
-        </div>
-      </div>
+          className="absolute bottom-2 start-2 flex h-6 w-6 items-center justify-center rounded text-ink-muted transition-colors hover:bg-surface hover:text-ink"
+          aria-label="תייג מישהו"
+        >
+          <AtSign className="h-3.5 w-3.5" />
+        </button>
+      )}
 
       {showDropdown && (
         <div
@@ -128,7 +138,10 @@ export function MentionTextarea({
             <button
               key={m.id}
               type="button"
-              onMouseDown={(e) => { e.preventDefault(); insertMention(m); }}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                insertMention(m);
+              }}
               className="flex w-full items-center gap-2 px-3 py-2 text-right text-sm text-ink transition-colors hover:bg-gray-50"
             >
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface text-[10px] font-semibold text-ink">

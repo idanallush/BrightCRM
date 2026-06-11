@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MentionTextarea } from "@/components/mention-textarea";
-
 import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -251,7 +250,7 @@ export function TaskForm({
 
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="description">תיאור</Label>
-              <MentionTextarea id="description" value={description} onChange={setDescription} team={team} placeholder="פרטים נוספים (לא חובה) — @ לתיוג" />
+              <MentionTextarea id="description" value={description} onChange={setDescription} team={team} placeholder="פרטים נוספים (לא חובה)" />
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -547,7 +546,7 @@ function CollapsibleTextarea({
 
   return (
     <div className="flex flex-col gap-1">
-      <div className={cn("relative", collapsed && "[&_textarea]:max-h-32 [&_textarea]:overflow-hidden")}>
+      <div className="relative">
         <MentionTextarea
           id={id}
           value={value}
@@ -555,7 +554,7 @@ function CollapsibleTextarea({
           team={team}
           placeholder={placeholder}
           rows={5}
-          className={cn("min-h-[150px] text-base")}
+          className={cn("min-h-[150px] text-base", collapsed && "max-h-32 overflow-hidden")}
         />
         {collapsed && (
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 rounded-b-xl bg-gradient-to-t from-white to-transparent" />
