@@ -24,19 +24,24 @@ export function MentionTextarea({
   id?: string;
 }) {
   const [showMentions, setShowMentions] = React.useState(false);
+  const [mentionAtPos, setMentionAtPos] = React.useState(-1);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   function handleTextChange(val: string) {
     onChange(val);
-    const lastAt = val.lastIndexOf("@");
-    if (lastAt >= 0 && (lastAt === 0 || val[lastAt - 1] === " " || val[lastAt - 1] === "\n")) {
-      const query = val.slice(lastAt + 1);
+    const cursor = textareaRef.current?.selectionStart ?? val.length;
+    const before = val.slice(0, cursor);
+    const lastAt = before.lastIndexOf("@");
+    if (lastAt >= 0 && (lastAt === 0 || before[lastAt - 1] === " " || before[lastAt - 1] === "\n")) {
+      const query = before.slice(lastAt + 1);
       if (!query.includes(" ") && !query.includes("\n")) {
+        setMentionAtPos(lastAt);
         setShowMentions(true);
         return;
       }
     }
     setShowMentions(false);
+    setMentionAtPos(-1);
   }
 
   function triggerMention() {
@@ -48,9 +53,11 @@ export function MentionTextarea({
     const insert = needsSpace ? " @" : "@";
     const next = before + insert + after;
     onChange(next);
+    const atPos = (before + insert).length - 1;
+    setMentionAtPos(atPos);
     setShowMentions(true);
     requestAnimationFrame(() => {
-      const caret = (before + insert).length;
+      const caret = atPos + 1;
       ta?.focus();
       ta?.setSelectionRange(caret, caret);
     });
@@ -58,13 +65,22 @@ export function MentionTextarea({
 
   function insertMention(member: TeamMember) {
     const mention = `@${member.full_name} `;
-    const val = value.replace(/@\S*$/, mention);
-    onChange(val);
+    const before = value.slice(0, mentionAtPos);
+    const afterAt = value.slice(mentionAtPos);
+    const rest = afterAt.replace(/^@\S*/, "");
+    const next = before + mention + rest;
+    onChange(next);
     setShowMentions(false);
-    textareaRef.current?.focus();
+    setMentionAtPos(-1);
+    const ta = textareaRef.current;
+    const caret = before.length + mention.length;
+    requestAnimationFrame(() => {
+      ta?.focus();
+      ta?.setSelectionRange(caret, caret);
+    });
   }
 
-  const mentionQuery = value.slice(value.lastIndexOf("@") + 1).toLowerCase();
+  const mentionQuery = mentionAtPos >= 0 ? value.slice(mentionAtPos + 1, textareaRef.current?.selectionStart ?? value.length).toLowerCase() : "";
   const filteredMembers = showMentions
     ? team.filter((m) => m.full_name.toLowerCase().includes(mentionQuery))
     : [];
