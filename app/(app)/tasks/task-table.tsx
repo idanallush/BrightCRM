@@ -11,6 +11,7 @@ import type { TaskViewRecord } from "./actions";
 import { useRouter } from "next/navigation";
 import type { TaskWithRelations } from "@/lib/data";
 import { StatusDropdown } from "./status-dropdown";
+import { renderTextWithLinks } from "./comment-helpers";
 
 const STALE_DAYS = 180;
 
@@ -204,7 +205,7 @@ export function TaskTable({
             </div>
           )}
           {t.description && (
-            <div className="mt-0.5 max-w-xs truncate text-sm text-ink-secondary">{t.description}</div>
+            <div className="mt-0.5 max-w-xs truncate text-sm text-ink-secondary">{renderTextWithLinks(t.description)}</div>
           )}
           <div className="mt-0.5 text-sm text-ink-muted md:hidden">{t.client?.name ?? "כללי"}</div>
         </td>

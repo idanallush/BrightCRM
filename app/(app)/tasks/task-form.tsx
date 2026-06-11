@@ -3,7 +3,9 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Input, Textarea } from "@/components/ui/input";
+import { Input } from "@/components/ui/input";
+import { MentionTextarea } from "@/components/mention-textarea";
+
 import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -231,7 +233,7 @@ export function TaskForm({
             </div>
 
             <div className="flex flex-col gap-1">
-              <CollapsibleTextarea id="description" value={description} onChange={setDescription} placeholder="הוסף תיאור..." />
+              <CollapsibleTextarea id="description" value={description} onChange={setDescription} placeholder="הוסף תיאור..." team={team} />
             </div>
           </>
         ) : (
@@ -249,7 +251,7 @@ export function TaskForm({
 
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="description">תיאור</Label>
-              <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="פרטים נוספים (לא חובה)" />
+              <MentionTextarea id="description" value={description} onChange={setDescription} team={team} placeholder="פרטים נוספים (לא חובה) — @ לתיוג" />
             </div>
 
             <div className="flex flex-col gap-1.5">
@@ -530,14 +532,14 @@ function ClientLogoInline({ client }: { client?: Client }) {
   return <ClientLogo logoUrl={client.logo_url} logoStoragePath={client.logo_storage_path} name={client.name} size="sm" />;
 }
 
-// Description input that caps height + shows a fade and "read more" toggle when the text is long.
 function CollapsibleTextarea({
-  id, value, onChange, placeholder,
+  id, value, onChange, placeholder, team,
 }: {
   id: string;
   value: string;
   onChange: (v: string) => void;
   placeholder: string;
+  team: TeamMember[];
 }) {
   const [expanded, setExpanded] = React.useState(false);
   const isLong = value.length > 300;
@@ -545,14 +547,15 @@ function CollapsibleTextarea({
 
   return (
     <div className="flex flex-col gap-1">
-      <div className="relative">
-        <Textarea
+      <div className={cn("relative", collapsed && "[&_textarea]:max-h-32 [&_textarea]:overflow-hidden")}>
+        <MentionTextarea
           id={id}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={onChange}
+          team={team}
           placeholder={placeholder}
           rows={5}
-          className={cn("min-h-[150px] text-base", collapsed && "max-h-32 overflow-hidden")}
+          className={cn("min-h-[150px] text-base")}
         />
         {collapsed && (
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 rounded-b-xl bg-gradient-to-t from-white to-transparent" />
