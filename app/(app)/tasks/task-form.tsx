@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MentionTextarea } from "@/components/mention-textarea";
+import { renderDescriptionContent } from "./comment-helpers";
 import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -232,7 +233,7 @@ export function TaskForm({
             </div>
 
             <div className="flex flex-col gap-1">
-              <CollapsibleTextarea id="description" value={description} onChange={setDescription} placeholder="הוסף תיאור..." team={team} />
+              <CollapsibleTextarea id="description" value={description} onChange={setDescription} placeholder="הוסף תיאור..." team={team} isExisting={!!task} />
             </div>
           </>
         ) : (
@@ -248,10 +249,12 @@ export function TaskForm({
               </Select>
             </div>
 
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="description">תיאור</Label>
-              <MentionTextarea id="description" value={description} onChange={setDescription} team={team} placeholder="פרטים נוספים (לא חובה)" />
-            </div>
+            <DescriptionField
+              value={description}
+              onChange={setDescription}
+              team={team}
+              isExisting={!!task}
+            />
 
             <div className="flex flex-col gap-1.5">
               <Label>סטטוס</Label>
@@ -531,18 +534,97 @@ function ClientLogoInline({ client }: { client?: Client }) {
   return <ClientLogo logoUrl={client.logo_url} logoStoragePath={client.logo_storage_path} name={client.name} size="sm" />;
 }
 
+function DescriptionField({
+  value,
+  onChange,
+  team,
+  isExisting,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  team: TeamMember[];
+  isExisting: boolean;
+}) {
+  const [editing, setEditing] = React.useState(!isExisting);
+  const teamNames = React.useMemo(() => team.map((m) => m.full_name), [team]);
+
+  if (!editing && isExisting) {
+    return (
+      <div className="flex flex-col gap-1.5">
+        <Label>תיאור</Label>
+        <div
+          onClick={() => setEditing(true)}
+          className="min-h-[2.75rem] cursor-pointer whitespace-pre-wrap rounded-lg border border-transparent p-3 text-body-sm text-ink transition-colors hover:border-border hover:bg-surface/50"
+        >
+          {value
+            ? renderDescriptionContent(value, teamNames)
+            : <span className="text-ink-muted">הוסף תיאור...</span>}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label htmlFor="description">תיאור</Label>
+      <MentionTextarea
+        id="description"
+        value={value}
+        onChange={onChange}
+        team={team}
+        placeholder="פרטים נוספים (לא חובה)"
+        autoFocus={isExisting}
+        onBlur={isExisting ? () => setEditing(false) : undefined}
+      />
+    </div>
+  );
+}
+
 function CollapsibleTextarea({
-  id, value, onChange, placeholder, team,
+  id, value, onChange, placeholder, team, isExisting,
 }: {
   id: string;
   value: string;
   onChange: (v: string) => void;
   placeholder: string;
   team: TeamMember[];
+  isExisting: boolean;
 }) {
+  const [editing, setEditing] = React.useState(!isExisting);
   const [expanded, setExpanded] = React.useState(false);
+  const teamNames = React.useMemo(() => team.map((m) => m.full_name), [team]);
   const isLong = value.length > 300;
   const collapsed = isLong && !expanded;
+
+  if (!editing && isExisting) {
+    return (
+      <div className="flex flex-col gap-1">
+        <div
+          onClick={() => setEditing(true)}
+          className={cn(
+            "cursor-pointer whitespace-pre-wrap rounded-lg border border-transparent p-3 text-body-sm text-ink transition-colors hover:border-border hover:bg-surface/50",
+            collapsed && "max-h-32 overflow-hidden relative",
+          )}
+        >
+          {value
+            ? renderDescriptionContent(value, teamNames)
+            : <span className="text-ink-muted">{placeholder}</span>}
+          {collapsed && (
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 rounded-b-xl bg-gradient-to-t from-white to-transparent" />
+          )}
+        </div>
+        {isLong && (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setExpanded((v) => !v); }}
+            className="self-start text-xs font-medium text-link hover:underline"
+          >
+            {expanded ? "הצג פחות" : "קרא עוד"}
+          </button>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-1">
@@ -554,21 +636,11 @@ function CollapsibleTextarea({
           team={team}
           placeholder={placeholder}
           rows={5}
-          className={cn("min-h-[150px] text-base", collapsed && "max-h-32 overflow-hidden")}
+          className={cn("min-h-[150px] text-base")}
+          autoFocus={isExisting}
+          onBlur={isExisting ? () => setEditing(false) : undefined}
         />
-        {collapsed && (
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 rounded-b-xl bg-gradient-to-t from-white to-transparent" />
-        )}
       </div>
-      {isLong && (
-        <button
-          type="button"
-          onClick={() => setExpanded((v) => !v)}
-          className="self-start text-xs font-medium text-link hover:underline"
-        >
-          {expanded ? "הצג פחות" : "קרא עוד"}
-        </button>
-      )}
     </div>
   );
 }

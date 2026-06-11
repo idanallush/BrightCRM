@@ -13,6 +13,8 @@ export function MentionTextarea({
   rows = 4,
   className,
   id,
+  autoFocus,
+  onBlur,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -21,6 +23,8 @@ export function MentionTextarea({
   rows?: number;
   className?: string;
   id?: string;
+  autoFocus?: boolean;
+  onBlur?: () => void;
 }) {
   const [showMentions, setShowMentions] = React.useState(false);
   const [mentionAtPos, setMentionAtPos] = React.useState<number | null>(null);
@@ -99,8 +103,12 @@ export function MentionTextarea({
         id={id}
         value={value}
         onChange={handleChange}
+        autoFocus={autoFocus}
         onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
+        onBlur={() => {
+          setFocused(false);
+          if (!showMentions && onBlur) onBlur();
+        }}
         onKeyDown={(e) => {
           if (e.key === "Escape" && showMentions) {
             setShowMentions(false);

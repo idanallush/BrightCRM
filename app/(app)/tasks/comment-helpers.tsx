@@ -68,6 +68,32 @@ export function renderContentWithMentions(content: string, names: string[]): Rea
   return nodes;
 }
 
+// Render description text: detect @Name patterns from known team names + clickable URLs.
+// Unlike comments, descriptions don't store mention IDs — we match against all team names.
+export function renderDescriptionContent(content: string, teamNames: string[]): React.ReactNode {
+  if (teamNames.length === 0) return renderTextWithLinks(content);
+  const sorted = [...teamNames].sort((a, b) => b.length - a.length);
+  const pattern = new RegExp(`@(?:${sorted.map(escapeRegExp).join("|")})`, "g");
+  const parts = content.split(pattern);
+  const matches = content.match(pattern) ?? [];
+
+  const nodes: React.ReactNode[] = [];
+  parts.forEach((part, i) => {
+    if (part) nodes.push(<React.Fragment key={`t${i}`}>{renderTextWithLinks(part)}</React.Fragment>);
+    if (i < matches.length) {
+      nodes.push(
+        <span
+          key={`m${i}`}
+          className="rounded-full bg-blue-50 px-1.5 font-semibold text-blue-700"
+        >
+          {matches[i]}
+        </span>,
+      );
+    }
+  });
+  return nodes;
+}
+
 // ---- Comment attachment display ----
 
 export function CommentAttachmentList({
