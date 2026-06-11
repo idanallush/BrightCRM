@@ -24,7 +24,7 @@ function escapeRegExp(s: string): string {
 const URL_PATTERN = /https?:\/\/[^\s<>"']+/;
 const URL_SPLIT = /(https?:\/\/[^\s<>"']+)/g;
 
-function renderTextWithLinks(text: string): React.ReactNode {
+export function renderTextWithLinks(text: string): React.ReactNode {
   const parts = text.split(URL_SPLIT);
   if (parts.length === 1) return text;
   return parts.map((part, i) => {
