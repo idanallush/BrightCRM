@@ -15,6 +15,7 @@ export function MentionTextarea({
   id,
   autoFocus,
   onBlur,
+  onPaste,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -25,6 +26,7 @@ export function MentionTextarea({
   id?: string;
   autoFocus?: boolean;
   onBlur?: () => void;
+  onPaste?: (e: React.ClipboardEvent<HTMLTextAreaElement>) => void;
 }) {
   const [showMentions, setShowMentions] = React.useState(false);
   const [mentionAtPos, setMentionAtPos] = React.useState<number | null>(null);
@@ -115,6 +117,7 @@ export function MentionTextarea({
             setMentionAtPos(null);
           }
         }}
+        onPaste={onPaste}
         placeholder={placeholder}
         rows={rows}
         className={cn(

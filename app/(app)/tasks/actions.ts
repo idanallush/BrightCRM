@@ -111,7 +111,7 @@ export async function createTask(input: TaskInput) {
     console.error("[Email] notifyNewTask failed:", err);
   }
 
-  return { ok: true as const };
+  return { ok: true as const, taskId: data.id as string };
 }
 
 export async function updateTask(id: string, input: TaskInput) {

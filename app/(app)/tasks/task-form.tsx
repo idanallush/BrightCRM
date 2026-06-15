@@ -13,12 +13,14 @@ import {
 import { toast } from "@/components/ui/toaster";
 import { cn, getInitials } from "@/lib/utils";
 import { createTask, updateTask, createTag, updateTag, type TaskInput } from "./actions";
+import { uploadAttachment } from "@/app/actions/attachments";
 import { STATUS_LIGHT } from "@/components/ui/badge";
 import type { Client, Tag, TaskWithRelations, TeamMember } from "@/lib/data";
-import { ClientLogo } from "@/components/client-logo";
+import { ClientCombobox, GENERAL_OPTION } from "@/components/client-combobox";
 import { AssigneeDropdown } from "./assignee-dropdown";
 import { TagSelector } from "./tag-selector";
-import { Repeat } from "lucide-react";
+import { Repeat, File as FileIcon, X } from "lucide-react";
+import { usePasteImage } from "@/lib/use-paste-image";
 import { formatRecurrenceDescription } from "@/lib/recurring";
 import type { RecurrenceRule } from "@/lib/recurring";
 
@@ -32,7 +34,7 @@ const STATUS_OPTIONS: { value: TaskInput["status"]; label: string }[] = [
 ];
 
 const NONE = "__none__";
-const GENERAL = "__general__";
+const GENERAL = GENERAL_OPTION;
 
 
 export function TaskForm({
@@ -72,6 +74,26 @@ export function TaskForm({
     task?.tags?.map((t) => t.id) ?? [],
   );
   const [availableTags, setAvailableTags] = React.useState<Tag[]>(initialTags);
+
+  // Pasted/queued image attachments — uploaded after the task is created/updated.
+  const [pendingAttachments, setPendingAttachments] = React.useState<File[]>([]);
+  const attachmentPreviews = React.useMemo(
+    () => pendingAttachments.map((f) => URL.createObjectURL(f)),
+    [pendingAttachments],
+  );
+  React.useEffect(() => {
+    return () => { attachmentPreviews.forEach((u) => URL.revokeObjectURL(u)); };
+  }, [attachmentPreviews]);
+
+  const handlePasteDescription = usePasteImage({
+    onImages: (files) => setPendingAttachments((prev) => [...prev, ...files]),
+    onTooLarge: (f) => toast.error(`"${f.name}" גדול מ-10MB`),
+    onUnsupported: (mime) => toast.error(`סוג תמונה לא נתמך: ${mime}`),
+  });
+
+  function removePending(idx: number) {
+    setPendingAttachments((prev) => prev.filter((_, i) => i !== idx));
+  }
 
   // Recurrence state
   const existingRule = task?.recurrence_rule as RecurrenceRule | null;
@@ -128,8 +150,26 @@ export function TaskForm({
       recurrence_rule: recurrenceRule,
     };
     const res = task ? await updateTask(task.id, payload) : await createTask(payload);
+    if ("error" in res) { setPending(false); toast.error(res.error); return; }
+
+    // Upload pasted/queued image attachments to the (now-existing) task.
+    const taskId = task?.id ?? (res as { taskId?: string }).taskId;
+    if (taskId && pendingAttachments.length > 0) {
+      const results = await Promise.all(pendingAttachments.map(async (file) => {
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("fileName", file.name);
+        fd.append("taskId", taskId);
+        return uploadAttachment(fd);
+      }));
+      const failed = results.filter((r) => "error" in r);
+      if (failed.length > 0) {
+        toast.error(`חלק מהקבצים לא הועלו (${failed.length})`);
+      }
+    }
+
     setPending(false);
-    if ("error" in res) { toast.error(res.error); return; }
+    setPendingAttachments([]);
     toast.success(task ? "המשימה עודכנה" : "המשימה נוצרה");
     router.refresh();
     onDone();
@@ -152,27 +192,12 @@ export function TaskForm({
           <>
             <div className="flex flex-col gap-1">
               <span className="text-xs font-medium text-ink-secondary">לקוח</span>
-              <Select value={clientId} onValueChange={handleClientChange}>
-                <SelectTrigger className="h-9 text-sm">
-                  <SelectValue placeholder="בחר לקוח" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={GENERAL}>
-                    <div className="flex items-center gap-2">
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-accent/30 text-[9px] font-bold text-ink">כל</span>
-                      כללי (לכולם)
-                    </div>
-                  </SelectItem>
-                  {clients.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      <div className="flex items-center gap-2">
-                        <ClientLogoInline client={c} />
-                        {c.name}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <ClientCombobox
+                value={clientId}
+                onChange={handleClientChange}
+                clients={clients}
+                size="sm"
+              />
             </div>
 
             <div className="flex flex-col gap-1">
@@ -233,20 +258,19 @@ export function TaskForm({
             </div>
 
             <div className="flex flex-col gap-1">
-              <CollapsibleTextarea id="description" value={description} onChange={setDescription} placeholder="הוסף תיאור..." team={team} isExisting={!!task} />
+              <CollapsibleTextarea id="description" value={description} onChange={setDescription} placeholder="הוסף תיאור..." team={team} isExisting={!!task} onPaste={handlePasteDescription} />
+              <PendingAttachmentsPreview files={pendingAttachments} previews={attachmentPreviews} onRemove={removePending} uploading={pending} />
             </div>
           </>
         ) : (
           <>
             <div className="flex flex-col gap-1.5">
               <Label>לקוח</Label>
-              <Select value={clientId} onValueChange={handleClientChange}>
-                <SelectTrigger><SelectValue placeholder="בחר לקוח" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value={GENERAL}>כללי (לכולם)</SelectItem>
-                  {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <ClientCombobox
+                value={clientId}
+                onChange={handleClientChange}
+                clients={clients}
+              />
             </div>
 
             <DescriptionField
@@ -254,7 +278,9 @@ export function TaskForm({
               onChange={setDescription}
               team={team}
               isExisting={!!task}
+              onPaste={handlePasteDescription}
             />
+            <PendingAttachmentsPreview files={pendingAttachments} previews={attachmentPreviews} onRemove={removePending} uploading={pending} />
 
             <div className="flex flex-col gap-1.5">
               <Label>סטטוס</Label>
@@ -529,21 +555,18 @@ function RecurrenceSection({
   );
 }
 
-function ClientLogoInline({ client }: { client?: Client }) {
-  if (!client) return null;
-  return <ClientLogo logoUrl={client.logo_url} logoStoragePath={client.logo_storage_path} name={client.name} size="sm" />;
-}
-
 function DescriptionField({
   value,
   onChange,
   team,
   isExisting,
+  onPaste,
 }: {
   value: string;
   onChange: (v: string) => void;
   team: TeamMember[];
   isExisting: boolean;
+  onPaste?: (e: React.ClipboardEvent<HTMLTextAreaElement>) => void;
 }) {
   const [editing, setEditing] = React.useState(!isExisting);
   const teamNames = React.useMemo(() => team.map((m) => m.full_name), [team]);
@@ -572,16 +595,17 @@ function DescriptionField({
         value={value}
         onChange={onChange}
         team={team}
-        placeholder="פרטים נוספים (לא חובה)"
+        placeholder="פרטים נוספים (לא חובה). אפשר להדביק תמונות (Cmd/Ctrl+V)"
         autoFocus={isExisting}
         onBlur={isExisting ? () => setEditing(false) : undefined}
+        onPaste={onPaste}
       />
     </div>
   );
 }
 
 function CollapsibleTextarea({
-  id, value, onChange, placeholder, team, isExisting,
+  id, value, onChange, placeholder, team, isExisting, onPaste,
 }: {
   id: string;
   value: string;
@@ -589,6 +613,7 @@ function CollapsibleTextarea({
   placeholder: string;
   team: TeamMember[];
   isExisting: boolean;
+  onPaste?: (e: React.ClipboardEvent<HTMLTextAreaElement>) => void;
 }) {
   const [editing, setEditing] = React.useState(!isExisting);
   const [expanded, setExpanded] = React.useState(false);
@@ -639,8 +664,58 @@ function CollapsibleTextarea({
           className={cn("min-h-[150px] text-base")}
           autoFocus={isExisting}
           onBlur={isExisting ? () => setEditing(false) : undefined}
+          onPaste={onPaste}
         />
       </div>
+    </div>
+  );
+}
+
+function PendingAttachmentsPreview({
+  files, previews, onRemove, uploading,
+}: {
+  files: File[];
+  previews: string[];
+  onRemove: (idx: number) => void;
+  uploading: boolean;
+}) {
+  if (files.length === 0) return null;
+  return (
+    <div className="flex flex-wrap gap-2">
+      {files.map((f, i) => (
+        <span key={i} className="relative inline-block">
+          {f.type.startsWith("image/") ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={previews[i]}
+              alt={f.name}
+              className={cn(
+                "h-16 w-16 rounded-lg border border-border object-cover transition-opacity",
+                uploading && "opacity-50",
+              )}
+            />
+          ) : (
+            <span className="inline-flex h-16 w-16 items-center justify-center rounded-lg border border-border bg-surface text-ink-muted">
+              <FileIcon className="h-5 w-5" />
+            </span>
+          )}
+          {uploading && (
+            <span className="absolute inset-0 flex items-center justify-center">
+              <span className="h-5 w-5 animate-spin rounded-full border-2 border-link border-t-transparent" />
+            </span>
+          )}
+          {!uploading && (
+            <button
+              type="button"
+              onClick={() => onRemove(i)}
+              className="absolute -end-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-ink text-white shadow-elevation-2 hover:bg-ink-hover"
+              aria-label="הסר קובץ"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          )}
+        </span>
+      ))}
     </div>
   );
 }

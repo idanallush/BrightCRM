@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Hint } from "@/components/ui/tooltip";
 import { toast } from "@/components/ui/toaster";
 import { getInitials } from "@/lib/utils";
+import { usePasteImage } from "@/lib/use-paste-image";
 import type { TeamMember } from "@/lib/data";
 
 const MAX_BYTES = 10 * 1024 * 1024;
@@ -95,6 +96,12 @@ export function CommentInput({
     setPendingFiles((prev) => prev.filter((_, i) => i !== idx));
   }
 
+  const handlePaste = usePasteImage({
+    onImages: (files) => setPendingFiles((prev) => [...prev, ...files]),
+    onTooLarge: (f) => toast.error(`"${f.name}" גדול מ-10MB`),
+    onUnsupported: (mime) => toast.error(`סוג תמונה לא נתמך: ${mime}`),
+  });
+
   async function handleSend() {
     if ((!text.trim() && pendingFiles.length === 0) || sending) return;
     setSending(true);
@@ -131,6 +138,7 @@ export function CommentInput({
             if (e.key === "Escape" && showMentions) { setShowMentions(false); return; }
             if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
           }}
+          onPaste={handlePaste}
           placeholder={placeholder ?? "כתוב עדכון... (@ לאזכור)"}
           rows={compact ? 1 : 2}
           className="w-full resize-none rounded-t-xl bg-transparent px-3 pt-3 pb-1.5 text-sm text-ink placeholder:text-ink-muted focus:outline-none"
