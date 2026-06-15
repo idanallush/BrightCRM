@@ -18,7 +18,8 @@ const PopoverContent = React.forwardRef<
       align={align}
       sideOffset={sideOffset}
       className={cn(
-        "z-50 w-72 rounded-xl border border-border bg-white p-0 text-ink shadow-elevation-3 outline-none",
+        // z-[60] sits above Dialog/Sheet (z-50) so this works when used inside them.
+        "z-[60] w-72 rounded-xl border border-border bg-white p-0 text-ink shadow-elevation-3 outline-none",
         "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
         className,
       )}

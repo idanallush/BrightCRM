@@ -41,7 +41,10 @@ export function ClientCombobox({
   const heightClass = size === "sm" ? "h-9 text-sm" : "h-10 text-sm";
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    // modal=true is required when this combobox renders inside a Radix Dialog:
+    // otherwise the Dialog's DismissableLayer/focus-scope swallows pointer events
+    // and the popover either won't open or opens-and-immediately-closes.
+    <Popover open={open} onOpenChange={setOpen} modal>
       <PopoverTrigger asChild>
         <button
           type="button"
