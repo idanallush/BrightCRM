@@ -43,7 +43,7 @@ npm run db:push      # supabase db push (requires supabase link first)
 כל הנתיבים מגיעים ל-Supabase `tasks` + `task_assignees`, ושולחים email notification:
 
 1. **WhatsApp** (הלב): `app/api/whatsapp/route.ts` → `lib/whatsapp/parse-task.ts` (Claude AI parse) → `lib/whatsapp/confirmation.ts` (אישור/ערוך/בטל) → writes to DB → `notifyNewTask()`
-2. **Web quick-add** (FAB, mobile): `components/quick-add.tsx` → `quickParseTask()` server action → `createTask()` in `app/(app)/tasks/actions.ts` → `notifyNewTask()`
+2. **Web quick-add** (FAB, mobile): `components/quick-add.tsx` → `quickParseTask()` server action → `createTask()` in `app/(app)/tasks/actions.ts` → `notifyNewTask()`. `createTask` returns `{ ok: true, taskId }` on success so callers can chain follow-up writes (e.g. attachment uploads).
 3. **Sidebar "הוספה" button** (global): opens a dropdown menu with "משימה חדשה" / "לקוח חדש". Triggers `GlobalDialogContext` from `shell-context.tsx` → opens `TaskForm` or `ClientForm` in a modal on the current page (no redirect). Data fetched client-side via `components/global-add-dialogs.tsx`.
 4. **Page-level "+ חדש" buttons**: each page toolbar has its own button that opens the same dialog locally via page state.
 
@@ -142,6 +142,29 @@ Status and health badges use **light bg + dark text** (not saturated solid color
 - Health: `bg-health-{level}-bg` + `text-health-{level}-text` (e.g. `bg-health-good-bg text-health-good-text`)
 - For small colored dots use the saturated token: `bg-st-waiting` / `bg-health-good`
 - Source of truth: `components/ui/badge.tsx` — `STATUS_LIGHT` export for inline style use, `StatusCell`/`HealthCell` for rendered pills.
+
+### Attachments — paste-to-attach (Cmd/Ctrl+V)
+
+Pasting an image from the clipboard into a text field queues it through the **same** `uploadAttachment` / `uploadCommentAttachment` pipeline as the file-picker button — there is no parallel upload path.
+
+- Reusable hook: `lib/use-paste-image.ts` — `usePasteImage({ onImages, onTooLarge, onUnsupported })`. Intercepts the textarea's `onPaste`, filters for image MIME types (JPEG/PNG/WebP only, matches `ALLOWED` in `app/actions/attachments.ts`), enforces 10MB max, and lets plain-text paste fall through untouched. Clipboard images get a stable name `pasted-<ts>-<i>.<ext>` so Storage doesn't collide.
+- Wired today:
+  - `app/(app)/tasks/comment-input.tsx` — pasted images go into the existing `pendingFiles` state and upload via the comment's normal submit path
+  - `app/(app)/tasks/task-form.tsx` — both create + edit modes. Pasted images sit in `pendingAttachments` with a thumbnail preview; on submit, after `createTask`/`updateTask`, they upload in parallel via `uploadAttachment` against the (now-existing) `taskId`. The form awaits every upload before `onDone()` — no fire-and-forget.
+- Wired through: `components/mention-textarea.tsx` accepts an `onPaste` prop pass-through (the description fields wrap `MentionTextarea`).
+- **Not wired** (intentional, would need a schema change): reminders description, client form text fields, the comment-edit textarea in `single-comment.tsx`. None of these have an attachments relation today.
+
+### Dropdowns inside Dialog — no Radix Popover, no cmdk
+
+**Canonical pattern for any new searchable dropdown that may render inside a `<Dialog>`**: plain `<div className="relative">` wrapper with an absolute-positioned panel. Do **not** reach for `@radix-ui/react-popover` or `cmdk` inside a Dialog.
+
+Why: Radix Dialog and Radix Popover are both `modal=true` components that each apply `inert`/`aria-hidden` to the *other's* portal subtree via `react-remove-scroll` + `aria-hidden`. Inside a Dialog, a Popover-Combobox ends up focused-but-inert — the cursor shows in the search input but keystrokes never reach `onChange`. Burned two attempts here; don't repeat.
+
+Reference implementations:
+- `components/client-combobox.tsx` — the canonical example. `relative` wrapper, `absolute top-full inset-x-0` panel, plain `<input>` + filtered list, `mousedown` outside-click listener, manual ArrowUp/Down/Home/End/Enter/Esc/Tab keyboard nav, `onMouseDown + preventDefault` on items so the click registers before input blur.
+- `components/mention-textarea.tsx` — the `@mention` dropdown follows the same pattern and already worked inside the Dialog. Pattern this after either file.
+
+Reuse `ClientCombobox` for any client-picker need; if you need a different combobox, follow the same shape. `components/ui/popover.tsx` and `components/ui/command.tsx` exist in the repo (and `cmdk` + `@radix-ui/react-popover` are in `package.json`) but are intentionally **unused by `ClientCombobox`**. They're available if you need a popover *outside* a Dialog — don't put them inside one.
 
 ### TaskForm — compact vs. full mode
 
