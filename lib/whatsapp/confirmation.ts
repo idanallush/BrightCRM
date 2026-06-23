@@ -126,19 +126,38 @@ export async function setEditState(pendingTaskId: string) {
     .eq("id", pendingTaskId);
 }
 
+const EDIT_STATE_TTL_MINUTES = 30;
+
 export async function getPendingEditState(phone: string) {
   const db = createAdminClient();
+
+  const cutoff = new Date(
+    Date.now() - EDIT_STATE_TTL_MINUTES * 60 * 1000,
+  ).toISOString();
 
   const { data } = await db
     .from("whatsapp_pending_tasks")
     .select("id, edit_field, parsed_data")
     .eq("phone", phone)
     .not("edit_field", "is", null)
+    .gte("created_at", cutoff)
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
 
   return data;
+}
+
+export async function clearPendingTasks(phone: string) {
+  const db = createAdminClient();
+  await db.from("whatsapp_pending_tasks").delete().eq("phone", phone);
+}
+
+const EDIT_FIELD_REGEX =
+  /^(?:כותרת|שם|title|דדליין|תאריך|deadline|due|לקוח|client|אחראי|מבצע|assignee)[:\s]+\S/;
+
+export function looksLikeFieldEdit(text: string): boolean {
+  return EDIT_FIELD_REGEX.test(text.trim());
 }
 
 export async function handleEditMessage(

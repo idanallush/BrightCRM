@@ -17,6 +17,8 @@ import {
   setEditState,
   getPendingEditState,
   handleEditMessage,
+  clearPendingTasks,
+  looksLikeFieldEdit,
 } from "@/lib/whatsapp/confirmation";
 import type { ParsedTask } from "@/lib/whatsapp/parse-task";
 
@@ -137,17 +139,23 @@ async function handleIncomingMessage(message: any) {
 
   const editState = await getPendingEditState(phone);
   if (editState && messageType === "text") {
-    console.log(`[WhatsApp] Handling pending edit for task ${editState.id}`);
     const text = message.text?.body?.trim();
-    if (text) {
+    if (text && looksLikeFieldEdit(text)) {
+      console.log(`[WhatsApp] Handling pending edit for task ${editState.id}`);
       await handleEditMessage(
         phone,
         editState.id,
         text,
         editState.parsed_data as ParsedTask,
       );
+      return;
     }
-    return;
+    // Text doesn't look like a field edit — drop the stale edit state
+    // and treat the message as a brand-new task.
+    console.log(
+      `[WhatsApp] Pending edit ${editState.id} exists but message isn't a field edit — clearing and treating as new task`,
+    );
+    await clearPendingTasks(phone);
   }
 
   if (messageType === "audio") {
